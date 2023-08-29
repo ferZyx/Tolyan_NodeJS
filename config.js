@@ -6,4 +6,6 @@ const config = {
     TG_TOKEN: process.env.TG_TOKEN,
 }
 
+console.log(config)
+
 export default config
