@@ -152,17 +152,7 @@ export default function setupAdminCommandHandler(bot) {
         if (!await userService.isAdmin(msg.from.id)){
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
-        const msg_text = '<b>Жирный текст</b>\n' +
-            '<i>Курсивный текст</i>\n' +
-            '<u>Подчеркнутый текст</u>\n' +
-            '<del>Зачеркнутый текст</del>\n' +
-            '<a href="https://example.com">Ссылка</a>\n' +
-            '<code>Моноширинный текст (код)</code>\n' +
-            '<pre>Предварительно форматированный текст\n' +
-            'с сохранением пробелов и переносов строк</pre>\n'
-        await bot.sendMessage(msg.chat.id, msg_text, {
-            parse_mode: 'html'
-        })
+        log.warn("Тестовый лог!")
     })
 
     bot.onText(/^\/online$/, async (msg) => {
