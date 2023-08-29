@@ -4,7 +4,6 @@ import TeacherController from "../controllers/TeacherController.js";
 
 // done
 export default function setupCommandHandlers(bot) {
-
     bot.onText(/^\/start$/, async (msg) => {
         await ScheduleController.startCommand(bot, msg)
             .catch(e => log.error("ВАЖНО! ОШИБКА В СТАРТ ХЕНДЕРЕ!", {stack:e.stack, msg}))
@@ -42,6 +41,8 @@ export default function setupCommandHandlers(bot) {
     });
 
     bot.on('message', async (msg) => {
-        log.silly(`User ${msg.chat.id} написал в чат: ${msg.text}`, {msg})
+        if(msg.chat.id !== -1001787183783){
+            log.silly(`User ${msg.chat.id} написал в чат: ${msg.text}`, {msg})
+        }
     });
 }

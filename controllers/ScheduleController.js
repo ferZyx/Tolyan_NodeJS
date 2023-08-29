@@ -74,8 +74,8 @@ class ScheduleController {
         return (currentDate.getDay() + 6) % 7;
     }
 
-    async registerUser(msg){
-        try{
+    async registerUser(msg) {
+        try {
             const User = await userService.findUserById(msg.chat.id)
             if (!User) {
                 await userService.createUser({
@@ -87,8 +87,8 @@ class ScheduleController {
                     username: msg.chat.username,
                 })
             }
-        }catch (e) {
-            log.error("Ошибка при попытке зарегестрировать пользователя", {stack:e.stack, msg})
+        } catch (e) {
+            log.error("Ошибка при попытке зарегестрировать пользователя", {stack: e.stack, msg})
         }
     }
 
@@ -99,7 +99,7 @@ class ScheduleController {
         } catch (e) {
             await this.errorHandler(e, bot, answer, "faculty|0")
         } finally {
-           await this.registerUser(msg)
+            await this.registerUser(msg)
         }
     }
 
@@ -255,12 +255,8 @@ class ScheduleController {
                             stack: e.stack, call
                         }))
                     })
-                    .catch(async (e) => {
-                        if (!e.response) {
-                            throw e
-                        }
-                        const response = e.response
-                        if (response.status === 503) {
+                    .catch(async () => {
+                        try {
                             log.info(`User ${call.message.chat.id} gets a cached schedule.`)
                             await bot.editMessageText('💀 schedule.ksu.kz не отвечает. Сейчас поищу твое расписание в своих недрах...', {
                                 chat_id: call.message.chat.id, message_id: call.message.message_id
@@ -285,8 +281,9 @@ class ScheduleController {
                                     }
                                 })
                             }
-                        } else {
-                            throw e
+                        } catch (e) {
+                            log.error("Ошбика при получении резервного расписания.", {stack: e.stack, call})
+                            await this.errorHandler(e, bot, call.message, call.data)
                         }
                     })
             }
@@ -350,16 +347,16 @@ class ScheduleController {
     }
 
     async errorHandler(e, bot, message, callback_data) {
-        try{
+        try {
             log.error(`User ${message.chat.id} got an error at ${callback_data}. Данные об ошибке в метаданных.`, {
                 stack: e.stack, message, callback_data
             })
-            await bot.editMessageText("⚠️ Дико извиняемся, произошла какая то ошибка." + "\n🔩 Не переживайте, я уже вызвал фиксиков!", {
+            await bot.editMessageText("⚠️ Дико извиняемся, произошла какая то ошибка." + "\n🔩 Не переживайте, я уже вызвал фиксиков! Постараемся всё починить как можно скорее!", {
                 chat_id: message.chat.id, message_id: message.message_id, reply_markup: {
                     inline_keyboard: [[{text: "Попробовать снова", callback_data}]]
                 }
             })
-        }catch (e) {
+        } catch (e) {
             log.error("УЛЬТРА МЕГА ВАЖНО! ОШИБКА ПРИ ПОПЫТКЕ ОБРАБОТАТЬ ОШИБКУ! errorHandler",
                 {stack: e.stack, message})
         }
