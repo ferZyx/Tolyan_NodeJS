@@ -1,7 +1,7 @@
 import 'dotenv/config'
 
 const config = {
-    DEBUG: Boolean(process.env.DEBUG) || false,
+    DEBUG: Boolean(process.env.DEBUG),
     DB_URI: process.env.DB_URI,
     TG_TOKEN: process.env.TG_TOKEN,
 }

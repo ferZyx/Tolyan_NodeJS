@@ -1,0 +1,39 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Notify Telegram about new commit
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            [${{ github.repository }}]
+            New commit detected: ${{ github.event.commits[0].message }}!
+
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent@v0.5.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER_IP }} 'bash /var/www/ksu-helper/deploy.sh'
+
+      - name: Notify Telegram about successful commit
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            [${{ github.repository }}]
+            New commit deployed! ${{ github.event.commits[0].message }}!
+            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
