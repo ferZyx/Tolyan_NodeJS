@@ -25,7 +25,7 @@ const log = createLogger({
 });
 
 
-if (config.DEBUG) {
+if (!config.DEBUG) {
     log.add(new transports.MongoDB({
         db: process.env.DB_URI,
         collection: 'logs',
