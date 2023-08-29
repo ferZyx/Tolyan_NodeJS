@@ -16,9 +16,10 @@ const bot = new TelegramBot(config.TG_TOKEN, {
 });
 const app = express();
 const port = 5001;
+
 app.use(express.json());
 app.use(cors())
-app.use( router);
+app.use(router);
 app.listen(port, () => log.info(`Tolyan express started at ${port} port.`));
 
 
