@@ -1,39 +1,41 @@
 import "dotenv/config";
 import "winston-mongodb"
-import winston from "winston"
-import {MongoClient} from "mongodb";
+import {createLogger, transports, format} from "winston"
 import CustomTransport from "./customTransport.js";
 import config from "../config.js";
 
 
-const log = winston.createLogger({
-    level: 'silly',
-    format: winston.format.combine(
-        winston.format.printf(({level, message, stack}) => {
-            return `${level}: ${message}\n${stack || ''}`;
-        })
-    ),
+const log = createLogger({
     transports: [
-        new winston.transports.Console(),
-        // Другие транспорты, если есть
+        new transports.Console({
+            level: 'silly',
+            format: format.combine(
+                format.printf(({level, message, stack}) => {
+                    return `${level}: ${message}\n${stack || ''}`;
+                })
+            ),
+        }),
+
+        new transports.File({
+            filename: "logs.log",
+            level: 'silly',
+            format: format.combine(format.timestamp(), format.json())
+        }),
     ],
 });
 
-const url = process.env.DB_URI;
 
-const client = new MongoClient(url);
-await client.connect();
-
-const transportOptions = {
-    db: await Promise.resolve(client),
-    collection: 'logs',
-    format: winston.format.metadata(),
-    level:"silly"
-};
-
-if (!config.DEBUG) {
-    log.add(new winston.transports.MongoDB(transportOptions)); // mongodb logging
-    log.add(new CustomTransport({level: "warn"}))  // telegram warning notifications
+if (config.DEBUG) {
+    log.add(new transports.MongoDB({
+        db: process.env.DB_URI,
+        collection: 'logs',
+        options: {useUnifiedTopology: true},
+        format: format.metadata(),
+        level: "silly"
+    })); // mongodb logging
+    log.add(new CustomTransport({
+        level: "warn"
+    }))  // telegram warning notifications
 }
 
 export default log
