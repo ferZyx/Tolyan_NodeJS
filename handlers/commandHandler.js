@@ -61,6 +61,11 @@ export default function setupCommandHandlers(bot) {
             `⚪️ Внесены значительные изменения в интерфейс расписания, менюшек, веб-версии расписания. `
         await bot.sendMessage(msg.chat.id, msg_text)
     })
+    bot.onText(/^\/donate/i, async (msg) => {
+        const msg_text = 'Над ботом активно работают 2 начинающих разработчика, которых вы можете поддержать, угостив ' +
+            'их стаканом компота или даже кружечкой горячего кофе!\n Каспи: <code>4400430139065632</code>'
+        await bot.sendMessage(msg.chat.id, msg_text, {parse_mode:'HTML'})
+    })
 
     bot.on('message', async (msg) => {
         if(msg.chat.id !== -1001787183783){
