@@ -41,6 +41,15 @@ class UserService {
         }
     }
 
+    async isAdmin(userId){
+        try{
+            const user = await User.findOne({userId})
+            return Boolean(user.isAdmin)
+        }catch (e) {
+            throw new Error("Ошибка при проверке юзера на админа" + e)
+        }
+    }
+
     // updateAll = async (users) => {
     //     try {
     //         await User.deleteMany({})

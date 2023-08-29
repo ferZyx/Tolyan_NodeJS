@@ -11,8 +11,11 @@ function sleep(ms) {
 }
 
 
-export default function setupAdminCommandHandler(bot){
+export default function setupAdminCommandHandler(bot) {
     bot.onText(/^\/update_faculties$/, async (msg) => {
+        if (!await userService.isAdmin(msg.from.id)){
+            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+        }
         await bot.sendMessage(msg.chat.id, 'Начинаю парсить факульеты, ИУ!')
         try {
             await axios.get("http://79.133.182.125:5000/api/schedule/get_faculty_list")
@@ -35,12 +38,15 @@ export default function setupAdminCommandHandler(bot){
                     }
                 })
         } catch (e) {
-            log.error(`ADMIN ERROR WHILE FACULTY LIST UPDATING`, {stack:e.stack})
+            log.error(`ADMIN ERROR WHILE FACULTY LIST UPDATING`, {stack: e.stack})
             await bot.sendMessage(msg.chat.id, 'Произошла ошибка при парсинге факультетов')
         }
     })
 
     bot.onText(/^\/update_programs$/, async (msg) => {
+        if (!await userService.isAdmin(msg.from.id)){
+            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+        }
         await bot.sendMessage(msg.chat.id, "The program list updating is starting!")
         const startTime = Date.now()
 
@@ -62,7 +68,7 @@ export default function setupAdminCommandHandler(bot){
                             })
                         }
                     } catch (e) {
-                        log.error("Ошибка при получении списка программ при обновлении.", {stack:e.stack})
+                        log.error("Ошибка при получении списка программ при обновлении.", {stack: e.stack})
                         isErrorless = false
                         break
                     }
@@ -73,7 +79,7 @@ export default function setupAdminCommandHandler(bot){
             })
             .catch((e) => {
                 isErrorless = false
-                log.error("Ошибка при получении списка факультетов при обновлении списка программ.", {stack:e.stack})
+                log.error("Ошибка при получении списка факультетов при обновлении списка программ.", {stack: e.stack})
             })
         if (isErrorless) {
             await programService.updateAll(programs)
@@ -85,6 +91,9 @@ export default function setupAdminCommandHandler(bot){
     })
 
     bot.onText(/^\/update_groups$/, async (msg) => {
+        if (!await userService.isAdmin(msg.from.id)){
+            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+        }
         await bot.sendMessage(msg.chat.id, "The group list updating is starting!")
         const startTime = Date.now()
 
@@ -109,7 +118,7 @@ export default function setupAdminCommandHandler(bot){
                             })
                         }
                     } catch (e) {
-                        log.error("Ошибка при получении списка групп при обновлении.", {stack:e.stack})
+                        log.error("Ошибка при получении списка групп при обновлении.", {stack: e.stack})
                         isErrorless = false
                         break
                     }
@@ -120,7 +129,7 @@ export default function setupAdminCommandHandler(bot){
             })
             .catch((e) => {
                 isErrorless = false
-                log.error("Ошибка при получении списка программ при обновлении списка групп.", {stack:e.stack})
+                log.error("Ошибка при получении списка программ при обновлении списка групп.", {stack: e.stack})
             })
         if (isErrorless) {
             await groupService.updateAll(groups)
@@ -132,38 +141,61 @@ export default function setupAdminCommandHandler(bot){
     })
 
     bot.onText(/^\/update_teachers$/, async (msg) => {
+        if (!await userService.isAdmin(msg.from.id)){
+            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+        }
         await bot.sendMessage(msg.chat.id, 'it is')
     })
 
+
     bot.onText(/^\/test$/, async (msg) => {
-        await bot.sendMessage(msg.chat.id, 'Hey  <a href="https://idl.buketov.edu.kz">idl.buketov.edu.kz</a>', {
-            parse_mode:'HTML', disable_web_page_preview:true
+        if (!await userService.isAdmin(msg.from.id)){
+            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+        }
+        const msg_text = '<b>Жирный текст</b>\n' +
+            '<i>Курсивный текст</i>\n' +
+            '<u>Подчеркнутый текст</u>\n' +
+            '<del>Зачеркнутый текст</del>\n' +
+            '<a href="https://example.com">Ссылка</a>\n' +
+            '<code>Моноширинный текст (код)</code>\n' +
+            '<pre>Предварительно форматированный текст\n' +
+            'с сохранением пробелов и переносов строк</pre>\n'
+        await bot.sendMessage(msg.chat.id, msg_text, {
+            parse_mode: 'html'
         })
     })
 
-
     bot.onText(/^\/online$/, async (msg) => {
+        if (!await userService.isAdmin(msg.from.id)){
+            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+        }
         await bot.sendMessage(msg.chat.id, 'it is')
     })
 
     bot.onText(/^\/users$/, async (msg) => {
-        try{
+        try {
+            if (!await userService.isAdmin(msg.from.id)){
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
             const userCount = await userService.countDocuments()
             await bot.sendMessage(msg.chat.id, `В базе данных Толяна ${userCount} пользователей.`)
-        }catch (e) {
+        } catch (e) {
             log.error(e)
         }
     })
 
     bot.onText(/^\/get_schedule (\w+)$/i, async (msg, match) => {
-        try{
+        try {
+            if (!await userService.isAdmin(msg.from.id)){
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
             const groupId = match[1];
 
             const answer = await bot.sendMessage(msg.chat.id, `Получаем расписание группы: ${groupId}`)
             const Group = await groupService.getById(groupId)
-            if(!Group){
+            if (!Group) {
                 return bot.editMessageText("Нет такой группы. ", {
-                    chat_id:answer.chat.id, message_id:answer.message_id
+                    chat_id: answer.chat.id, message_id: answer.message_id
                 })
             }
 
@@ -172,7 +204,7 @@ export default function setupAdminCommandHandler(bot){
                 message: answer
             }
             await ScheduleController.getScheduleMenu(bot, call)
-        }catch (e) {
+        } catch (e) {
             log.error(e)
         }
 

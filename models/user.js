@@ -8,7 +8,8 @@ const userSchema = new mongoose.Schema(
         firstName: {type: String},
         lastName: {type: String},
         username: {type: String},
-        group: {type: Number, ref: 'Group', field:"id"}
+        group: {type: Number, ref: 'Group', field:"id"},
+        isAdmin:{type:Boolean}
     },
     {
         timestamps: true, // Указываем использовать timestamps
