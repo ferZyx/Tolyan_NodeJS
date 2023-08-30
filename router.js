@@ -50,11 +50,11 @@ router.get('/get_user_schedule', async (req, res) => {
 
 })
 
-router.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.send();
-});
+router.get('/get_user_activity_logs', async (req, res) => {
+
+})
+
+
 
 
 export default router
