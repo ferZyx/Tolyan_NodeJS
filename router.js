@@ -8,6 +8,12 @@ import LogService from "./services/logService.js";
 
 const router = new Router()
 
+router.post("/log", async (req,res) => {
+    const data = req.body
+    log.warn(JSON.stringify(data))
+    return res.json('logged')
+})
+
 router.get('/get_user_schedule', async (req, res) => {
     const userId = req.query.userId
     log.warn(`Поступил запрос на веб апп. userId: ${userId}`)
