@@ -15,6 +15,7 @@ const bot = new TelegramBot(config.TG_TOKEN, {
         autoStart: true
     }
 });
+
 const app = express();
 app.use(cors());
 app.use(express.json());
