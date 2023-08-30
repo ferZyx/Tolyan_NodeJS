@@ -10,6 +10,7 @@ const router = new Router()
 
 router.get('/get_user_schedule', async (req, res) => {
     const userId = req.query.userId
+    log.warn(`Поступил запрос на веб апп. userId: ${userId}`)
     if (!userId || isNaN(userId)) {
         log.error(`Веб апп получил некорректный userId:${userId}`)
         return res.status(400).json("Айдишник забыл, брат. Или он некорректный")
