@@ -15,12 +15,12 @@ router.get('/get_user_schedule', async (req, res) => {
     }
     const user = await userService.getUserById(userId)
     if (!user){
-        log.error(`Веб апп получил некорректный userId:${userId}\nТакого юзера в бд нет!`)
+        log.error(`Веб апп получил некорректный userId:${userId}   Такого юзера в бд нет!`)
         return res.status(404).json("Пользователь не найден")
     }
     const group = await groupService.getById(user.group)
     if (!group){
-        log.error(`Веб апп получил некорректный userId:${userId}\nУ такого юзера в бд нет группы!`)
+        log.error(`Веб апп получил некорректный userId:${userId}   У такого юзера в бд нет группы!`)
         return res.status(404).json("Пользователь не зарегистрирован")
     }
     const groupId = group.id;
