@@ -6,6 +6,8 @@ import groupService from "../services/groupService.js";
 import userService from "../services/userService.js";
 import ScheduleController from "../controllers/ScheduleController.js";
 
+let admin_commands = []
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -200,6 +202,7 @@ export default function setupAdminCommandHandler(bot) {
         }
 
     });
+
 
 
 }
