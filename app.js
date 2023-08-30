@@ -15,11 +15,9 @@ const bot = new TelegramBot(config.TG_TOKEN, {
     }
 });
 const app = express();
-app.use(
-    cors({
-        exposedHeaders: "*",
-    })
-);
+app.use(cors({
+    credentials: true
+}));
 app.use(express.json());
 app.use(router);
 
