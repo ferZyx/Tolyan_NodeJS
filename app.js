@@ -8,6 +8,7 @@ import setupCommandHandlers from "./handlers/commandHandler.js";
 import setupCallbackHandlers from "./handlers/callbackHandler.js";
 import setupAdminCommandHandler from "./handlers/adminCommandHandler.js";
 import router from "./router.js";
+import errorMiddleware from "./middlewares/errorMiddleware.js";
 
 const bot = new TelegramBot(config.TG_TOKEN, {
     polling: {
@@ -18,6 +19,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(router);
+app.use(errorMiddleware)
 
 const port = 5001;
 app.listen(port, () => log.info(`Tolyan express started at ${port} port.`));
