@@ -8,7 +8,7 @@ import scheduleService from "./services/scheduleService.js";
 
 const router = new Router()
 
-router.get('/get_user_schedule', cors(), (req, res) => {
+router.get('/get_user_schedule', cors(), async (req, res) => {
     try {
         const userId = req.query.userId
         if (!userId) {
