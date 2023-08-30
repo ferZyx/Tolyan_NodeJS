@@ -74,6 +74,7 @@ router.get('/get_user_activity_logs', async (req, res) => {
         limit,
         totalPages: Math.ceil(totalDocuments / limit),
         documents,
+        desiredLogLevels
     });
 
 })
