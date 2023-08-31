@@ -325,7 +325,7 @@ class ScheduleController {
             }
             const Group = await groupService.getById(groupId)
             if (!Group) {
-                log.error(`!!! USER ${msg.chat.id} УЧИТСЯ В ГРУППЕ КОТОРОЙ НЕТ В БД`)
+                log.error(`!!! USER ${msg.chat.id} УЧИТСЯ В ГРУППЕ КОТОРОЙ НЕТ В БД.`, {User})
                 return bot.editMessageText("⚠️ Я не смог найти группу в которой ты учишься(\n" +
                     "2 варианта. Либо я сломался что вероятнее всего. Либо произошла какая то ошибка. \n" +
                     "Попробуй воспользоваться /start для получения расписания", {

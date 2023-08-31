@@ -126,7 +126,7 @@ export default function setupAdminCommandHandler(bot) {
                     }
                     const stage = Math.floor(programs.indexOf(program) / programs.length * 100)
                     await bot.sendMessage(msg.chat.id, `${program.name} || It is ${stage}%.`)
-                    await sleep(3000)
+                    await sleep(5000)
                 }
             })
             .catch((e) => {
