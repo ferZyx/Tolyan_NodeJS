@@ -162,10 +162,10 @@ export default function setupAdminCommandHandler(bot) {
 
     bot.onText(/^\/online$/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
-
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
-        await bot.sendMessage(msg.chat.id, 'it is')
+        const users = await userService.getTodayActiveUsers()
+        await bot.sendMessage(msg.chat.id, `Сегодня ботом воспользовались: ${users.length}`)
     })
 
     bot.onText(/^\/users$/, async (msg) => {
