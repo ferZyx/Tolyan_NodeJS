@@ -206,5 +206,35 @@ export default function setupAdminCommandHandler(bot) {
 
     });
 
+    bot.onText(/^\/get_user (\w+)$/i, async (msg, match) => {
+        try {
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+            const userId = match[1];
+
+            const user = await userService.getUserById(userId)
+            await bot.sendMessage(msg.chat.id, JSON.stringify(user, null, 4))
+        } catch (e) {
+            log.error(e)
+        }
+
+    });
+
+    bot.onText(/^\/get_group (\w+)$/i, async (msg, match) => {
+        try {
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+            const groupId = match[1];
+
+            const group = await groupService.getById(groupId)
+            await bot.sendMessage(msg.chat.id, JSON.stringify(group, null, 4))
+        } catch (e) {
+            log.error(e)
+        }
+
+    });
+
 
 }
