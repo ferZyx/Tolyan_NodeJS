@@ -1,6 +1,7 @@
 import ScheduleController from "../controllers/ScheduleController.js";
 import log from "../logging/logging.js";
 import TeacherController from "../controllers/TeacherController.js";
+import config from "../config.js";
 
 // done
 export default function setupCommandHandlers(bot) {
@@ -62,9 +63,11 @@ export default function setupCommandHandlers(bot) {
         await bot.sendMessage(msg.chat.id, msg_text)
     })
     bot.onText(/^\/donate/i, async (msg) => {
+        log.warn(`User ${msg.chat.id} прописал /donate`)
         const msg_text = 'Над ботом активно работают 2 начинающих разработчика, которых вы можете поддержать, угостив ' +
             'их стаканом компота или даже кружечкой горячего кофе!\n Каспи: <code>4400430139065632</code>'
         await bot.sendMessage(msg.chat.id, msg_text, {parse_mode:'HTML'})
+        await bot.forwardMessage(config.LOG_CHANEL_ID, msg.chat.id, msg.message_id)
     })
 
     bot.on('message', async (msg) => {
