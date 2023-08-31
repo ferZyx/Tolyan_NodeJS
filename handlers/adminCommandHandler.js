@@ -5,6 +5,7 @@ import programService from "../services/programService.js";
 import groupService from "../services/groupService.js";
 import userService from "../services/userService.js";
 import ScheduleController from "../controllers/ScheduleController.js";
+import fs from "fs/promises"
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -186,9 +187,49 @@ export default function setupAdminCommandHandler(bot) {
             const userCount = await userService.countDocuments()
             await bot.sendMessage(msg.chat.id, `В базе данных Толяна ${userCount} пользователей.`)
         } catch (e) {
-            log.error(e)
+            log.error({stack:e.stack})
         }
     })
+
+    bot.onText(/^\/group_stat$/, async (msg) => {
+        try {
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+            await bot.sendMessage(msg.chat.id, "started")
+            const startTime = Date.now()
+
+            let group_stat = []
+
+            const groups = await groupService.getAll()
+            for(const group of groups){
+                const program = await programService.getById(group.program)
+                const faculty = await facultyService.getById(program.faculty)
+                const users = await userService.getUsersByGroupId(group.id)
+                group_stat.push({
+                    id:group.id,
+                    name:group.name,
+                    program:program.name,
+                    faculty:faculty.name,
+                    students:group.studentCount,
+                    our_users:users.length,
+                    not_our_user:group.studentCount - users.length,
+                    percent: Math.floor(users.length / group.studentCount * 100)
+                })
+            }
+
+            const sortedGroupStat = group_stat.slice().sort((a, b) => b.percent - a.percent);
+
+            await fs.writeFile("./group_stat.json", JSON.stringify(sortedGroupStat, null, 3))
+
+            const endTime = Date.now()
+            await bot.sendDocument(msg.chat.id, './group_stat.json', {caption:`Action time: ${(endTime - startTime)/1000} сек.`})
+        } catch (e) {
+            console.log(e)
+            log.error("error", {stack:e.stack})
+        }
+    })
+
 
     bot.onText(/^\/get_schedule (\w+)$/i, async (msg, match) => {
         try {
@@ -211,7 +252,7 @@ export default function setupAdminCommandHandler(bot) {
             }
             await ScheduleController.getScheduleMenu(bot, call)
         } catch (e) {
-            log.error(e)
+            log.error({stack:e.stack})
         }
 
     });
@@ -226,7 +267,7 @@ export default function setupAdminCommandHandler(bot) {
             const user = await userService.getUserById(userId)
             await bot.sendMessage(msg.chat.id, JSON.stringify(user, null, 4))
         } catch (e) {
-            log.error(e)
+            log.error({stack:e.stack})
         }
 
     });
@@ -241,7 +282,7 @@ export default function setupAdminCommandHandler(bot) {
             const group = await groupService.getById(groupId)
             await bot.sendMessage(msg.chat.id, JSON.stringify(group, null, 4))
         } catch (e) {
-            log.error(e)
+            log.error({stack:e.stack})
         }
 
     });

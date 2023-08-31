@@ -51,10 +51,21 @@ class UserService {
     }
 
     async getTodayActiveUsers(){
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Обнуляем время для сравнения с началом дня
-        const users = await User.find({updatedAt: {$gte: today}});
-        return users
+        try{
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Обнуляем время для сравнения с началом дня
+            return await User.find({updatedAt: {$gte: today}})
+        }catch (e) {
+            throw e
+        }
+    }
+
+    async getUsersByGroupId(groupId){
+        try{
+            return await User.find({group:groupId})
+        }catch (e) {
+            throw e
+        }
     }
 
     // updateAll = async (users) => {
