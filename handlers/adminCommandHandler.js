@@ -6,8 +6,6 @@ import groupService from "../services/groupService.js";
 import userService from "../services/userService.js";
 import ScheduleController from "../controllers/ScheduleController.js";
 
-let admin_commands = []
-
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -15,7 +13,7 @@ function sleep(ms) {
 
 export default function setupAdminCommandHandler(bot) {
     bot.onText(/^\/update_faculties$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)){
+        if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
         await bot.sendMessage(msg.chat.id, 'Начинаю парсить факульеты, ИУ!')
@@ -46,7 +44,7 @@ export default function setupAdminCommandHandler(bot) {
     })
 
     bot.onText(/^\/update_programs$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)){
+        if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
         await bot.sendMessage(msg.chat.id, "The program list updating is starting!")
@@ -93,7 +91,7 @@ export default function setupAdminCommandHandler(bot) {
     })
 
     bot.onText(/^\/update_groups$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)){
+        if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
         await bot.sendMessage(msg.chat.id, "The group list updating is starting!")
@@ -104,29 +102,22 @@ export default function setupAdminCommandHandler(bot) {
         await programService.getAll()
             .then(async (programs) => {
                 for (const program of programs) {
-                    try {
-                        const response = await axios.get(`http://79.133.182.125:5000/api/schedule/get_group_list_by_programId/${program['id']}`)
-                        const group_list = response.data
-
-                        for (const group of group_list) {
-                            groups.push({
-                                name: group['name'],
-                                id: group['id'],
-                                language: group['language'],
-                                href: group['href'],
-                                age: group['age'],
-                                studentCount: group['studentCount'],
-                                program: group['programId'],
-                            })
-                        }
-                    } catch (e) {
-                        log.error("Ошибка при получении списка групп при обновлении.", {stack: e.stack})
-                        isErrorless = false
-                        break
+                    const group_list = await get_group_list(program)
+                    for (const group of group_list) {
+                        groups.push({
+                            name: group['name'],
+                            id: group['id'],
+                            language: group['language'],
+                            href: group['href'],
+                            age: group['age'],
+                            studentCount: group['studentCount'],
+                            program: group['programId'],
+                        })
                     }
+
                     const stage = Math.floor(programs.indexOf(program) / programs.length * 100)
                     await bot.sendMessage(msg.chat.id, `${program.name} || It is ${stage}%.`)
-                    await sleep(5000)
+                    await sleep(3000)
                 }
             })
             .catch((e) => {
@@ -140,10 +131,22 @@ export default function setupAdminCommandHandler(bot) {
         } else {
             await bot.sendMessage(msg.chat.id, "Error while group updating( check logs!")
         }
+
+        async function get_group_list(program) {
+            try{
+                const response = await axios.get(`http://79.133.182.125:5000/api/schedule/get_group_list_by_programId/${program['id']}`)
+                return response.data
+            }catch (e) {
+                log.error("Произошла ошибка при обновлении ебучих групп. Через 5 минут попробую продолжить")
+                await sleep(5*60*1000)
+                return get_group_list(program)
+            }
+
+        }
     })
 
     bot.onText(/^\/update_teachers$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)){
+        if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
         await bot.sendMessage(msg.chat.id, 'it is')
@@ -151,14 +154,14 @@ export default function setupAdminCommandHandler(bot) {
 
 
     bot.onText(/^\/test$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)){
+        if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
         log.warn("Тестовый лог!")
     })
 
     bot.onText(/^\/online$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)){
+        if (!await userService.isAdmin(msg.from.id)) {
 
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
@@ -167,7 +170,7 @@ export default function setupAdminCommandHandler(bot) {
 
     bot.onText(/^\/users$/, async (msg) => {
         try {
-            if (!await userService.isAdmin(msg.from.id)){
+            if (!await userService.isAdmin(msg.from.id)) {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
             }
             const userCount = await userService.countDocuments()
@@ -179,7 +182,7 @@ export default function setupAdminCommandHandler(bot) {
 
     bot.onText(/^\/get_schedule (\w+)$/i, async (msg, match) => {
         try {
-            if (!await userService.isAdmin(msg.from.id)){
+            if (!await userService.isAdmin(msg.from.id)) {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
             }
             const groupId = match[1];
@@ -202,7 +205,6 @@ export default function setupAdminCommandHandler(bot) {
         }
 
     });
-
 
 
 }
