@@ -16,7 +16,7 @@ class CustomTransport extends Transport {
     log(info, callback) {
         const BASE_DIR = path.basename(path.dirname(__dirname))
 
-        const log_chanel_id = -1001787183783;
+        const log_chanel_id = config.LOG_CHANEL_ID;
 
         const text = `[${BASE_DIR}][${info.level}]%20` + info.message.replace(" ", "%20");
 
