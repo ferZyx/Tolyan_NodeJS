@@ -16,6 +16,14 @@ class groupService{
             throw e
         }
     }
+
+    getAll = async () => {
+        try{
+            return await Group.find({})
+        }catch (e) {
+            throw e
+        }
+    }
     
     updateAll = async (groups) =>{
         try{

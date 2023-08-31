@@ -18,6 +18,8 @@ export default function setupAdminCommandHandler(bot) {
         }
         await bot.sendMessage(msg.chat.id, 'Начинаю парсить факульеты, ИУ!')
         try {
+            const old_faculties = await facultyService.getAll()
+
             await axios.get("http://79.133.182.125:5000/api/schedule/get_faculty_list")
                 .then(async (response) => {
                     if (response.status) {
@@ -25,7 +27,8 @@ export default function setupAdminCommandHandler(bot) {
 
                         await facultyService.updateAll(faculties)
 
-                        await bot.sendMessage(msg.chat.id, "Faculty list successfully updated! Congratulations!")
+                        await bot.sendMessage(msg.chat.id, "Faculty list successfully updated! Congratulations!\n" +
+                            `Было: ${old_faculties.length} || Стало: ${faculties.length} || Разница: ${faculties.length - old_faculties.length}`)
                     } else {
                         await bot.sendMessage(msg.chat.id, `Received ${response.status} status code.`)
                     }
@@ -52,6 +55,7 @@ export default function setupAdminCommandHandler(bot) {
 
         let programs = []
         let isErrorless = true
+        const old_programs = await programService.getAll()
         await facultyService.getAll()
             .then(async (faculties) => {
                 for (const faculty of faculties) {
@@ -84,7 +88,9 @@ export default function setupAdminCommandHandler(bot) {
         if (isErrorless) {
             await programService.updateAll(programs)
             const endTime = Date.now()
-            await bot.sendMessage(msg.chat.id, `Program updating finished successfully. Action time: ${Math.floor((endTime - startTime) / 1000)} сек.`)
+            await bot.sendMessage(msg.chat.id, `Program updating finished successfully. Action time:` +
+                `${Math.floor((endTime - startTime) / 1000)} сек.\n` +
+                `Было: ${old_programs.length} || Стало: ${programs.length} || Разница: ${programs.length - old_programs.length}`)
         } else {
             await bot.sendMessage(msg.chat.id, "Error while program updating( check logs!")
         }
@@ -99,6 +105,7 @@ export default function setupAdminCommandHandler(bot) {
 
         let groups = []
         let isErrorless = true
+        const old_groups = await groupService.getAll()
         await programService.getAll()
             .then(async (programs) => {
                 for (const program of programs) {
@@ -127,7 +134,10 @@ export default function setupAdminCommandHandler(bot) {
         if (isErrorless) {
             await groupService.updateAll(groups)
             const endTime = Date.now()
-            await bot.sendMessage(msg.chat.id, `Group updating finished successfully. Action time: ${Math.floor((endTime - startTime) / 1000)} сек.`)
+            await bot.sendMessage(msg.chat.id, `Group updating finished successfully. Action time: ` +
+                `${Math.floor((endTime - startTime) / 1000)} сек.` +
+                `Было: ${old_groups.length} || Стало: ${groups.length} || Разница: ${groups.length - old_groups.length}`)
+
         } else {
             await bot.sendMessage(msg.chat.id, "Error while group updating( check logs!")
         }
