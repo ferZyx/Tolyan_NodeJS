@@ -66,7 +66,7 @@ router.get('/get_user_activity_logs', async (req, res) => {
 
     const query = desiredLogLevels.length > 0 ? {level: {$in: desiredLogLevels}} : {};
 
-    const totalDocuments = await LogService.getLogsCount()
+    const totalDocuments = await LogService.getLogsCount(query)
     const documents = await LogService.getLogs(query, skip, limit)
 
     return res.json({

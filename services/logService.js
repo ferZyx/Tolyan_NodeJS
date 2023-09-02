@@ -1,8 +1,8 @@
 import Log from "../models/Log.js";
 
 class LogService {
-    async getLogsCount() {
-        return Log.countDocuments()
+    async getLogsCount(query) {
+        return Log.countDocuments(query)
     }
 
     async getLogs(query, from, count){
