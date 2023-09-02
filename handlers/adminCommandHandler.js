@@ -185,15 +185,16 @@ export default function setupAdminCommandHandler(bot) {
             if (!await userService.isAdmin(msg.from.id)) {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
             }
-            let msg_text = ''
-            const weakActivity = await UserActivityService.getWeakUserActivity()
-            for(const doc of weakActivity){
+            let msg_text = 'Активность юзеров за последнюю неделю: \n'
+            const {weakUserActivity, weakUserCount} = await UserActivityService.getWeakUserActivity()
+            for(const doc of weakUserActivity){
                 const date = new Date(doc.createdAt); // Преобразуем строку в объект Date
                 const day = date.getDate().toString().padStart(2, '0'); // Извлекаем день и форматируем
                 const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Извлекаем месяц и форматируем
 
-                msg_text += `${day}.${month}: ${doc.userActivity}`
+                msg_text += `${day}.${month}: ${doc.userActivity}\n`
             }
+            msg_text += `\nВсего уникальных пользователей за неделю: ${weakUserCount}`
             await bot.sendMessage(msg.chat.id, msg_text)
         } catch (e) {
             log.error({stack:e.stack})
