@@ -258,9 +258,9 @@ class ScheduleController {
                             stack: e.stack, call
                         }))
                     })
-                    .catch(async () => {
+                    .catch(async (e) => {
                         try {
-                            log.info(`User ${call.message.chat.id} gets a cached schedule.`)
+                            log.info(`User ${call.message.chat.id} gets a cached schedule.`,{e})
                             await bot.editMessageText('💀 schedule.ksu.kz не отвечает. Сейчас поищу твое расписание в своих недрах...', {
                                 chat_id: call.message.chat.id, message_id: call.message.message_id
                             })
