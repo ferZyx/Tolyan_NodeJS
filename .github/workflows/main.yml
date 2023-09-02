@@ -26,7 +26,7 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER_IP }} 'bash /var/www/deployFiles/Tolyan_NodeJS.sh'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER_IP }} 'bash /var/www/deployFiles/Tolyan_NodeJS'
 
       - name: Notify Telegram about successful commit
         uses: appleboy/telegram-action@master

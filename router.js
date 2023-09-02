@@ -78,5 +78,4 @@ router.get('/get_user_activity_logs', async (req, res) => {
     });
 })
 
-
 export default router
