@@ -37,7 +37,7 @@ class UserActivityService{
             today.setHours(0, 0, 0, 0); // Обнуляем время для сравнения с началом дня
 
             const oneWeekAgo = new Date(today);
-            oneWeekAgo.setDate(today.getDate() - 7);
+            oneWeekAgo.setDate(today.getDate() - 6);
 
             return await User.countDocuments({
                 updatedAt: { $gte: oneWeekAgo, $lte: today } // Между одной неделей назад и сегодняшней датой
