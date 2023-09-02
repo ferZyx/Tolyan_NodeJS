@@ -6,6 +6,7 @@ import groupService from "../services/groupService.js";
 import userService from "../services/userService.js";
 import ScheduleController from "../controllers/ScheduleController.js";
 import fs from "fs/promises"
+import UserActivityService from "../services/userActivityService.js";
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -178,6 +179,27 @@ export default function setupAdminCommandHandler(bot) {
         const users = await userService.getTodayActiveUsers()
         await bot.sendMessage(msg.chat.id, `Сегодня ботом воспользовались: ${users.length}`)
     })
+
+    bot.onText(/^\/online2$/, async (msg) => {
+        try {
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+            let msg_text = ''
+            const weakActivity = await UserActivityService.getWeakUserActivity()
+            for(const doc of weakActivity){
+                const date = new Date(doc.createdAt); // Преобразуем строку в объект Date
+                const day = date.getDate().toString().padStart(2, '0'); // Извлекаем день и форматируем
+                const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Извлекаем месяц и форматируем
+
+                msg_text += `${day}.${month}: ${doc.userActivity}`
+            }
+            await bot.sendMessage(msg.chat.id, msg_text)
+        } catch (e) {
+            log.error({stack:e.stack})
+        }
+    })
+
 
     bot.onText(/^\/users$/, async (msg) => {
         try {
