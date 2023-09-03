@@ -215,7 +215,7 @@ class ScheduleController {
         }
         let end_text = `🕰 <i><b>Расписание загружено: ${scheduleDateTime} || ${scheduleLifeTime} назад.</b></i>\n` +
             '📖 Дополнительная информация: /help\n' +
-            '🗞 Наш канал: https://t.me/ksutolyan (прямо сейчас проходит опрос)\n' +
+            '🗞 Наш канал: https://t.me/ksutolyan \n' +
             '<tg-spoiler>Угостить компотом: /donate </tg-spoiler>'
         let msg_text = `${preMessage}👥 Группа: ${group.name} | Курс: ${group.age}\n📆 Расписание на <b>${schedule_day}</b>:\n` + schedule_text + end_text
 
