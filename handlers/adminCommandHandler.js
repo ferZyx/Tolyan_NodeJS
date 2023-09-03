@@ -16,7 +16,7 @@ function sleep(ms) {
 
 
 export default function setupAdminCommandHandler(bot) {
-    bot.onText(/^\/update_faculties$/, async (msg) => {
+    bot.onText(/^\/update_faculties/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
@@ -50,7 +50,7 @@ export default function setupAdminCommandHandler(bot) {
         }
     })
 
-    bot.onText(/^\/update_programs$/, async (msg) => {
+    bot.onText(/^\/update_programs/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
@@ -100,7 +100,7 @@ export default function setupAdminCommandHandler(bot) {
         }
     })
 
-    bot.onText(/^\/update_groups$/, async (msg) => {
+    bot.onText(/^\/update_groups/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
@@ -159,7 +159,7 @@ export default function setupAdminCommandHandler(bot) {
         }
     })
 
-    bot.onText(/^\/update_teachers$/, async (msg) => {
+    bot.onText(/^\/update_teachers/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
@@ -167,7 +167,7 @@ export default function setupAdminCommandHandler(bot) {
     })
 
 
-    bot.onText(/^\/info$/, async (msg) => {
+    bot.onText(/^\/info/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
@@ -175,7 +175,7 @@ export default function setupAdminCommandHandler(bot) {
         await bot.sendMessage(msg.chat.id, JSON.stringify(msg, null, 2))
     })
 
-    bot.onText(/^\/test$/, async (msg) => {
+    bot.onText(/^\/test/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
@@ -189,7 +189,7 @@ export default function setupAdminCommandHandler(bot) {
         }
     })
 
-    bot.onText(/^\/online$/, async (msg) => {
+    bot.onText(/^\/online/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
@@ -197,7 +197,7 @@ export default function setupAdminCommandHandler(bot) {
         await bot.sendMessage(msg.chat.id, `Сегодня ботом воспользовались: ${userCount}`)
     })
 
-    bot.onText(/^\/online2$/, async (msg) => {
+    bot.onText(/^\/online2/, async (msg) => {
         try {
             if (!await userService.isAdmin(msg.from.id)) {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
@@ -218,7 +218,7 @@ export default function setupAdminCommandHandler(bot) {
         }
     })
 
-    bot.onText(/^\/regs$/, async (msg) => {
+    bot.onText(/^\/regs/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
@@ -226,7 +226,7 @@ export default function setupAdminCommandHandler(bot) {
         await bot.sendMessage(msg.chat.id, `Сегодня зарегестрировались: ${userCount}`)
     })
 
-    bot.onText(/^\/regs2$/, async (msg) => {
+    bot.onText(/^\/regs2/, async (msg) => {
         try {
             if (!await userService.isAdmin(msg.from.id)) {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
@@ -248,7 +248,7 @@ export default function setupAdminCommandHandler(bot) {
     })
 
 
-    bot.onText(/^\/users$/, async (msg) => {
+    bot.onText(/^\/users/, async (msg) => {
         try {
             if (!await userService.isAdmin(msg.from.id)) {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
@@ -299,7 +299,7 @@ export default function setupAdminCommandHandler(bot) {
     //     }
     // })
 
-    bot.onText(/^\/get_schedule (\w+)$/i, async (msg, match) => {
+    bot.onText(/^\/get_schedule (\w+)/i, async (msg, match) => {
         try {
             if (!await userService.isAdmin(msg.from.id)) {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
@@ -382,7 +382,7 @@ export default function setupAdminCommandHandler(bot) {
     });
 
 
-    bot.onText(/^\/get_group (\w+)$/i, async (msg, match) => {
+    bot.onText(/^\/get_group (\w+)/i, async (msg, match) => {
         try {
             if (!await userService.isAdmin(msg.from.id)) {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
