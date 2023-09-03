@@ -177,13 +177,13 @@ export default function setupAdminCommandHandler(bot) {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
-        try{
+        try {
             const answer = await bot.sendMessage(msg.chat.id, JSON.stringify(msg, null, 2))
             await bot.editMessageText(JSON.stringify(msg, null, 2), {
                 message_id: answer.message_id, chat_id: answer.chat.id
             })
-        }catch (e) {
-            log.error("Ошибочка в /test", {stack:e.stack})
+        } catch (e) {
+            log.error("Ошибочка в /test", {stack: e.stack})
         }
     })
 
@@ -299,20 +299,19 @@ export default function setupAdminCommandHandler(bot) {
             if (!await userService.isAdmin(msg.from.id)) {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
             }
-            const split_data = msg.text.split(" ")
-            if (split_data.length < 2 || split_data.length > 2){
-                return await bot.sendMessage(msg.chat.id, "После команды должен быть 1 параметр!")
+            const userId = parseFloat(msg.text.replace('/get_user', ''))
+            if (isNaN(userId)) {
+                return await bot.sendMessage(msg.chat.id, "UserId is NaN")
             }
-            const userId = split_data[1]
 
             const user = await userService.getUserById(userId)
-            if (!user){
+            if (!user) {
                 return await bot.sendMessage(msg.chat.id, "Не найден такой юзер. НЕТУ!")
             }
             let msg_text = `Информация о юзере id: ${userId}\n` + JSON.stringify(user, null, 4)
 
             const group = await groupService.getById(user.group)
-            if (group){
+            if (group) {
                 msg_text += `\n\n Информация о группе id: ${group.id}\n` + JSON.stringify(group, null, 4)
                 const program = await programService.getById(group.program)
                 const faculty = await facultyService.getById(program.faculty)
@@ -334,11 +333,11 @@ export default function setupAdminCommandHandler(bot) {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
             }
             const split_data = msg.text.split(" ")
-            if (split_data.length < 3){
+            if (split_data.length < 3) {
                 return await bot.sendMessage(msg.chat.id, "После команды должен быть 2 параметра!")
             }
             const userId = split_data[1]
-            if (isNaN(parseFloat(userId))){
+            if (isNaN(parseFloat(userId))) {
                 return await bot.sendMessage(msg.chat.id, "Параметр userId is NaN")
             }
             const msg_text = msg.text.replace(userId, '').replace('/sms ', '')

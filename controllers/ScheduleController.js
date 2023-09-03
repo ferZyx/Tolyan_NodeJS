@@ -85,7 +85,7 @@ class ScheduleController {
                     firstName: msg.chat.first_name,
                     lastName: msg.chat.last_name,
                     username: msg.chat.username,
-                }).then(user => log.warn("Зарегистрирован новый пользователь!", {user}))
+                }).then(user => log.warn(`Зарегистрирован новый пользователь! /get_user${msg.chat.id}`, {user}))
             }
         } catch (e) {
             log.error("Ошибка при попытке зарегестрировать пользователя", {stack: e.stack, msg})
