@@ -5,7 +5,7 @@ import TeacherController from "../controllers/TeacherController.js";
 
 export default function setupCallbackHandlers(bot) {
     bot.on('callback_query', async (call) => {
-        log.silly(`User ${call.message.chat.id} clicked to btn ${call.data}`, {call})
+        log.silly(`User ${call.message.chat.id} clicked to btn ${call.data}`, {call, userId:call.message.chat.id})
 
         if (call.data.includes("faculty")) {
             try {
