@@ -466,5 +466,25 @@ export default function setupAdminCommandHandler(bot) {
 
     });
 
+    bot.onText(/^\/ahelp/i, async (msg) => {
+        const msg_text = '/update_faculties \n' +
+            '/update_programs \n' +
+            '/update_groups \n' +
+            '/update_teaches \n' +
+            '/info \n' +
+            '/test \n' +
+            '/online \n' +
+            '/online2 \n' +
+            '/regs \n' +
+            '/regs2 \n' +
+            '/get_schedule \n' +
+            '/get_reserved_schedule \n' +
+            '/get_user \n' +
+            '/sms \n' +
+            '/unactive_spam \n' +
+            '/get_group \n'
+        await bot.sendMessage(msg.chat.id, msg_text)
+    });
+
 
 }
