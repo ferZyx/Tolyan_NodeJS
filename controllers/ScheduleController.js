@@ -85,10 +85,13 @@ class ScheduleController {
                     firstName: msg.chat.first_name,
                     lastName: msg.chat.last_name,
                     username: msg.chat.username,
-                }).then(user => log.warn(`Зарегистрирован новый пользователь! /get_user${msg.chat.id}`, {user}))
+                }).then(user => log.warn(`Зарегистрирован новый пользователь! /get_user${msg.chat.id}`, {
+                    user,
+                    userId: msg.chat.id
+                }))
             }
         } catch (e) {
-            log.error("Ошибка при попытке зарегестрировать пользователя", {stack: e.stack, msg})
+            log.error("Ошибка при попытке зарегестрировать пользователя", {stack: e.stack, msg, userId: msg.chat.id})
         }
     }
 
@@ -255,12 +258,15 @@ class ScheduleController {
                         await this.sendSchedule(bot, call, schedule_cache[groupId])
 
                         await scheduleService.updateByGroupId(groupId, response.data).catch(e => log.error(`Ошибка при попытке сохранить резервную копию расписания в бд. groupId:${groupId}. Пользователь никак не пострадал.`, {
-                            stack: e.stack, call
+                            stack: e.stack, call, userId: call.message.chat.id
                         }))
                     })
                     .catch(async (e) => {
                         try {
-                            log.info(`User ${call.message.chat.id} gets a cached schedule.`,{e})
+                            log.info(`User ${call.message.chat.id} gets a cached schedule.`, {
+                                e,
+                                userId: call.message.chat.id
+                            })
                             await bot.editMessageText('💀 schedule.ksu.kz не отвечает. Сейчас поищу твое расписание в своих недрах...', {
                                 chat_id: call.message.chat.id, message_id: call.message.message_id
                             })
@@ -285,7 +291,11 @@ class ScheduleController {
                                 })
                             }
                         } catch (e) {
-                            log.error("Ошбика при получении резервного расписания.", {stack: e.stack, call})
+                            log.error("Ошбика при получении резервного расписания.", {
+                                stack: e.stack,
+                                call,
+                                userId: call.message.chat.id
+                            })
                             await this.errorHandler(e, bot, call.message, call.data)
                         }
                     })
@@ -299,8 +309,7 @@ class ScheduleController {
                 username: call.message.chat.username,
                 group: groupId
             }).catch((e) => log.error("Ошибка при обновлении данных о пользователе при получении расписания. ", {
-                stack: e.stack,
-                call
+                stack: e.stack, call, userId: call.message.chat.id
             }))
 
         } catch (e) {
@@ -325,7 +334,7 @@ class ScheduleController {
             }
             const Group = await groupService.getById(groupId)
             if (!Group) {
-                log.error(`!!! USER ${msg.chat.id} УЧИТСЯ В ГРУППЕ КОТОРОЙ НЕТ В БД.`, {User})
+                log.error(`!!! USER ${msg.chat.id} УЧИТСЯ В ГРУППЕ КОТОРОЙ НЕТ В БД.`, {User, userId:msg.chat.id})
                 return bot.editMessageText("⚠️ Я не смог найти группу в которой ты учишься(\n" +
                     "2 варианта. Либо я сломался что вероятнее всего. Либо произошла какая то ошибка. \n" +
                     "Попробуй воспользоваться /start для получения расписания", {
@@ -341,7 +350,7 @@ class ScheduleController {
             }
             await this.getScheduleMenu(bot, call)
         } catch (e) {
-            log.error(`Ошибка при получении расписания через /schedule: ` + e.message, {stack: e.stack, msg})
+            log.error(`Ошибка при получении расписания через /schedule: ` + e.message, {stack: e.stack, msg, userId:msg.chat.id})
             await bot.editMessageText("⚠️ Произошла непредвиденная ошибочка. Попробуйте /start. Возможно я сломался и меня скоро починят.", {
                 chat_id: answer.chat.id, message_id: answer.message_id
             })
@@ -351,11 +360,11 @@ class ScheduleController {
 
     async errorHandler(e, bot, message, callback_data) {
         try {
-            if(e.response && e.response.body.description === 'Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message'){
-                log.info(`User ${message.chat.id} получил ошибку о том шо сообщение нот модифайнед. Скипаю ошибочку`)
-            }else{
+            if (e.response && e.response.body.description === 'Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message') {
+                log.info(`User ${message.chat.id} получил ошибку о том шо сообщение нот модифайнед. Скипаю ошибочку`, {userId:message.chat.id})
+            } else {
                 log.error(`User ${message.chat.id} got an error at ${callback_data}. Данные об ошибке в метаданных.`, {
-                    stack: e.stack, message, callback_data
+                    stack: e.stack, message, callback_data, userId:message.chat.id
                 })
                 await bot.editMessageText("⚠️ Дико извиняемся, произошла какая то ошибка." + "\n🔩 Не переживайте, я уже вызвал фиксиков! Постараемся всё починить как можно скорее!", {
                     chat_id: message.chat.id, message_id: message.message_id, reply_markup: {
@@ -365,7 +374,7 @@ class ScheduleController {
             }
         } catch (e) {
             log.error("УЛЬТРА МЕГА ВАЖНО! ОШИБКА ПРИ ПОПЫТКЕ ОБРАБОТАТЬ ОШИБКУ! errorHandler",
-                {stack: e.stack, message})
+                {stack: e.stack, message, userId:message.chat.id})
         }
     }
 

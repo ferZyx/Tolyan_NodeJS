@@ -45,7 +45,7 @@ export default function setupCallbackHandlers(bot) {
                     return await ScheduleController.getSchedule(bot, call.message)
                 } catch (e) {
                     log.error("ВАЖНО! ОШИБКА В ШЕДУЛ КОЛБЕК ХЕНДЕРЕ ПРИ ПОПЫТКЕ ЭВОЛЮЦИОНИРОВАТЬ!", {
-                        stack: e.stack, call
+                        stack: e.stack, call, userId:call.message.chat.id
                     })
                 }
             }
@@ -61,7 +61,7 @@ export default function setupCallbackHandlers(bot) {
             try {
                 await ScheduleController.getScheduleMenu(bot, call)
             } catch (e) {
-                log.error("ОШИБКА В КОЛБЕК ХЕНДЕЛЕРЕ schedule", {stack:e.stack})
+                log.error("ОШИБКА В КОЛБЕК ХЕНДЕЛЕРЕ schedule", {stack:e.stack, call, userId:call.message.chat.id})
             }
 
         } else if (call.data.includes("teacher")) {
@@ -69,13 +69,13 @@ export default function setupCallbackHandlers(bot) {
                 const [, _id] = call.data.split("|")
                 await TeacherController.getProfile(bot, call, _id)
             } catch (e) {
-                log.error("ВАЖНО! ОШИБКА В ТИЧЕР КОЛБЕК ХЕНДЛЕРЕ!", {stack: e.stack, call})
+                log.error("ВАЖНО! ОШИБКА В ТИЧЕР КОЛБЕК ХЕНДЛЕРЕ!", {stack: e.stack, call, userId:call.message.chat.id})
             }
             await bot.answerCallbackQuery(call.id)
         } else {
             return ScheduleController.validateErrorHandler(bot, call)
                 .catch(e => log.error("ВАЖНО. ОШИБКА В ГОВНО-ХЕДЛЕРЕ ПРИ ПОПЫТКЕ ПРОИНФОРМИРОВАТЬ ЮЗЕРА ОБ ОШИБКЕ!", {
-                    stack: e.stack, call
+                    stack: e.stack, call, userId:call.message.chat.id
                 }))
         }
     })

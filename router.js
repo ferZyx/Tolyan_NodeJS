@@ -62,10 +62,14 @@ router.get('/get_user_activity_logs', async (req, res) => {
     const desiredLogLevels = req.query.levels ? req.query.levels.split(',') : [];
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
+    const userId = parseInt(req.query.userId);
     const skip = (page - 1) * limit;
 
     const query = desiredLogLevels.length > 0 ? {level: {$in: desiredLogLevels}} : {};
 
+    if (userId){
+        query['meta.userId'] = userId
+    }
     const totalDocuments = await LogService.getLogsCount(query)
     const documents = await LogService.getLogs(query, skip, limit)
 
