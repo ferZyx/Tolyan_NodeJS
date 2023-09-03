@@ -254,7 +254,7 @@ class ScheduleController {
                         schedule_cache[groupId] = {data: response.data, timestamp: Date.now(), group}
                         await this.sendSchedule(bot, call, schedule_cache[groupId])
 
-                        await scheduleService.updateByGroupId(groupId, response.data).catch(e => log.error("Ошибка при попытке сохранить резервную копию расписания в бд", {
+                        await scheduleService.updateByGroupId(groupId, response.data).catch(e => log.error(`Ошибка при попытке сохранить резервную копию расписания в бд. groupId:${groupId}. Пользователь никак не пострадал.`, {
                             stack: e.stack, call
                         }))
                     })

@@ -223,7 +223,7 @@ export default function setupAdminCommandHandler(bot) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
         const userCount = await userRegistrationStatService.getTodayRegisteredUserCount()
-        await bot.sendMessage(msg.chat.id, `Сегодня зарегестрировались: ${userCount}`)
+        await bot.sendMessage(msg.chat.id, `Сегодня зарегистрировались: ${userCount}`)
     })
 
     bot.onText(/^\/regs2/, async (msg) => {
