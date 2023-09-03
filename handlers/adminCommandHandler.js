@@ -229,45 +229,44 @@ export default function setupAdminCommandHandler(bot) {
         }
     })
 
-    bot.onText(/^\/group_stat$/, async (msg) => {
-        try {
-            if (!await userService.isAdmin(msg.from.id)) {
-                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
-            }
-            await bot.sendMessage(msg.chat.id, "started")
-            const startTime = Date.now()
-
-            let group_stat = []
-
-            const groups = await groupService.getAll()
-            for (const group of groups) {
-                const program = await programService.getById(group.program)
-                const faculty = await facultyService.getById(program.faculty)
-                const users = await userService.getUsersByGroupId(group.id)
-                group_stat.push({
-                    id: group.id,
-                    name: group.name,
-                    program: program.name,
-                    faculty: faculty.name,
-                    students: group.studentCount,
-                    our_users: users.length,
-                    not_our_user: group.studentCount - users.length,
-                    percent: Math.floor(users.length / group.studentCount * 100)
-                })
-            }
-
-            const sortedGroupStat = group_stat.slice().sort((a, b) => b.percent - a.percent);
-
-            await fs.writeFile("./group_stat.json", JSON.stringify(sortedGroupStat, null, 3))
-
-            const endTime = Date.now()
-            await bot.sendDocument(msg.chat.id, './group_stat.json', {caption: `Action time: ${(endTime - startTime) / 1000} сек.`})
-        } catch (e) {
-            console.log(e)
-            log.error("error", {stack: e.stack})
-        }
-    })
-
+    // bot.onText(/^\/group_stat$/, async (msg) => {
+    //     try {
+    //         if (!await userService.isAdmin(msg.from.id)) {
+    //             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+    //         }
+    //         await bot.sendMessage(msg.chat.id, "started")
+    //         const startTime = Date.now()
+    //
+    //         let group_stat = []
+    //
+    //         const groups = await groupService.getAll()
+    //         for (const group of groups) {
+    //             const program = await programService.getById(group.program)
+    //             const faculty = await facultyService.getById(program.faculty)
+    //             const users = await userService.getUsersByGroupId(group.id)
+    //             group_stat.push({
+    //                 id: group.id,
+    //                 name: group.name,
+    //                 program: program.name,
+    //                 faculty: faculty.name,
+    //                 students: group.studentCount,
+    //                 our_users: users.length,
+    //                 not_our_user: group.studentCount - users.length,
+    //                 percent: Math.floor(users.length / group.studentCount * 100)
+    //             })
+    //         }
+    //
+    //         const sortedGroupStat = group_stat.slice().sort((a, b) => b.percent - a.percent);
+    //
+    //         await fs.writeFile("./group_stat.json", JSON.stringify(sortedGroupStat, null, 3))
+    //
+    //         const endTime = Date.now()
+    //         await bot.sendDocument(msg.chat.id, './group_stat.json', {caption: `Action time: ${(endTime - startTime) / 1000} сек.`})
+    //     } catch (e) {
+    //         console.log(e)
+    //         log.error("error", {stack: e.stack})
+    //     }
+    // })
 
     bot.onText(/^\/get_schedule (\w+)$/i, async (msg, match) => {
         try {
@@ -295,20 +294,63 @@ export default function setupAdminCommandHandler(bot) {
 
     });
 
-    bot.onText(/^\/get_user (\w+)$/i, async (msg, match) => {
+    bot.onText(/^\/get_user/i, async (msg) => {
         try {
             if (!await userService.isAdmin(msg.from.id)) {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
             }
-            const userId = match[1];
+            const split_data = msg.text.split(" ")
+            if (split_data.length < 2 || split_data.length > 2){
+                return await bot.sendMessage(msg.chat.id, "После команды должен быть 1 параметр!")
+            }
+            const userId = split_data[1]
 
             const user = await userService.getUserById(userId)
-            await bot.sendMessage(msg.chat.id, JSON.stringify(user, null, 4))
+            if (!user){
+                return await bot.sendMessage(msg.chat.id, "Не найден такой юзер. НЕТУ!")
+            }
+            let msg_text = `Информация о юзере id: ${userId}\n` + JSON.stringify(user, null, 4)
+
+            const group = await groupService.getById(user.group)
+            if (group){
+                msg_text += `\n\n Информация о группе id: ${group.id}\n` + JSON.stringify(group, null, 4)
+                const program = await programService.getById(group.program)
+                const faculty = await facultyService.getById(program.faculty)
+
+                msg_text += `\n\n Информация о программе id: ${program.id}\n` + JSON.stringify(program, null, 4)
+                msg_text += `\n\n Информация о факультете id: ${faculty.id}\n` + JSON.stringify(faculty, null, 4)
+            }
+
+            await bot.sendMessage(msg.chat.id, msg_text)
         } catch (e) {
-            log.error({stack: e.stack})
+            log.error("Ошибочка при /get_user", {stack: e.stack})
         }
 
     });
+
+    bot.onText(/^\/sms/i, async (msg) => {
+        try {
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+            const split_data = msg.text.split(" ")
+            if (split_data.length < 3){
+                return await bot.sendMessage(msg.chat.id, "После команды должен быть 2 параметра!")
+            }
+            const userId = split_data[1]
+            if (isNaN(parseFloat(userId))){
+                return await bot.sendMessage(msg.chat.id, "Параметр userId is NaN")
+            }
+            const msg_text = msg.text.replace(userId, '').replace('/sms ', '')
+
+            await bot.sendMessage(userId, msg_text)
+            await bot.sendMessage(msg.chat.id, "Отправлено: \n" + msg_text)
+        } catch (e) {
+            log.error("Ошибочка при /sms", {stack: e.stack})
+        }
+
+    });
+
 
     bot.onText(/^\/get_group (\w+)$/i, async (msg, match) => {
         try {
