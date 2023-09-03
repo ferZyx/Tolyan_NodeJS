@@ -46,6 +46,22 @@ class UserActivityService{
             throw e
         }
     }
+
+    async getUnactiveUsers(){
+        try{
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Обнуляем время для сравнения с началом дня
+
+            const oneWeekAgo = new Date(today);
+            oneWeekAgo.setDate(today.getDate() - 6);
+
+            return await User.find({
+                updatedAt: { $lte: oneWeekAgo } // Между одной неделей назад и сегодняшней датой
+            });
+        }catch (e) {
+            throw e
+        }
+    }
 }
 
 export default new UserActivityService()

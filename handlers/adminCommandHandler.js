@@ -248,6 +248,7 @@ export default function setupAdminCommandHandler(bot) {
     })
 
 
+
     bot.onText(/^\/users/, async (msg) => {
         try {
             if (!await userService.isAdmin(msg.from.id)) {
@@ -381,6 +382,48 @@ export default function setupAdminCommandHandler(bot) {
 
     });
 
+    bot.onText(/^\/unactive_spam/i, async (msg) => {
+        try {
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+            const split_data = msg.text.split(" ")
+            if (split_data.length < 2) {
+                return await bot.sendMessage(msg.chat.id, "После команды должен быть текст!")
+            }
+            const msg_text = msg.text.replace("/unactive_spam", "")
+
+            const users = (await userActivityService.getUnactiveUsers())
+            let success = []
+            let bad = []
+
+            await bot.sendMessage(msg.chat.id, 'Начал спамить.\n\n' + msg_text)
+            const startTime = Date.now()
+
+            for(const user of users){
+                await sleep(500)
+                try{
+                    await bot.sendMessage(user.userId, msg_text)
+                    log.info(`User ${user.userId} получил unactive_spam message`)
+                    success.push(user.userId)
+                }catch (e) {
+                    log.info(`User ${user.userId} не получил спам сообщение.`, {stack:e.stack})
+                    bad.push(user.userId)
+                }
+            }
+
+            await fs.writeFile("./temp/success.json", JSON.stringify(success, null, 3))
+            await fs.writeFile("./temp/bad.json", JSON.stringify(bad, null, 3))
+
+            const endTime = Date.now()
+            await bot.sendDocument(msg.chat.id, './temp/success.json', {caption: `Action time: ${(endTime - startTime) / 1000} сек.`})
+            await bot.sendDocument(msg.chat.id, './temp/bad.json')
+
+        } catch (e) {
+            log.error("Ошибочка при /unactive_spam", {stack: e.stack})
+        }
+
+    });
 
     bot.onText(/^\/get_group (\w+)/i, async (msg, match) => {
         try {
