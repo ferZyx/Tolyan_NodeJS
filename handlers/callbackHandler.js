@@ -61,7 +61,7 @@ export default function setupCallbackHandlers(bot) {
             try {
                 await ScheduleController.getScheduleMenu(bot, call)
             } catch (e) {
-
+                log.error("ОШИБКА В КОЛБЕК ХЕНДЕЛЕРЕ schedule", {stack:e.stack})
             }
 
         } else if (call.data.includes("teacher")) {

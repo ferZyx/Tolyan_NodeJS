@@ -145,12 +145,12 @@ export default function setupAdminCommandHandler(bot) {
         }
 
         async function get_group_list(program) {
-            try{
+            try {
                 const response = await axios.get(`http://79.133.182.125:5000/api/schedule/get_group_list_by_programId/${program['id']}`)
                 return response.data
-            }catch (e) {
+            } catch (e) {
                 log.error("Произошла ошибка при обновлении ебучих групп. Через 5 минут попробую продолжить")
-                await sleep(5*60*1000)
+                await sleep(5 * 60 * 1000)
                 return get_group_list(program)
             }
 
@@ -165,11 +165,26 @@ export default function setupAdminCommandHandler(bot) {
     })
 
 
-    bot.onText(/^\/test$/, async (msg) => {
+    bot.onText(/^\/info$/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
         log.warn("Тестовый лог!")
+        await bot.sendMessage(msg.chat.id, JSON.stringify(msg, null, 2))
+    })
+
+    bot.onText(/^\/test$/, async (msg) => {
+        if (!await userService.isAdmin(msg.from.id)) {
+            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+        }
+        try{
+            const answer = await bot.sendMessage(msg.chat.id, JSON.stringify(msg, null, 2))
+            await bot.editMessageText(JSON.stringify(msg, null, 2), {
+                message_id: answer.message_id, chat_id: answer.chat.id
+            })
+        }catch (e) {
+            log.error("Ошибочка в /test", {stack:e.stack})
+        }
     })
 
     bot.onText(/^\/online$/, async (msg) => {
@@ -187,7 +202,7 @@ export default function setupAdminCommandHandler(bot) {
             }
             let msg_text = 'Активность юзеров за последнюю неделю: \n'
             const {weakUserActivity, weakUserCount} = await UserActivityService.getWeakUserActivity()
-            for(const doc of weakUserActivity){
+            for (const doc of weakUserActivity) {
                 const date = new Date(doc.createdAt); // Преобразуем строку в объект Date
                 const day = date.getDate().toString().padStart(2, '0'); // Извлекаем день и форматируем
                 const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Извлекаем месяц и форматируем
@@ -197,7 +212,7 @@ export default function setupAdminCommandHandler(bot) {
             msg_text += `\nВсего уникальных пользователей за неделю: ${weakUserCount}`
             await bot.sendMessage(msg.chat.id, msg_text)
         } catch (e) {
-            log.error({stack:e.stack})
+            log.error({stack: e.stack})
         }
     })
 
@@ -210,7 +225,7 @@ export default function setupAdminCommandHandler(bot) {
             const userCount = await userService.countDocuments()
             await bot.sendMessage(msg.chat.id, `В базе данных Толяна ${userCount} пользователей.`)
         } catch (e) {
-            log.error({stack:e.stack})
+            log.error({stack: e.stack})
         }
     })
 
@@ -225,18 +240,18 @@ export default function setupAdminCommandHandler(bot) {
             let group_stat = []
 
             const groups = await groupService.getAll()
-            for(const group of groups){
+            for (const group of groups) {
                 const program = await programService.getById(group.program)
                 const faculty = await facultyService.getById(program.faculty)
                 const users = await userService.getUsersByGroupId(group.id)
                 group_stat.push({
-                    id:group.id,
-                    name:group.name,
-                    program:program.name,
-                    faculty:faculty.name,
-                    students:group.studentCount,
-                    our_users:users.length,
-                    not_our_user:group.studentCount - users.length,
+                    id: group.id,
+                    name: group.name,
+                    program: program.name,
+                    faculty: faculty.name,
+                    students: group.studentCount,
+                    our_users: users.length,
+                    not_our_user: group.studentCount - users.length,
                     percent: Math.floor(users.length / group.studentCount * 100)
                 })
             }
@@ -246,10 +261,10 @@ export default function setupAdminCommandHandler(bot) {
             await fs.writeFile("./group_stat.json", JSON.stringify(sortedGroupStat, null, 3))
 
             const endTime = Date.now()
-            await bot.sendDocument(msg.chat.id, './group_stat.json', {caption:`Action time: ${(endTime - startTime)/1000} сек.`})
+            await bot.sendDocument(msg.chat.id, './group_stat.json', {caption: `Action time: ${(endTime - startTime) / 1000} сек.`})
         } catch (e) {
             console.log(e)
-            log.error("error", {stack:e.stack})
+            log.error("error", {stack: e.stack})
         }
     })
 
@@ -275,7 +290,7 @@ export default function setupAdminCommandHandler(bot) {
             }
             await ScheduleController.getScheduleMenu(bot, call)
         } catch (e) {
-            log.error({stack:e.stack})
+            log.error({stack: e.stack})
         }
 
     });
@@ -290,7 +305,7 @@ export default function setupAdminCommandHandler(bot) {
             const user = await userService.getUserById(userId)
             await bot.sendMessage(msg.chat.id, JSON.stringify(user, null, 4))
         } catch (e) {
-            log.error({stack:e.stack})
+            log.error({stack: e.stack})
         }
 
     });
@@ -305,7 +320,7 @@ export default function setupAdminCommandHandler(bot) {
             const group = await groupService.getById(groupId)
             await bot.sendMessage(msg.chat.id, JSON.stringify(group, null, 4))
         } catch (e) {
-            log.error({stack:e.stack})
+            log.error({stack: e.stack})
         }
 
     });
