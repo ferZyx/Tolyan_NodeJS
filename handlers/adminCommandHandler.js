@@ -7,6 +7,8 @@ import userService from "../services/userService.js";
 import ScheduleController from "../controllers/ScheduleController.js";
 import fs from "fs/promises"
 import UserActivityService from "../services/userActivityService.js";
+import userActivityService from "../services/userActivityService.js";
+import userRegistrationStatService from "../services/userRegistrationStatService.js";
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -191,8 +193,8 @@ export default function setupAdminCommandHandler(bot) {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
-        const users = await userService.getTodayActiveUsers()
-        await bot.sendMessage(msg.chat.id, `Сегодня ботом воспользовались: ${users.length}`)
+        const userCount = await userActivityService.getTodayUserCount()
+        await bot.sendMessage(msg.chat.id, `Сегодня ботом воспользовались: ${userCount}`)
     })
 
     bot.onText(/^\/online2$/, async (msg) => {
@@ -210,6 +212,35 @@ export default function setupAdminCommandHandler(bot) {
                 msg_text += `${day}.${month}: ${doc.userActivity}\n`
             }
             msg_text += `\nВсего уникальных пользователей за неделю: ${weakUserCount}`
+            await bot.sendMessage(msg.chat.id, msg_text)
+        } catch (e) {
+            log.error({stack: e.stack})
+        }
+    })
+
+    bot.onText(/^\/regs$/, async (msg) => {
+        if (!await userService.isAdmin(msg.from.id)) {
+            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+        }
+        const userCount = await userRegistrationStatService.getTodayRegisteredUserCount()
+        await bot.sendMessage(msg.chat.id, `Сегодня зарегестрировались: ${userCount}`)
+    })
+
+    bot.onText(/^\/regs2$/, async (msg) => {
+        try {
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+            let msg_text = 'Зареганных юзеров за последнюю неделю: \n'
+            const {weakRegisteredUserCount, weakRegistrationStat} = await userRegistrationStatService.getWeakRegistrationStat()
+            for (const doc of weakRegistrationStat) {
+                const date = new Date(doc.createdAt); // Преобразуем строку в объект Date
+                const day = date.getDate().toString().padStart(2, '0'); // Извлекаем день и форматируем
+                const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Извлекаем месяц и форматируем
+
+                msg_text += `${day}.${month}: ${doc.registeredUsers}\n`
+            }
+            msg_text += `\nВсего зареганных пользователей за неделю: ${weakRegisteredUserCount}`
             await bot.sendMessage(msg.chat.id, msg_text)
         } catch (e) {
             log.error({stack: e.stack})

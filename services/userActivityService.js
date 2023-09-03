@@ -40,7 +40,7 @@ class UserActivityService{
             oneWeekAgo.setDate(today.getDate() - 6);
 
             return await User.countDocuments({
-                updatedAt: { $gte: oneWeekAgo, $lte: today } // Между одной неделей назад и сегодняшней датой
+                updatedAt: { $gte: oneWeekAgo } // Между одной неделей назад и сегодняшней датой
             });
         }catch (e) {
             throw e

@@ -50,16 +50,6 @@ class UserService {
         }
     }
 
-    async getTodayActiveUsers(){
-        try{
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // Обнуляем время для сравнения с началом дня
-            return await User.find({updatedAt: {$gte: today}})
-        }catch (e) {
-            throw e
-        }
-    }
-
     async getUsersByGroupId(groupId){
         try{
             return await User.find({group:groupId})
