@@ -326,6 +326,32 @@ export default function setupAdminCommandHandler(bot) {
 
     });
 
+    bot.onText(/^\/get_reserved_schedule (\w+)/i, async (msg, match) => {
+        try {
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+            const groupId = match[1];
+
+            const answer = await bot.sendMessage(msg.chat.id, `Получаем расписание группы: ${groupId}`)
+            const Group = await groupService.getById(groupId)
+            if (!Group) {
+                return bot.editMessageText("Нет такой группы. ", {
+                    chat_id: answer.chat.id, message_id: answer.message_id
+                })
+            }
+
+            const call = {
+                data: `schedule|${Group.language}|${groupId}|${await ScheduleController.getCurrentDayNumber()}`,
+                message: answer
+            }
+            await ScheduleController.getReservedSchedule(bot, call, groupId)
+        } catch (e) {
+            log.error({stack: e.stack})
+        }
+
+    });
+
     bot.onText(/^\/get_user/i, async (msg) => {
         try {
             if (!await userService.isAdmin(msg.from.id)) {

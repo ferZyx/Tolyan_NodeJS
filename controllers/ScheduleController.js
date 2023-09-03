@@ -241,6 +241,32 @@ class ScheduleController {
         })
     }
 
+    async getReservedSchedule(bot, call, groupId){
+        await bot.editMessageText('💀 schedule.ksu.kz не отвечает. Сейчас поищу твое расписание в своих недрах...', {
+            chat_id: call.message.chat.id, message_id: call.message.message_id
+        })
+        const response = await scheduleService.getByGroupId(groupId)
+        if (response) {
+            const updatedAt = new Date(response.updatedAt);
+            const timestamp = updatedAt.getTime();
+
+            const group = await groupService.getById(groupId)
+            schedule_cache[groupId] = {data: response.data, timestamp, group}
+            await this.sendSchedule(bot, call, schedule_cache[groupId], "<b>⚠️ schedule.ksu.kz не отвечает. \n" +
+                "🫡 Последнее загруженное расписание:\n\n</b>")
+        } else {
+            await bot.editMessageText("🙈 Первопроходец от своей группы?\n" +
+                "⚠️ Официальный сайт КарУ - упал, а резервного расписания для вашей группы я не могу найти( \n" +
+                "🫢 P.S. После получения расписания в нашем боте, оно подгружается в базу данных.\n" +
+                "А дальше уже дело за малым, при следующем таком падении официального сайта мы возьмем расписание из нашей базы)\n" +
+                "😉 Загрузи расписание как только schedule.ksu.kz встанет на ноги и больше ты не увидишь это дурацкое сообщение!", {
+                chat_id: call.message.chat.id, message_id: call.message.message_id, reply_markup: {
+                    inline_keyboard: [[{text: "Попробовать снова", callback_data: call.data}]]
+                }
+            })
+        }
+    }
+
     async getScheduleMenu(bot, call) {
         try {
             const data_array = call.data.split('|');
@@ -267,29 +293,7 @@ class ScheduleController {
                                 e,
                                 userId: call.message.chat.id
                             })
-                            await bot.editMessageText('💀 schedule.ksu.kz не отвечает. Сейчас поищу твое расписание в своих недрах...', {
-                                chat_id: call.message.chat.id, message_id: call.message.message_id
-                            })
-                            const response = await scheduleService.getByGroupId(groupId)
-                            if (response) {
-                                const updatedAt = new Date(response.updatedAt);
-                                const timestamp = updatedAt.getTime();
-
-                                const group = await groupService.getById(groupId)
-                                schedule_cache[groupId] = {data: response.data, timestamp, group}
-                                await this.sendSchedule(bot, call, schedule_cache[groupId], "<b>⚠️ schedule.ksu.kz не отвечает. \n" +
-                                    "🫡 Последнее загруженное расписание:\n\n</b>")
-                            } else {
-                                await bot.editMessageText("🙈 Первопроходец от своей группы?\n" +
-                                    "⚠️ Официальный сайт КарУ - упал, а резервного расписания для вашей группы я не могу найти( \n" +
-                                    "🫢 P.S. После получения расписания в нашем боте, оно подгружается в базу данных.\n" +
-                                    "А дальше уже дело за малым, при следующем таком падении официального сайта мы возьмем расписание из нашей базы)\n" +
-                                    "😉 Загрузи расписание как только schedule.ksu.kz встанет на ноги и больше ты не увидишь это дурацкое сообщение!", {
-                                    chat_id: call.message.chat.id, message_id: call.message.message_id, reply_markup: {
-                                        inline_keyboard: [[{text: "Попробовать снова", callback_data: call.data}]]
-                                    }
-                                })
-                            }
+                            await this.getReservedSchedule(bot, call, groupId)
                         } catch (e) {
                             log.error("Ошбика при получении резервного расписания.", {
                                 stack: e.stack,
