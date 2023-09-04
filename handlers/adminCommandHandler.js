@@ -385,6 +385,19 @@ export default function setupAdminCommandHandler(bot) {
 
     });
 
+    bot.onText(/^\/get_logs/i, async (msg) => {
+        try {
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+
+            await bot.sendDocument(msg.chat.id, './logs.log')
+        } catch (e) {
+            log.error("Ошибочка при /get_user", {stack: e.stack})
+        }
+
+    });
+
     bot.onText(/^\/sms/i, async (msg) => {
         try {
             if (!await userService.isAdmin(msg.from.id)) {
@@ -480,6 +493,7 @@ export default function setupAdminCommandHandler(bot) {
             '/get_schedule \n' +
             '/get_reserved_schedule \n' +
             '/get_user \n' +
+            '/get_logs \n' +
             '/sms \n' +
             '/unactive_spam \n' +
             '/get_group \n'
