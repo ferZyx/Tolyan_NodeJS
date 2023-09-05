@@ -462,7 +462,8 @@ export default function setupAdminCommandHandler(bot) {
             }
             const msg_text = msg.text.replace("/spam ", "")
 
-            const users = (await userService.getAll())
+            const users = (await userService.getAll()).slice(32, 1000)
+            console.log(users)
 
             let success = []
             let bad = []
@@ -475,7 +476,7 @@ export default function setupAdminCommandHandler(bot) {
                 if (stop){
                     break
                 }
-                await sleep(500)
+                await sleep(1000)
                 let status = true
                 try {
                     await bot.sendMessage(user.userId, msg_text)
@@ -486,6 +487,7 @@ export default function setupAdminCommandHandler(bot) {
                     log.info(`User ${user.userId} не получил спам сообщение.`, {stack: e.stack})
                     bad.push(user.userId)
                 } finally {
+                    await sleep(1000)
                     await bot.editMessageText(`Прошло: ${Math.floor((Date.now() - startTime)/1000)} с. || ${users.indexOf(user)}/${users.length} Отправлено. Статус отправки: ${status}`,
                         {message_id:status_msg.message_id, chat_id:status_msg.chat.id})
                 }
@@ -494,7 +496,7 @@ export default function setupAdminCommandHandler(bot) {
             await bot.sendMessage(msg.chat.id, 'Done')
 
         } catch (e) {
-            log.error("Ошибочка при /unactive_spam", {stack: e.stack})
+            log.error("Ошибочка при /spam", {stack: e.stack})
         }
 
     });
@@ -528,6 +530,8 @@ export default function setupAdminCommandHandler(bot) {
             '/get_logs \n' +
             '/sms \n' +
             '/unactive_spam \n' +
+            '/spam \n' +
+            '/stop \n' +
             '/get_group \n'
         await bot.sendMessage(msg.chat.id, msg_text)
     });
