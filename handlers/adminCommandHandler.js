@@ -189,20 +189,17 @@ export default function setupAdminCommandHandler(bot) {
         }
     })
 
-    bot.onText(/^\/online$/, async (msg) => {
+    bot.onText(/\/stat/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
-        const userCount = await userActivityService.getTodayUserCount()
-        await bot.sendMessage(msg.chat.id, `Сегодня ботом воспользовались: ${userCount}`)
-    })
-
-    bot.onText(/^\/online2$/, async (msg) => {
         try {
-            if (!await userService.isAdmin(msg.from.id)) {
-                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
-            }
-            let msg_text = 'Активность юзеров за последнюю неделю: \n'
+            // Юзеров за сегодня
+            const activeUsersToday = await userActivityService.getTodayUserCount()
+            const registeredUsersToday = await userRegistrationStatService.getTodayRegisteredUserCount()
+
+            let msg_text = 'Статистика ежедневного онлайна: \n' +
+                `Сегодня: ${activeUsersToday}\n`
             const {weakUserActivity, weakUserCount} = await UserActivityService.getWeakUserActivity()
             for (const doc of weakUserActivity) {
                 const date = new Date(doc.createdAt); // Преобразуем строку в объект Date
@@ -211,28 +208,14 @@ export default function setupAdminCommandHandler(bot) {
 
                 msg_text += `${day}.${month}: ${doc.userActivity}\n`
             }
-            msg_text += `\nВсего уникальных пользователей за неделю: ${weakUserCount}`
-            await bot.sendMessage(msg.chat.id, msg_text)
-        } catch (e) {
-            log.error({stack: e.stack})
-        }
-    })
+            msg_text += `Всего уникальных пользователей за неделю: ${weakUserCount}\n\n`
 
-    bot.onText(/^\/regs$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)) {
-            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
-        }
-        const userCount = await userRegistrationStatService.getTodayRegisteredUserCount()
-        await bot.sendMessage(msg.chat.id, `Сегодня зарегистрировались: ${userCount}`)
-    })
-
-    bot.onText(/^\/regs2$/, async (msg) => {
-        try {
-            if (!await userService.isAdmin(msg.from.id)) {
-                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
-            }
-            let msg_text = 'Зареганных юзеров за последнюю неделю: \n'
-            const {weakRegisteredUserCount, weakRegistrationStat} = await userRegistrationStatService.getWeakRegistrationStat()
+            msg_text += 'Статистика ежедневных регистраций: \n' +
+                `Сегодня: ${registeredUsersToday}\n`
+            const {
+                weakRegisteredUserCount,
+                weakRegistrationStat
+            } = await userRegistrationStatService.getWeakRegistrationStat()
             for (const doc of weakRegistrationStat) {
                 const date = new Date(doc.createdAt); // Преобразуем строку в объект Date
                 const day = date.getDate().toString().padStart(2, '0'); // Извлекаем день и форматируем
@@ -240,14 +223,13 @@ export default function setupAdminCommandHandler(bot) {
 
                 msg_text += `${day}.${month}: ${doc.registeredUsers}\n`
             }
-            msg_text += `\nВсего зареганных пользователей за неделю: ${weakRegisteredUserCount}`
+            msg_text += `Всего зареганных пользователей за неделю: ${weakRegisteredUserCount}`
+
             await bot.sendMessage(msg.chat.id, msg_text)
         } catch (e) {
-            log.error({stack: e.stack})
+            log.error("Ошибочка в /stat", {stack: e.stack})
         }
     })
-
-
 
     bot.onText(/^\/users$/, async (msg) => {
         try {
@@ -439,14 +421,14 @@ export default function setupAdminCommandHandler(bot) {
             await bot.sendMessage(msg.chat.id, 'Начал спамить.\n\n' + msg_text)
             const startTime = Date.now()
 
-            for(const user of users){
+            for (const user of users) {
                 await sleep(500)
-                try{
+                try {
                     await bot.sendMessage(user.userId, msg_text)
                     log.info(`User ${user.userId} получил unactive_spam message`)
                     success.push(user.userId)
-                }catch (e) {
-                    log.info(`User ${user.userId} не получил спам сообщение.`, {stack:e.stack})
+                } catch (e) {
+                    log.info(`User ${user.userId} не получил спам сообщение.`, {stack: e.stack})
                     bad.push(user.userId)
                 }
             }
