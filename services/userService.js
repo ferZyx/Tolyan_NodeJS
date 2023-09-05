@@ -58,6 +58,14 @@ class UserService {
         }
     }
 
+    async getAll(){
+        try{
+            return await User.find({})
+        }catch (e) {
+            throw e
+        }
+    }
+
     // updateAll = async (users) => {
     //     try {
     //         await User.deleteMany({})

@@ -446,6 +446,59 @@ export default function setupAdminCommandHandler(bot) {
 
     });
 
+    bot.onText(/^\/spam/i, async (msg) => {
+        let stop = false
+        bot.onText(/\/stop/, async(msg)=> {
+            await bot.sendMessage(msg.chat.id, "Остановил спамить")
+            stop = true
+        })
+        try {
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+            const split_data = msg.text.split(" ")
+            if (split_data.length < 2) {
+                return await bot.sendMessage(msg.chat.id, "После команды должен быть текст!")
+            }
+            const msg_text = msg.text.replace("/spam ", "")
+
+            const users = (await userService.getAll())
+
+            let success = []
+            let bad = []
+
+            await bot.sendMessage(msg.chat.id, 'Начал спамить. /stop чтобы принудительно завершить спам\n' + msg_text)
+            const status_msg = await bot.sendMessage(msg.chat.id, "Тут будет прогресс")
+            const startTime = Date.now()
+
+            for (const user of users) {
+                if (stop){
+                    break
+                }
+                await sleep(500)
+                let status = true
+                try {
+                    await bot.sendMessage(user.userId, msg_text)
+                    log.info(`User ${user.userId} получил spm message`)
+                    success.push(user.userId)
+                } catch (e) {
+                    status = false
+                    log.info(`User ${user.userId} не получил спам сообщение.`, {stack: e.stack})
+                    bad.push(user.userId)
+                } finally {
+                    await bot.editMessageText(`Прошло: ${Math.floor((Date.now() - startTime)/1000)} с. || ${users.indexOf(user)}/${users.length} Отправлено. Статус отправки: ${status}`,
+                        {message_id:status_msg.message_id, chat_id:status_msg.chat.id})
+                }
+            }
+
+            await bot.sendMessage(msg.chat.id, 'Done')
+
+        } catch (e) {
+            log.error("Ошибочка при /unactive_spam", {stack: e.stack})
+        }
+
+    });
+
     bot.onText(/^\/get_group (\w+)/i, async (msg, match) => {
         try {
             if (!await userService.isAdmin(msg.from.id)) {
@@ -468,10 +521,7 @@ export default function setupAdminCommandHandler(bot) {
             '/update_teaches \n' +
             '/info \n' +
             '/test \n' +
-            '/online \n' +
-            '/online2 \n' +
-            '/regs \n' +
-            '/regs2 \n' +
+            '/stat \n' +
             '/get_schedule \n' +
             '/get_reserved_schedule \n' +
             '/get_user \n' +
