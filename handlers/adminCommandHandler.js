@@ -468,7 +468,7 @@ export default function setupAdminCommandHandler(bot) {
             let success = []
             let bad = []
 
-            await bot.sendMessage(msg.chat.id, 'Начал спамить. /stop чтобы принудительно завершить спам\n' + msg_text)
+            await bot.sendMessage(msg.chat.id, 'Начал спамить. /stop чтобы принудительно завершить спам\n' + msg_text, {disable_web_page_preview:true})
             const status_msg = await bot.sendMessage(msg.chat.id, "Тут будет прогресс")
             const startTime = Date.now()
 
@@ -479,7 +479,7 @@ export default function setupAdminCommandHandler(bot) {
                 await sleep(1000)
                 let status = true
                 try {
-                    await bot.sendMessage(user.userId, msg_text)
+                    await bot.sendMessage(user.userId, msg_text, {disable_web_page_preview:true})
                     log.info(`User ${user.userId} получил spm message`)
                     success.push(user.userId)
                 } catch (e) {
