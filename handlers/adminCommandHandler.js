@@ -448,7 +448,7 @@ export default function setupAdminCommandHandler(bot) {
 
     bot.onText(/^\/spam/i, async (msg) => {
         let stop = false
-        bot.onText(/\/stop/, async(msg)=> {
+        bot.onText(/\/stop/, async (msg) => {
             await bot.sendMessage(msg.chat.id, "Остановил спамить")
             stop = true
         })
@@ -465,35 +465,25 @@ export default function setupAdminCommandHandler(bot) {
             const users = (await userService.getAll()).slice(80, 1000)
             console.log(users)
 
-            let success = []
-            let bad = []
-
-            await bot.sendMessage(msg.chat.id, 'Начал спамить. /stop чтобы принудительно завершить спам\n' + msg_text, {disable_web_page_preview:true})
-            const status_msg = await bot.sendMessage(msg.chat.id, "Тут будет прогресс")
+            await bot.sendMessage(msg.chat.id, 'Начал спамить. /stop чтобы принудительно завершить спам\n' + msg_text, {disable_web_page_preview: true})
             const startTime = Date.now()
 
             for (const user of users) {
-                if (stop){
+                if (stop) {
                     break
                 }
                 await sleep(2000)
                 let status = true
                 try {
-                    await bot.sendMessage(user.userId, msg_text, {disable_web_page_preview:true})
+                    await bot.sendMessage(user.userId, msg_text, {disable_web_page_preview: true})
                     log.info(`User ${user.userId} получил spm message`)
-                    success.push(user.userId)
                 } catch (e) {
                     status = false
                     log.info(`User ${user.userId} не получил спам сообщение.`, {stack: e.stack})
-                    bad.push(user.userId)
-                } finally {
-                    await sleep(2000)
-                    await bot.editMessageText(`Прошло: ${Math.floor((Date.now() - startTime)/1000)} с. || ${users.indexOf(user)}/${users.length} Отправлено. Статус отправки: ${status}`,
-                        {message_id:status_msg.message_id, chat_id:status_msg.chat.id})
                 }
             }
 
-            await bot.sendMessage(msg.chat.id, 'Done')
+            await bot.sendMessage(msg.chat.id, `Done. Action time = ${Math.floor((Date.now() - startTime) / 1000)}`)
 
         } catch (e) {
             log.error("Ошибочка при /spam", {stack: e.stack})
