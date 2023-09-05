@@ -462,7 +462,7 @@ export default function setupAdminCommandHandler(bot) {
             }
             const msg_text = msg.text.replace("/spam ", "")
 
-            const users = (await userService.getAll()).slice(32, 1000)
+            const users = (await userService.getAll()).slice(80, 1000)
             console.log(users)
 
             let success = []
@@ -476,7 +476,7 @@ export default function setupAdminCommandHandler(bot) {
                 if (stop){
                     break
                 }
-                await sleep(1000)
+                await sleep(2000)
                 let status = true
                 try {
                     await bot.sendMessage(user.userId, msg_text, {disable_web_page_preview:true})
@@ -487,7 +487,7 @@ export default function setupAdminCommandHandler(bot) {
                     log.info(`User ${user.userId} не получил спам сообщение.`, {stack: e.stack})
                     bad.push(user.userId)
                 } finally {
-                    await sleep(1000)
+                    await sleep(2000)
                     await bot.editMessageText(`Прошло: ${Math.floor((Date.now() - startTime)/1000)} с. || ${users.indexOf(user)}/${users.length} Отправлено. Статус отправки: ${status}`,
                         {message_id:status_msg.message_id, chat_id:status_msg.chat.id})
                 }
