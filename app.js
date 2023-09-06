@@ -48,7 +48,10 @@ app.listen(port, () => log.info(`Tolyan express started at ${port} port.`));
         log.warn("[beta] Произошла запись зарегестрированных юзеров! /regs2 to check")
         UserRegistrationStatService.dailyRegisteredUserCountLogging()
     });
-})().catch(e => console.error(e));
+})().catch(async (e) => {
+    console.error(e)
+    await bot.sendMessage(config.LOG_CHANEL_ID, "Прозошла какая то лютая ошибка. Сработал кетч из апп.жс. Данные об ошибке в логах pm2 будут.")
+});
 
 
 
