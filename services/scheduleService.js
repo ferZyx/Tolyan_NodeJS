@@ -3,23 +3,19 @@ import {Schedule} from "../models/schedule.js"
 class scheduleService {
     updateByGroupId = async (groupId, data) => {
         try {
-            const updatedSchedule = await Schedule.findOneAndUpdate(
-                { groupId },
-                { groupId },
-                { upsert: true, new: true }
+            return await await Schedule.findOneAndUpdate(
+                {groupId}, {groupId, data}, {upsert: true, returnDocument: "after"}
             );
 
-            updatedSchedule.data = data;
-            return await updatedSchedule.save();
         } catch (e) {
-            throw new Error(e);
+            throw e;
         }
     }
 
     getByGroupId = async (groupId) => {
-        try{
+        try {
             return await Schedule.findOne({groupId})
-        }catch (e) {
+        } catch (e) {
             throw new Error(e)
         }
     }
