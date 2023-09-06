@@ -12,6 +12,7 @@ import errorMiddleware from "./middlewares/errorMiddleware.js";
 import router from "./router.js";
 import UserActivityService from "./services/userActivityService.js";
 import UserRegistrationStatService from "./services/userRegistrationStatService.js";
+import setupDocumentHandler from "./handlers/documentHandler.js";
 
 const bot = new TelegramBot(config.TG_TOKEN, {
     polling: {
@@ -42,6 +43,8 @@ app.listen(port, () => log.info(`Tolyan express started at ${port} port.`));
     await setupCommandHandlers(bot);
     await setupAdminCommandHandler(bot);
     await setupCallbackHandlers(bot);
+    await setupDocumentHandler(bot)
+
     cron.schedule('59 23 * * *', () => {
         log.warn("[beta] Произошла запись активности юзеров! /online2 to check")
         UserActivityService.dailyUserActivityLogging()
