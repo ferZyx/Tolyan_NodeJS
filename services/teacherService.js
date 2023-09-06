@@ -7,7 +7,7 @@ class teacherService {
 
             await Teacher.insertMany(teachers)
         } catch (e) {
-            throw new Error(e)
+            throw new Error("Ошибка при обновлении всех преподов: " + e.stack)
         }
     }
 
@@ -15,7 +15,7 @@ class teacherService {
         try {
             return await Teacher.find({name: {$regex: name, $options: 'i'}});
         } catch (e) {
-            throw new Error(e)
+            throw new Error("Ошибка при поиске препода по имени: " + e.stack)
         }
     }
 
@@ -23,7 +23,7 @@ class teacherService {
         try {
             return await Teacher.find({});
         } catch (e) {
-            throw new Error(e)
+            throw new Error("Ошибка при получении всех преподов: " + e.stack)
         }
     }
 
@@ -31,7 +31,7 @@ class teacherService {
         try {
             return await Teacher.findOne({_id});
         } catch (e) {
-            throw new Error(e)
+            throw new Error("Ошибка при получении препода по айди: " + e.stack)
         }
     }
 }

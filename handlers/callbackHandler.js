@@ -44,6 +44,7 @@ export default function setupCallbackHandlers(bot) {
                     await bot.sendMessage(call.message.chat.id, "❗️ Секундочку, я эволюционирую.")
                     return await ScheduleController.getSchedule(bot, call.message)
                 } catch (e) {
+                    console.error(e)
                     log.error("ВАЖНО! ОШИБКА В ШЕДУЛ КОЛБЕК ХЕНДЕРЕ ПРИ ПОПЫТКЕ ЭВОЛЮЦИОНИРОВАТЬ!", {
                         userId:call.message.chat.id
                     })
@@ -61,6 +62,7 @@ export default function setupCallbackHandlers(bot) {
             try {
                 await ScheduleController.getScheduleMenu(bot, call)
             } catch (e) {
+                console.error(e)
                 log.error("ОШИБКА В КОЛБЕК ХЕНДЕЛЕРЕ schedule", {userId:call.message.chat.id})
             }
 
@@ -69,6 +71,7 @@ export default function setupCallbackHandlers(bot) {
                 const [, _id] = call.data.split("|")
                 await TeacherController.getProfile(bot, call, _id)
             } catch (e) {
+                console.error(e)
                 log.error("ВАЖНО! ОШИБКА В ТИЧЕР КОЛБЕК ХЕНДЛЕРЕ!", {userId:call.message.chat.id})
             }
             await bot.answerCallbackQuery(call.id)

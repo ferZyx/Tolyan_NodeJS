@@ -8,7 +8,7 @@ class scheduleService {
             );
 
         } catch (e) {
-            throw e;
+            throw new Error("Ошибка при обновлении расписания по групАйди: " + e.stack)
         }
     }
 
@@ -16,7 +16,7 @@ class scheduleService {
         try {
             return await Schedule.findOne({groupId})
         } catch (e) {
-            throw new Error(e)
+            throw new Error("Ошибка при получении расписания по группАйди: " + e.stack)
         }
     }
 }

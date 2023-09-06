@@ -377,6 +377,7 @@ class ScheduleController {
                 })
             }
         } catch (e) {
+            console.error(e)
             log.error("УЛЬТРА МЕГА ВАЖНО! ОШИБКА ПРИ ПОПЫТКЕ ОБРАБОТАТЬ ОШИБКУ! errorHandler",
                 {userId:message.chat.id})
         }
@@ -394,6 +395,7 @@ class ScheduleController {
                 chat_id: call.message.chat.id, message_id: call.message.message_id
             })
         } catch (e) {
+            console.error(e)
             log.error("УЛЬТРА МЕГА ВАЖНО! ОШИБКА ПРИ ПОПЫТКЕ ОБРАБОТАТЬ ОШИБКУ! validateErrorHandler",
                 {call})
         }

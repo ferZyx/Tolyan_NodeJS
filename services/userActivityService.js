@@ -8,7 +8,7 @@ class UserActivityService{
             today.setHours(0, 0, 0, 0); // Обнуляем время для сравнения с началом дня
             return await User.countDocuments({updatedAt: {$gte: today}})
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении кол-ва пользователей за сегодня: " + e.stack)
         }
     }
 
@@ -17,7 +17,7 @@ class UserActivityService{
             const userActivity = await this.getTodayUserCount()
             return await UserActivity.create({userActivity})
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при логировании дневной активности пользователей: " + e.stack)
         }
     }
 
@@ -27,7 +27,7 @@ class UserActivityService{
             const weakUserCount = await this.getWeakUserCount()
             return {weakUserActivity, weakUserCount}
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении активности пользователей за неделю: " + e.stack)
         }
     }
 
@@ -43,7 +43,7 @@ class UserActivityService{
                 updatedAt: { $gte: oneWeekAgo } // Между одной неделей назад и сегодняшней датой
             });
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении кол-ва пользователей за неделю: " + e.stack)
         }
     }
 
@@ -59,7 +59,7 @@ class UserActivityService{
                 updatedAt: { $lte: oneWeekAgo } // Между одной неделей назад и сегодняшней датой
             });
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении неактивных пользователей: " + e.stack)
         }
     }
 }

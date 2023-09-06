@@ -5,7 +5,7 @@ class groupService{
         try{
             return await Group.find({program: programId}).sort('-id')
         }catch (e) {
-            throw new Error(e)
+            throw new Error("Ошибка при получении группы по програмАйди: " + e.stack)
         }
     }
 
@@ -13,7 +13,7 @@ class groupService{
         try{
             return await Group.findOne({id})
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении группы по айди: " + e.stack)
         }
     }
 
@@ -21,7 +21,7 @@ class groupService{
         try{
             return await Group.find({})
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении всех групп: " + e.stack)
         }
     }
     
@@ -31,7 +31,7 @@ class groupService{
             
             await Group.insertMany(groups)
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при обновлении всех групп: " + e.stack)
         }
     }
 }

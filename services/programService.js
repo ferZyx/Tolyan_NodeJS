@@ -5,7 +5,7 @@ class programService{
         try{
             return await Program.find({faculty: facultyId}).sort('name')
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении программы по факультиАйди: " + e.stack)
         }
     }
 
@@ -13,7 +13,7 @@ class programService{
         try{
             return await Program.findOne({id})
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении программы по айди: " + e.stack)
         }
     }
 
@@ -23,7 +23,7 @@ class programService{
             
             await Program.insertMany(programs)
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при обновлении всех программ: " + e.stack)
         }
     }
 
@@ -31,7 +31,7 @@ class programService{
         try{
             return await Program.find({})
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении всех программ: " + e.stack)
         }
     }
 

@@ -8,7 +8,7 @@ class FacultyService {
             const program = await Program.findOne({ id: group.program })
             return program.faculty;
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении факультета по группе: " + e.stack)
         }
     }
 
@@ -16,7 +16,7 @@ class FacultyService {
         try {
             return await Faculty.findOne({id})
         } catch (e) {
-            throw e
+            throw new Error("Ошибка при получении факультета по айди: " + e.stack)
         }
     }
 
@@ -24,7 +24,7 @@ class FacultyService {
         try {
             return await Faculty.find({}).sort('id')
         } catch (e) {
-            throw e
+            throw new Error("Ошибка при получении всех факультетов: " + e.stack)
         }
     }
 
@@ -34,11 +34,9 @@ class FacultyService {
 
             await Faculty.insertMany(faculties)
         } catch (e) {
-            throw e
+            throw new Error("Ошибка при обновлении всех факультетов: " + e.stack)
         }
     }
-
-
 }
 
 export default new FacultyService()

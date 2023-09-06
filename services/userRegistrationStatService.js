@@ -8,7 +8,7 @@ class UserRegistrationStatService {
             today.setHours(0, 0, 0, 0); // Обнуляем время для сравнения с началом дня
             return await User.countDocuments({createdAt: {$gte: today}})
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении кол-ва зарегестрированных юзеров сегодня: " + e.stack)
         }
     }
 
@@ -17,7 +17,7 @@ class UserRegistrationStatService {
             const registeredUsers = await this.getTodayRegisteredUserCount()
             return await userRegistrationStat.create({registeredUsers})
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при логировании кол-ва зарегестрированных юзеров сегодня: " + e.stack)
         }
     }
 
@@ -33,7 +33,7 @@ class UserRegistrationStatService {
                 createdAt: { $gte: oneWeekAgo} // Между одной неделей назад и сегодняшней датой
             });
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении кол-ва зарегестрированных юзеров неделю: " + e.stack)
         }
     }
 
@@ -43,7 +43,7 @@ class UserRegistrationStatService {
             const weakRegisteredUserCount = await this.getWeakRegisteredUserCount()
             return {weakRegistrationStat, weakRegisteredUserCount}
         }catch (e) {
-            throw e
+            throw new Error("Ошибка при получении статистики регистраций юзеров в течении недели: " + e.stack)
         }
     }
 

@@ -48,7 +48,7 @@ app.listen(port, () => log.info(`Tolyan express started at ${port} port.`));
         log.warn("[beta] Произошла запись зарегестрированных юзеров! /regs2 to check")
         UserRegistrationStatService.dailyRegisteredUserCountLogging()
     });
-})();
+})().catch(e => console.error(e));
 
 
 
