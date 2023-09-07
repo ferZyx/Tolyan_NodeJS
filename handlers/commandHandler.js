@@ -29,7 +29,7 @@ export default function setupCommandHandlers(bot) {
                 return;
             }
 
-            const answer = await bot.sendMessage(msg.chat.id, `🪄 Пытаюсь накодовать профиль препода с фамилией: ${surname}. Вжух!`, {parse_mode: 'html'});
+            const answer = await bot.sendMessage(msg.chat.id, `🪄 Пытаюсь накодовать профиль препода с фамилией: ${surname}. Вжух!`, {parse_mode: 'HTML'});
 
             await TeacherController.findProfiles(bot, answer, surname);
         } catch (e) {

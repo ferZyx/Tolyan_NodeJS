@@ -33,7 +33,7 @@ app.listen(port, () => log.info(`Tolyan express started at ${port} port.`));
 (async () => {
     await db.connect(config.DB_URI)
         .then(() => {
-            log.info("Успешное подключение к базе данных. БОТ РАБОТАЕТ КОРРЕКТНО ПО ИДЕЕ!")
+            log.info("Успешное подключение к базе данных. БОТ РАБОТАЕТ КОРРЕКТНО ПО ИДЕЕ!", {test:'heeey'})
         })
         .catch((e) => {
             log.error("Ошибка подключения к базе данных! ВЫЗЫВАЮ ФИКСИКОВ ВИУ ВИУ ВИУ!", {stack: e.stack})

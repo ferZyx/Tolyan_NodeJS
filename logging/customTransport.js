@@ -14,18 +14,22 @@ class CustomTransport extends Transport {
     }
 
     log(info, callback) {
-        const BASE_DIR = path.basename(path.dirname(__dirname))
+        try{
+            const BASE_DIR = path.basename(path.dirname(__dirname))
 
-        const log_chanel_id = config.LOG_CHANEL_ID;
+            const log_chanel_id = config.LOG_CHANEL_ID;
 
-        const text = `[${BASE_DIR}][${info.level}]%20` + info.message.replace(" ", "%20");
+            const text = `[${BASE_DIR}][${info.level}]%20` + info.message.replace(" ", "%20");
 
-        const token = config.TG_TOKEN
-        const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${log_chanel_id}&text=${text}`
+            const token = config.TG_TOKEN
+            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${log_chanel_id}&text=${text}`
 
-        https.get(url)
-
-        callback();
+            https.get(url)
+        }catch (e){
+            console.log("ОШИБКА ПРИ ПОПЫТКЕ ОТОСЛАТЬ ЛОГ В ТЕЛЕГРААААМ!")
+        }finally {
+            callback();
+        }
     }
 }
 

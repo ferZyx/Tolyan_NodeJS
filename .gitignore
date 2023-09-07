@@ -3,4 +3,5 @@
 .env
 temp
 logs.log
+error_logs.log
 group_stat.json

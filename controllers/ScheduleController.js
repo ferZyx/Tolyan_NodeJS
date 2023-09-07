@@ -96,7 +96,7 @@ class ScheduleController {
     }
 
     async startCommand(bot, msg) {
-        const answer = await bot.sendMessage(msg.chat.id, "🪄 Пытаюсь накодовать список факультетов. Вжух!", {parse_mode: 'html'})
+        const answer = await bot.sendMessage(msg.chat.id, "🪄 Пытаюсь накодовать список факультетов. Вжух!", {parse_mode: 'HTML'})
         try {
             await this.getFacultyMenu(bot, answer, 0)
         } catch (e) {
@@ -232,16 +232,17 @@ class ScheduleController {
                 text: `➡️`, callback_data: preCallback + `|${+dayNumber + 1}`
             }],]
         }
-        await bot.editMessageText(msg_text, {
-            message_id: call.message.message_id,
-            chat_id: call.message.chat.id,
-            parse_mode: "html",
-            reply_markup: markup,
-            disable_web_page_preview: true
-        })
+        await bot.editMessageText(msg_text,
+            {
+                message_id: call.message.message_id,
+                chat_id: call.message.chat.id,
+                parse_mode: "HTML",
+                reply_markup: markup,
+                disable_web_page_preview: true
+            })
     }
 
-    async getReservedSchedule(bot, call, groupId){
+    async getReservedSchedule(bot, call, groupId) {
         await bot.editMessageText('💀 schedule.ksu.kz не отвечает. Сейчас поищу твое расписание в своих недрах...', {
             chat_id: call.message.chat.id, message_id: call.message.message_id
         })
@@ -323,7 +324,7 @@ class ScheduleController {
     }
 
     async getSchedule(bot, msg) {
-        const answer = await bot.sendMessage(msg.chat.id, "🪄 Пытаюсь накодовать твое расписание. Вжух!", {parse_mode: 'html'})
+        const answer = await bot.sendMessage(msg.chat.id, "🪄 Пытаюсь накодовать твое расписание. Вжух!", {parse_mode: 'HTML'})
         try {
             const User = await userService.getUserById(msg.chat.id)
             if (!User) {
@@ -338,7 +339,7 @@ class ScheduleController {
             }
             const Group = await groupService.getById(groupId)
             if (!Group) {
-                log.error(`!!! USER ${msg.chat.id} УЧИТСЯ В ГРУППЕ КОТОРОЙ НЕТ В БД.`, {User, userId:msg.chat.id})
+                log.error(`!!! USER ${msg.chat.id} УЧИТСЯ В ГРУППЕ КОТОРОЙ НЕТ В БД.`, {User, userId: msg.chat.id})
                 return bot.editMessageText("⚠️ Я не смог найти группу в которой ты учишься(\n" +
                     "2 варианта. Либо я сломался что вероятнее всего. Либо произошла какая то ошибка. \n" +
                     "Попробуй воспользоваться /start для получения расписания", {
@@ -354,7 +355,7 @@ class ScheduleController {
             }
             await this.getScheduleMenu(bot, call)
         } catch (e) {
-            log.error(`Ошибка при получении расписания через /schedule: ` + e.message, {stack: e.stack, msg, userId:msg.chat.id})
+            log.error(`Ошибка при получении расписания через /schedule: ` + e.message)
             await bot.editMessageText("⚠️ Произошла непредвиденная ошибочка. Попробуйте /start. Возможно я сломался и меня скоро починят.", {
                 chat_id: answer.chat.id, message_id: answer.message_id
             })
@@ -365,10 +366,10 @@ class ScheduleController {
     async errorHandler(e, bot, message, callback_data) {
         try {
             if (e.response && e.response.body.description === 'Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message') {
-                log.info(`User ${message.chat.id} получил ошибку о том шо сообщение нот модифайнед. Скипаю ошибочку`, {userId:message.chat.id})
+                log.info(`User ${message.chat.id} получил ошибку о том шо сообщение нот модифайнед. Скипаю ошибочку`, {userId: message.chat.id})
             } else {
                 log.error(`User ${message.chat.id} got an error at ${callback_data}. Данные об ошибке в метаданных.`, {
-                    stack: e.stack, message, callback_data, userId:message.chat.id
+                    stack: e.stack, message, callback_data, userId: message.chat.id
                 })
                 await bot.editMessageText("⚠️ Дико извиняемся, произошла какая то ошибка." + "\n🔩 Не переживайте, я уже вызвал фиксиков! Постараемся всё починить как можно скорее!", {
                     chat_id: message.chat.id, message_id: message.message_id, reply_markup: {
@@ -378,8 +379,8 @@ class ScheduleController {
             }
         } catch (e) {
             console.error(e)
-            log.error("УЛЬТРА МЕГА ВАЖНО! ОШИБКА ПРИ ПОПЫТКЕ ОБРАБОТАТЬ ОШИБКУ! errorHandler",
-                {userId:message.chat.id})
+            log.error("УЛЬТРА МЕГА ВАЖНО! pm2 check! ОШИБКА ПРИ ПОПЫТКЕ ОБРАБОТАТЬ ОШИБКУ! errorHandler",
+                {userId: message.chat.id})
         }
     }
 
@@ -396,7 +397,7 @@ class ScheduleController {
             })
         } catch (e) {
             console.error(e)
-            log.error("УЛЬТРА МЕГА ВАЖНО! ОШИБКА ПРИ ПОПЫТКЕ ОБРАБОТАТЬ ОШИБКУ! validateErrorHandler",
+            log.error("УЛЬТРА МЕГА ВАЖНО! pm2 check! ОШИБКА ПРИ ПОПЫТКЕ ОБРАБОТАТЬ ОШИБКУ! validateErrorHandler",
                 {call})
         }
     }

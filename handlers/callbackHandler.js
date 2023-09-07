@@ -46,7 +46,7 @@ export default function setupCallbackHandlers(bot) {
                 } catch (e) {
                     console.error(e)
                     log.error("ВАЖНО! ОШИБКА В ШЕДУЛ КОЛБЕК ХЕНДЕРЕ ПРИ ПОПЫТКЕ ЭВОЛЮЦИОНИРОВАТЬ!", {
-                        userId:call.message.chat.id
+                        userId:call.message.chat.id, stack:e.stack
                     })
                 }
             }
@@ -63,7 +63,7 @@ export default function setupCallbackHandlers(bot) {
                 await ScheduleController.getScheduleMenu(bot, call)
             } catch (e) {
                 console.error(e)
-                log.error("ОШИБКА В КОЛБЕК ХЕНДЕЛЕРЕ schedule", {userId:call.message.chat.id})
+                log.error("ОШИБКА В КОЛБЕК ХЕНДЕЛЕРЕ schedule", {userId:call.message.chat.id, stack:e.stack})
             }
 
         } else if (call.data.includes("teacher")) {
@@ -72,7 +72,7 @@ export default function setupCallbackHandlers(bot) {
                 await TeacherController.getProfile(bot, call, _id)
             } catch (e) {
                 console.error(e)
-                log.error("ВАЖНО! ОШИБКА В ТИЧЕР КОЛБЕК ХЕНДЛЕРЕ!", {userId:call.message.chat.id})
+                log.error("ВАЖНО! ОШИБКА В ТИЧЕР КОЛБЕК ХЕНДЛЕРЕ!", {userId:call.message.chat.id, stack:e.stack})
             }
             await bot.answerCallbackQuery(call.id)
         } else {

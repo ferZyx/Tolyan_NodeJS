@@ -180,10 +180,8 @@ export default function setupAdminCommandHandler(bot) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
         try {
-            const answer = await bot.sendMessage(msg.chat.id, JSON.stringify(msg, null, 2))
-            await bot.editMessageText(JSON.stringify(msg, null, 2), {
-                message_id: answer.message_id, chat_id: answer.chat.id
-            })
+            log.info("info")
+            log.warn('warn')
         } catch (e) {
             log.error("Ошибочка в /test", {stack: e.stack})
         }

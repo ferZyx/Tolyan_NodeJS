@@ -10,9 +10,10 @@ const log = createLogger({
         new transports.Console({
             level: 'silly',
             format: format.combine(
-                format.printf(({level, message, stack}) => {
-                    return `${level}: ${message}\n${stack || ''}`;
-                })
+                format.timestamp({format: 'YYYY-MM-DD HH:mm:ss'}),
+                format.printf(({level, message, stack, timestamp}) => {
+                    return `${timestamp} || ${level.toUpperCase()} || ${message}\n${stack || ''}`;
+                }),
             ),
         }),
 
@@ -21,17 +22,15 @@ const log = createLogger({
             level: 'silly',
             format: format.combine(format.timestamp(), format.json())
         }),
+        new transports.File({
+            filename: "error_logs.log",
+            level: 'error',
+            format: format.combine(format.timestamp(), format.json())
+        }),
     ],
 });
 
 if (!config.DEBUG) {
-    log.add(new transports.MongoDB({
-        db: process.env.DB_URI,
-        collection: 'logs',
-        options: {useUnifiedTopology: true},
-        format: format.metadata(),
-        level: "silly"
-    })); // mongodb logging
     log.add(new CustomTransport({
         level: "warn"
     }))  // telegram warning notifications
