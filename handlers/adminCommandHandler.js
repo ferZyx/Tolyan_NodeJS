@@ -9,6 +9,7 @@ import fs from "fs/promises"
 import UserActivityService from "../services/userActivityService.js";
 import userActivityService from "../services/userActivityService.js";
 import userRegistrationStatService from "../services/userRegistrationStatService.js";
+import teacherService from "../services/teacherService.js";
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -163,7 +164,24 @@ export default function setupAdminCommandHandler(bot) {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
-        await bot.sendMessage(msg.chat.id, 'it is')
+        try{
+            const old_teachers = await teacherService.getAll()
+
+            await bot.sendMessage(msg.chat.id, 'Начинаю получать преподов!')
+
+            await axios.get(`http://79.133.182.125:5000/api/teacher/get_all_teachers`, {timeout: 60 * 1000})
+                .then(async(response) => {
+                    const teachers = response.data
+                    await teacherService.updateAll(teachers)
+
+                    await bot.sendMessage(msg.chat.id, "Teacher list successfully updated! Congratulations!\n" +
+                        `Было: ${old_teachers.length} || Стало: ${teachers.length} || Разница: ${teachers.length - old_teachers.length}`)
+                })
+        }catch (e) {
+            await bot.sendMessage(msg.chat.id, "Error while teacher updating!")
+            log.error("Ошибка при обновлении тичеров!")
+            console.error(e)
+        }
     })
 
 
@@ -460,8 +478,7 @@ export default function setupAdminCommandHandler(bot) {
             }
             const msg_text = msg.text.replace("/spam ", "")
 
-            const users = (await userService.getAll()).slice(80, 1000)
-            console.log(users)
+            const users = (await userService.getAll())
 
             await bot.sendMessage(msg.chat.id, 'Начал спамить. /stop чтобы принудительно завершить спам\n' + msg_text, {disable_web_page_preview: true})
             const startTime = Date.now()
