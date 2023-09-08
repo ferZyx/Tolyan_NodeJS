@@ -1,7 +1,7 @@
 import {userLastRequest} from "../../app.js";
 import log from "../../logging/logging.js";
 
-export default async function(bot, msg, next) {
+export async function commandAntiSpamMiddleware(bot, msg, next) {
     const userId = msg.chat.id;
     const currentTime = new Date().getTime();
 

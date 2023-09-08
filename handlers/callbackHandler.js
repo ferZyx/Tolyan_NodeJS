@@ -2,12 +2,12 @@ import ScheduleController from "../controllers/ScheduleController.js";
 import log from "../logging/logging.js";
 import {schedule_cache} from "../controllers/ScheduleController.js";
 import TeacherController from "../controllers/TeacherController.js";
-import antiSpamMiddleware from "../middlewares/bot/callbackAntiSpamMiddleware.js";
+import {callbackAntiSpamMiddleware} from "../middlewares/bot/callbackAntiSpamMiddleware.js";
 
 export default function setupCallbackHandlers(bot) {
     bot.on('callback_query', async (call) => {
         log.silly(`User ${call.message.chat.id} clicked to btn ${call.data}`, {call, userId:call.message.chat.id})
-        await antiSpamMiddleware(bot, call, async() => {
+        await callbackAntiSpamMiddleware(bot, call, async() => {
             if (call.data.includes("faculty")) {
                 try {
                     const [, page] = call.data.split('|');

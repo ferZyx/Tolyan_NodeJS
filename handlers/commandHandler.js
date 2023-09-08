@@ -2,12 +2,12 @@ import ScheduleController from "../controllers/ScheduleController.js";
 import log from "../logging/logging.js";
 import TeacherController from "../controllers/TeacherController.js";
 import config from "../config.js";
-import antiSpamMiddleware from "../middlewares/bot/commandAntiSpamMiddleware.js";
+import {commandAntiSpamMiddleware} from "../middlewares/bot/commandAntiSpamMiddleware.js";
 
 // done
 export default function setupCommandHandlers(bot) {
     bot.onText(/^\/start/i, async (msg) => {
-        await antiSpamMiddleware(bot, msg, async () => {
+        await commandAntiSpamMiddleware(bot, msg, async () => {
             await ScheduleController.startCommand(bot, msg)
                 .catch(e => log.error("ВАЖНО! ОШИБКА В СТАРТ ХЕНДЕРЕ!", {stack: e.stack, msg, userId: msg.chat.id}))
         })
@@ -15,7 +15,7 @@ export default function setupCommandHandlers(bot) {
 
 
     bot.onText(/^\/schedule/i, async (msg) => {
-        await antiSpamMiddleware(bot, msg, async () => {
+        await commandAntiSpamMiddleware(bot, msg, async () => {
             await ScheduleController.getSchedule(bot, msg)
                 .catch(e => log.error("ВАЖНО! ОШИБКА В ШЕДУЛ КОМАНД ХЕДЛЕРЕ", {
                     stack: e.stack,
@@ -25,7 +25,7 @@ export default function setupCommandHandlers(bot) {
         })
     })
     bot.onText(/^расписание/i, async (msg) => {
-        await antiSpamMiddleware(bot, msg, async () => {
+        await commandAntiSpamMiddleware(bot, msg, async () => {
             await ScheduleController.getSchedule(bot, msg)
                 .catch(e => log.error("ВАЖНО! ОШИБКА В РАСПИСАНЕ КОМАНД ХЕДЛЕРЕ", {
                     stack: e.stack,
@@ -36,7 +36,7 @@ export default function setupCommandHandlers(bot) {
     });
 
     bot.onText(/^профиль(\s(\S{2,}))?$/i, async (msg, match) => {
-        await antiSpamMiddleware(bot, msg, async () => {
+        await commandAntiSpamMiddleware(bot, msg, async () => {
             const surname = match[2];
 
             try {
@@ -54,7 +54,7 @@ export default function setupCommandHandlers(bot) {
         })
     });
     bot.onText(/^профиль\s(\S)$/i, async (msg) => {
-        await antiSpamMiddleware(bot, msg, async () => {
+        await commandAntiSpamMiddleware(bot, msg, async () => {
             await bot.sendMessage(msg.chat.id, '⚠️ Фамилия для поиска профиля должна состоять как минимум из 2 символов.')
                 .catch(e => log.error("ВАЖНО! ОШИБКА В ПРОФИЛЬ КОМАНД ХЕДЛЕРЕ", {
                     stack: e.stack,
@@ -65,7 +65,7 @@ export default function setupCommandHandlers(bot) {
     });
 
     bot.onText(/^\/help/i, async (msg) => {
-        await antiSpamMiddleware(bot, msg, async () => {
+        await commandAntiSpamMiddleware(bot, msg, async () => {
             const msg_text = "📝 Доступные команды:\n" +
                 "🔴 /start - Указать расписание какой группы вас интересует.\n" +
                 "🟠 /schedule - Получить расписание вашей группы.\n" +
@@ -81,7 +81,7 @@ export default function setupCommandHandlers(bot) {
     })
 
     bot.onText(/^\/news/i, async (msg) => {
-        await antiSpamMiddleware(bot, msg, async () => {
+        await commandAntiSpamMiddleware(bot, msg, async () => {
             const msg_text = `👋 Рад что тебе интересно наше обновление!\n` +
                 `⚪️ Полностью изменена логика работы бота, сделан акцент на безотказную и независимую работу от ксу. \n` +
                 `⚫️ Другими словами, даже когда великий и могучий ксу снова приляжет отдохнуть - наш бот не ляжет вместе с ним, а наоборот продолжит выдывать вам ваше расписание из нашей чудо-базы данных!\n` +
@@ -91,7 +91,7 @@ export default function setupCommandHandlers(bot) {
     })
 
     bot.onText(/^\/donate/i, async (msg) => {
-        await antiSpamMiddleware(bot, msg, async () => {
+        await commandAntiSpamMiddleware(bot, msg, async () => {
             log.warn(`User ${msg.chat.id} прописал /donate`, {userId: msg.chat.id})
             const msg_text = 'Над ботом активно работают 2 начинающих разработчика, которых вы можете поддержать, угостив ' +
                 'их стаканом компота или даже кружечкой горячего кофе!\n Каспи: <code>4400430139065632</code>'

@@ -364,16 +364,25 @@ export default function setupAdminCommandHandler(bot) {
             if (!user) {
                 return await bot.sendMessage(msg.chat.id, "Не найден такой юзер. НЕТУ!")
             }
-            let msg_text = `Информация о юзере id: ${userId}\n` + JSON.stringify(user, null, 4)
+            let msg_text = `Информация о юзере id: ${userId}\n` +
+                `Тип: ${user.userType}\n` +
+                `username: ${user.username}\n`
+
+            if (msg.chat.type !== 'private'){
+                msg_text += `Название: ${user.userTitle}\n\n`
+            }else{
+                msg_text += `Имя: ${user.firstName}\n` +
+                    `Фамилия: ${user.lastName}\n\n`
+            }
 
             const group = await groupService.getById(user.group)
             if (group) {
-                msg_text += `\n\n Информация о группе id: ${group.id}\n` + JSON.stringify(group, null, 4)
+                msg_text += `Группа: ${group.name} || id: ${group.id}\n`
                 const program = await programService.getById(group.program)
                 const faculty = await facultyService.getById(program.faculty)
 
-                msg_text += `\n\n Информация о программе id: ${program.id}\n` + JSON.stringify(program, null, 4)
-                msg_text += `\n\n Информация о факультете id: ${faculty.id}\n` + JSON.stringify(faculty, null, 4)
+                msg_text += `Программа: ${program.name} || id: ${program.id}\n`
+                msg_text += `Факультет: ${faculty.name} || id: ${faculty.id}\n`
             }
 
             await bot.sendMessage(msg.chat.id, msg_text)
@@ -391,7 +400,7 @@ export default function setupAdminCommandHandler(bot) {
 
             await bot.sendDocument(msg.chat.id, './logs.log')
         } catch (e) {
-            log.error("Ошибочка при /get_user", {stack: e.stack})
+            log.error("Ошибочка при /get_logs", {stack: e.stack})
         }
 
     });
@@ -430,7 +439,7 @@ export default function setupAdminCommandHandler(bot) {
             }
             const msg_text = msg.text.replace("/unactive_spam", "")
 
-            const users = (await userActivityService.getUnactiveUsers())
+            const users = await userActivityService.getUnactiveUsers()
             let success = []
             let bad = []
 
@@ -478,7 +487,7 @@ export default function setupAdminCommandHandler(bot) {
             }
             const msg_text = msg.text.replace("/spam ", "")
 
-            const users = (await userService.getAll())
+            const users = await userService.getAll()
 
             await bot.sendMessage(msg.chat.id, 'Начал спамить. /stop чтобы принудительно завершить спам\n' + msg_text, {disable_web_page_preview: true})
             const startTime = Date.now()
