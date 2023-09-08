@@ -29,6 +29,7 @@ app.use(errorMiddleware)
 const port = 5001;
 app.listen(port, () => log.info(`Tolyan express started at ${port} port.`));
 
+export const userLastRequest = {};
 
 (async () => {
     await db.connect(config.DB_URI)
