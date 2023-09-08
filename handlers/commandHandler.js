@@ -102,7 +102,11 @@ export default function setupCommandHandlers(bot) {
 
     bot.on('message', async (msg) => {
         if (msg.chat.id !== -1001787183783) {
-            log.silly(`User ${msg.chat.id} написал в чат: ${msg.text}`, {msg, userId: msg.chat.id})
+            if(msg.chat.type !== 'private'){
+                log.silly(`User ${msg.chat.id} || ${msg.from.id} написал в чат: ${msg.text}`, {msg, userId: msg.chat.id})
+            }else {
+                log.silly(`User ${msg.chat.id} написал в чат: ${msg.text}`, {msg, userId: msg.chat.id})
+            }
         }
     });
 }
