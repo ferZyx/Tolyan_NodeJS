@@ -377,7 +377,9 @@ export default function setupAdminCommandHandler(bot) {
 
             const group = await groupService.getById(user.group)
             if (group) {
-                msg_text += `Группа: ${group.name} || id: ${group.id}\n`
+                const group_users = await userService.getUsersCountByGroupId(group.id)
+                msg_text += `Группа: ${group.name} | id: ${group.id}\n` +
+                    `В группе: ${group.studentCount} | Пользуются ботом: ${group_users}\n`
                 const program = await programService.getById(group.program)
                 const faculty = await facultyService.getById(program.faculty)
 

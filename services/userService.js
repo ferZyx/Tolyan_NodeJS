@@ -50,9 +50,9 @@ class UserService {
         }
     }
 
-    async getUsersByGroupId(groupId) {
+    async getUsersCountByGroupId(groupId) {
         try {
-            return await User.find({group: groupId})
+            return await User.countDocuments({group: groupId})
         } catch (e) {
             throw new Error("Ошибка при получении пользователей по полю групАйди: " + e.stack)
         }
