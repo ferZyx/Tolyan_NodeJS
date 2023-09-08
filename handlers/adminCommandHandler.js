@@ -25,7 +25,7 @@ export default function setupAdminCommandHandler(bot) {
         try {
             const old_faculties = await facultyService.getAll()
 
-            await axios.get("http://79.133.182.125:5000/api/schedule/get_faculty_list")
+            await axios.get("https://api.tolyan.me/schedule/get_faculty_list")
                 .then(async (response) => {
                     if (response.status) {
                         const faculties = response.data
@@ -65,7 +65,7 @@ export default function setupAdminCommandHandler(bot) {
             .then(async (faculties) => {
                 for (const faculty of faculties) {
                     try {
-                        const response = await axios.get(`http://79.133.182.125:5000/api/schedule/get_program_list_by_facultyId/${faculty.id}`)
+                        const response = await axios.get(`https://api.tolyan.me/schedule/get_program_list_by_facultyId/${faculty.id}`)
                         const program_list = response.data
 
                         for (const program of program_list) {
@@ -149,7 +149,7 @@ export default function setupAdminCommandHandler(bot) {
 
         async function get_group_list(program) {
             try {
-                const response = await axios.get(`http://79.133.182.125:5000/api/schedule/get_group_list_by_programId/${program['id']}`)
+                const response = await axios.get(`https://api.tolyan.me/schedule/get_group_list_by_programId/${program['id']}`)
                 return response.data
             } catch (e) {
                 log.error("Произошла ошибка при обновлении ебучих групп. Через 5 минут попробую продолжить")
@@ -169,7 +169,7 @@ export default function setupAdminCommandHandler(bot) {
 
             await bot.sendMessage(msg.chat.id, 'Начинаю получать преподов!')
 
-            await axios.get(`http://79.133.182.125:5000/api/teacher/get_all_teachers`, {timeout: 60 * 1000})
+            await axios.get(`https://api.tolyan.me/teacher/get_all_teachers`, {timeout: 60 * 1000})
                 .then(async(response) => {
                     const teachers = response.data
                     await teacherService.updateAll(teachers)
