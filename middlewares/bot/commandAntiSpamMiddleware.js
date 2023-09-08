@@ -1,4 +1,5 @@
 import {userLastRequest} from "../../app.js";
+import log from "../../logging/logging.js";
 
 export default async function(bot, msg, next) {
     const userId = msg.chat.id;
@@ -12,6 +13,10 @@ export default async function(bot, msg, next) {
         if (timeDiff < 1000) {
             // Отправляем уведомление о спаме пользователю
             await bot.sendMessage(msg.chat.id, "🚯 Не спамь! ", {reply_to_message_id:msg.message_id})
+                .catch(e => {
+                    log.error("Ошибка в комманд антиспам мидлваре")
+                    console.error(e)
+                })
             // Пропускаем выполнение хендлера
             return;
         }

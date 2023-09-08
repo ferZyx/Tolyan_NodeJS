@@ -1,4 +1,5 @@
 import {userLastRequest} from "../../app.js";
+import log from "../../logging/logging.js";
 
 export default async function(bot, call, next) {
     const userId = call.message.chat.id;
@@ -11,7 +12,10 @@ export default async function(bot, call, next) {
         // Если прошло менее 0.5 секунд с предыдущего запроса, считаем это спамом
         if (timeDiff < 500) {
             // Отправляем уведомление о спаме пользователю
-            await bot.answerCallbackQuery(call.id, {text:"🚯 Не спамь, пожалуйста!", show_alert:false})
+            await bot.answerCallbackQuery(call.id, {text:"🚯 Не спамь, пожалуйста!", show_alert:false}).catch(e => {
+                log.error("Ошибка в коллбек антиспам мидлваре")
+                console.error(e)
+            })
             // Пропускаем выполнение хендлера
             return;
         }
