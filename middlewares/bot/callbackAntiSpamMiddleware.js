@@ -9,8 +9,7 @@ export async function callbackAntiSpamMiddleware(bot, call, next) {
     if (userLastRequest[userId]) {
         const timeDiff = currentTime - userLastRequest[userId];
 
-        // Если прошло менее 0.5 секунд с предыдущего запроса, считаем это спамом
-        if (timeDiff < 500) {
+        if (timeDiff < 750) {
             // Отправляем уведомление о спаме пользователю
             await bot.answerCallbackQuery(call.id, {text:"🚯 Не спамь, пожалуйста!", show_alert:false}).catch(e => {
                 log.error("Ошибка в коллбек антиспам мидлваре")
