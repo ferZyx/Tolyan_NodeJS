@@ -368,7 +368,7 @@ export default function setupAdminCommandHandler(bot) {
                 `Тип: ${user.userType}\n` +
                 `username: ${user.username}\n`
 
-            if (msg.chat.type !== 'private'){
+            if (user.userType !== 'private'){
                 msg_text += `Название: ${user.userTitle}\n\n`
             }else{
                 msg_text += `Имя: ${user.firstName}\n` +
