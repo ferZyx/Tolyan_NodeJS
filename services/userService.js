@@ -1,6 +1,28 @@
 import {User} from "../models/user.js"
+import log from "../logging/logging.js";
 
 class UserService {
+    async registerUser(msg) {
+        try {
+            const User = await this.findUserById(msg.chat.id)
+            if (!User) {
+                await this.createUser({
+                    userId: msg.chat.id,
+                    userType: String(msg.chat.type),
+                    userTitle: msg.chat.title,
+                    firstName: msg.chat.first_name,
+                    lastName: msg.chat.last_name,
+                    username: msg.chat.username,
+                }).then(user => log.warn(`Зарегистрирован новый пользователь! /get_user${msg.chat.id}`, {
+                    user,
+                    userId: msg.chat.id
+                }))
+            }
+        } catch (e) {
+            log.error("Ошибка при попытке зарегестрировать пользователя", {stack: e.stack, msg, userId: msg.chat.id})
+        }
+    }
+
     async createUser(userData) {
         try {
             return User.create(userData)

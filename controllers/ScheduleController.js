@@ -5,9 +5,10 @@ import groupService from "../services/groupService.js";
 import axios from "axios";
 import scheduleService from "../services/scheduleService.js";
 import userService from "../services/userService.js";
+import {startCommandController} from "./commands/startCommandController.js";
+import {unexpectedCommandController} from "../exceptions/bot/unexpectedCommandController.js";
 
 export let schedule_cache = {}
-
 
 function getRowMarkup(data, refTo) {
     return {
@@ -72,38 +73,6 @@ class ScheduleController {
             return ((currentDate.getDay() + 6) % 7) + 1;
         }
         return (currentDate.getDay() + 6) % 7;
-    }
-
-    async registerUser(msg) {
-        try {
-            const User = await userService.findUserById(msg.chat.id)
-            if (!User) {
-                await userService.createUser({
-                    userId: msg.chat.id,
-                    userType: String(msg.chat.type),
-                    userTitle: msg.chat.title,
-                    firstName: msg.chat.first_name,
-                    lastName: msg.chat.last_name,
-                    username: msg.chat.username,
-                }).then(user => log.warn(`Зарегистрирован новый пользователь! /get_user${msg.chat.id}`, {
-                    user,
-                    userId: msg.chat.id
-                }))
-            }
-        } catch (e) {
-            log.error("Ошибка при попытке зарегестрировать пользователя", {stack: e.stack, msg, userId: msg.chat.id})
-        }
-    }
-
-    async startCommand(bot, msg) {
-        const answer = await bot.sendMessage(msg.chat.id, "🪄 Пытаюсь накодовать список факультетов. Вжух!", {parse_mode: 'HTML'})
-        try {
-            await this.getFacultyMenu(bot, answer, 0)
-        } catch (e) {
-            await this.errorHandler(e, bot, answer, "faculty|0")
-        } finally {
-            await this.registerUser(msg)
-        }
     }
 
     async getFacultyMenu(bot, message, prePage) {
@@ -301,7 +270,7 @@ class ScheduleController {
                                 call,
                                 userId: call.message.chat.id
                             })
-                            await this.errorHandler(e, bot, call.message, call.data)
+                            return await unexpectedCommandController(e, bot, call.message, call.data)
                         }
                     })
             }
@@ -318,7 +287,7 @@ class ScheduleController {
             }))
 
         } catch (e) {
-            await this.errorHandler(e, bot, call.message, call.data)
+            return await unexpectedCommandController(e, bot, call.message, call.data)
         }
 
     }
@@ -329,13 +298,13 @@ class ScheduleController {
             const User = await userService.getUserById(msg.chat.id)
             if (!User) {
                 await bot.deleteMessage(msg.chat.id, answer.message_id);
-                return this.startCommand(bot, msg);
+                return await startCommandController(bot, msg);
             }
 
             const groupId = User.group
             if (!groupId) {
                 await bot.deleteMessage(msg.chat.id, answer.message_id);
-                return this.startCommand(bot, msg);
+                return await startCommandController(bot, msg);
             }
             const Group = await groupService.getById(groupId)
             if (!Group) {
@@ -361,45 +330,6 @@ class ScheduleController {
             })
         }
 
-    }
-
-    async errorHandler(e, bot, message, callback_data) {
-        try {
-            if (e.response && e.response.body.description === 'Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message') {
-                log.info(`User ${message.chat.id} получил ошибку о том шо сообщение нот модифайнед. Скипаю ошибочку`, {userId: message.chat.id})
-            } else {
-                log.error(`User ${message.chat.id} got an error at ${callback_data}. Данные об ошибке в метаданных.`, {
-                    stack: e.stack, message, callback_data, userId: message.chat.id
-                })
-                await bot.editMessageText("⚠️ Дико извиняемся, произошла какая то ошибка." + "\n🔩 Не переживайте, я уже вызвал фиксиков! Постараемся всё починить как можно скорее!", {
-                    chat_id: message.chat.id, message_id: message.message_id, reply_markup: {
-                        inline_keyboard: [[{text: "Попробовать снова", callback_data}]]
-                    }
-                })
-            }
-        } catch (e) {
-            console.error(e)
-            log.error("УЛЬТРА МЕГА ВАЖНО! pm2 check! ОШИБКА ПРИ ПОПЫТКЕ ОБРАБОТАТЬ ОШИБКУ! errorHandler",
-                {userId: message.chat.id})
-        }
-    }
-
-    async validateErrorHandler(bot, call) {
-        try {
-            log.error(`User ${call.message.chat.id} used an incorrect callback: ${call.data}. Данные об ошибке в метаданных. Ему сказано шоб /start писал!`, {
-                call
-            })
-            await bot.editMessageText("⚠️ Произошла ошибка!\n" +
-                "Вероятно вы использовали кнопки которые вам прислал бот до обновления.\n" +
-                "Попробуйте прописать /start и пройти авторизацию повторно.\n" +
-                "Если это не помогает - свяжитесь с нами через https://t.me/lena_nebot", {
-                chat_id: call.message.chat.id, message_id: call.message.message_id
-            })
-        } catch (e) {
-            console.error(e)
-            log.error("УЛЬТРА МЕГА ВАЖНО! pm2 check! ОШИБКА ПРИ ПОПЫТКЕ ОБРАБОТАТЬ ОШИБКУ! validateErrorHandler",
-                {call})
-        }
     }
 }
 

@@ -1,24 +1,24 @@
-import teacherService from "../services/teacherService.js";
+import teacherProfileService from "../services/teacherProfileService.js";
 import log from "../logging/logging.js";
 
-class TeacherController {
+class TeacherProfileController {
     async findProfiles(bot, message, surname) {
         try {
-            const teachers = await teacherService.findByName(surname)
+            const teachers = await teacherProfileService.findByName(surname)
             if (!teachers.length) {
                 await bot.editMessageText(`⚠️ К сожалению по запросу: <b>${surname}</b> ничего не найдено.\n` + `✍️ Проверьте корректность ввода.\n` + `Если всё в порядке и я не могу найти - значит сори 🙃`, {
-                    message_id: message.message_id, chat_id: message.chat.id, parse_mode: 'html'
+                    message_id: message.message_id, chat_id: message.chat.id, parse_mode: 'HTML'
                 })
             } else {
 
                 let markup = {
                     inline_keyboard: teachers.map((teacher) => [{
-                        text: teacher.name, callback_data: `teacher|${teacher._id}`
+                        text: teacher.name, callback_data: `profile|${teacher._id}`
                     }])
                 }
 
                 await bot.editMessageText(`✅По вашему запросу: <b>${surname}</b> найдено ${teachers.length} профилей!🙉`, {
-                    message_id: message.message_id, chat_id: message.chat.id, parse_mode: 'html', reply_markup: markup
+                    message_id: message.message_id, chat_id: message.chat.id, parse_mode: 'HTML', reply_markup: markup
                 })
 
             }
@@ -35,7 +35,7 @@ class TeacherController {
 
     async getProfile(bot, call, _id) {
         try {
-            const teacher = await teacherService.getById(_id)
+            const teacher = await teacherProfileService.getById(_id)
 
             await bot.sendDocument(call.message.chat.id, teacher.href, {
                 caption: `👩‍🚀: ${teacher.name}\n🌏: ${teacher.faculty}\n🚀: ${teacher.department}`
@@ -55,4 +55,4 @@ class TeacherController {
     }
 }
 
-export default new TeacherController()
+export default new TeacherProfileController()

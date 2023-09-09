@@ -9,7 +9,8 @@ import fs from "fs/promises"
 import UserActivityService from "../services/userActivityService.js";
 import userActivityService from "../services/userActivityService.js";
 import userRegistrationStatService from "../services/userRegistrationStatService.js";
-import teacherService from "../services/teacherService.js";
+import teacherService from "../services/teacherProfileService.js";
+import departmentService from "../services/departmentService.js";
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -174,13 +175,47 @@ export default function setupAdminCommandHandler(bot) {
                     const teachers = response.data
                     await teacherService.updateAll(teachers)
 
-                    await bot.sendMessage(msg.chat.id, "Teacher list successfully updated! Congratulations!\n" +
+                    await bot.sendMessage(msg.chat.id, "TeacherProfile list successfully updated! Congratulations!\n" +
                         `Было: ${old_teachers.length} || Стало: ${teachers.length} || Разница: ${teachers.length - old_teachers.length}`)
                 })
         }catch (e) {
             await bot.sendMessage(msg.chat.id, "Error while teacher updating!")
             log.error("Ошибка при обновлении тичеров!")
             console.error(e)
+        }
+    })
+
+    bot.onText(/^\/update_departments$/, async (msg) => {
+        if (!await userService.isAdmin(msg.from.id)) {
+            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+        }
+        await bot.sendMessage(msg.chat.id, 'Начинаю парсить departments, ИУ!')
+        try {
+            const old_departments = await departmentService.getAll()
+
+            await axios.get("https://api.tolyan.me/teacherSchedule/get_departments_list")
+                .then(async (response) => {
+                    if (response.status) {
+                        const departments = response.data
+
+                        await departmentService.updateAll(departments)
+
+                        await bot.sendMessage(msg.chat.id, "departments list successfully updated! Congratulations!\n" +
+                            `Было: ${old_departments.length} || Стало: ${departments.length} || Разница: ${departments.length - old_departments.length}`)
+                    } else {
+                        await bot.sendMessage(msg.chat.id, `Received ${response.status} status code.`)
+                    }
+                })
+                .catch((e) => {
+                    if (e.response) {
+                        bot.sendMessage(msg.chat.id, `Получен ${e.response.status} status code. Данные в бд не троагал.`)
+                    } else {
+                        log.error('Ошибка при парсинге departments')
+                    }
+                })
+        } catch (e) {
+            log.error(`ADMIN ERROR WHILE FACULTY LIST UPDATING`, {stack: e.stack})
+            await bot.sendMessage(msg.chat.id, 'Произошла ошибка при парсинге факультетов')
         }
     })
 
@@ -551,6 +586,5 @@ export default function setupAdminCommandHandler(bot) {
             '/get_group \n'
         await bot.sendMessage(msg.chat.id, msg_text)
     });
-
 
 }

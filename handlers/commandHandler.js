@@ -1,16 +1,23 @@
 import ScheduleController from "../controllers/ScheduleController.js";
 import log from "../logging/logging.js";
-import TeacherController from "../controllers/TeacherController.js";
+import TeacherController from "../controllers/TeacherProfileController.js";
 import config from "../config.js";
 import {commandAntiSpamMiddleware} from "../middlewares/bot/commandAntiSpamMiddleware.js";
+import {startCommandController} from "../controllers/commands/startCommandController.js";
+
+
+
 
 // done
 export default function setupCommandHandlers(bot) {
     bot.onText(/^\/start/i, async (msg) => {
-        await commandAntiSpamMiddleware(bot, msg, async () => {
-            await ScheduleController.startCommand(bot, msg)
-                .catch(e => log.error("ВАЖНО! ОШИБКА В СТАРТ ХЕНДЕРЕ!", {stack: e.stack, msg, userId: msg.chat.id}))
-        })
+        try {
+            await commandAntiSpamMiddleware(bot, msg, async () => {
+                await startCommandController(bot, msg)
+            })
+        } catch (e) {
+            log.error("ВАЖНО! ОШИБКА В СТАРТ ХЕНДЕРЕ!", {stack: e.stack, msg, userId: msg.chat.id})
+        }
     })
 
 
@@ -102,9 +109,12 @@ export default function setupCommandHandlers(bot) {
 
     bot.on('message', async (msg) => {
         if (msg.chat.id !== -1001787183783) {
-            if(msg.chat.type !== 'private'){
-                log.silly(`User ${msg.chat.id} || ${msg.from.id} написал в чат: ${msg.text}`, {msg, userId: msg.chat.id})
-            }else {
+            if (msg.chat.type !== 'private') {
+                log.silly(`User ${msg.chat.id} || ${msg.from.id} написал в чат: ${msg.text}`, {
+                    msg,
+                    userId: msg.chat.id
+                })
+            } else {
                 log.silly(`User ${msg.chat.id} написал в чат: ${msg.text}`, {msg, userId: msg.chat.id})
             }
         }
