@@ -4,4 +4,4 @@
 temp
 logs.log
 error_logs.log
-group_stat.json
+temp/group_stat.json
