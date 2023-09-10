@@ -10,63 +10,59 @@ import {unexpectedCommandController} from "../exceptions/bot/unexpectedCommandCo
 
 export let schedule_cache = {}
 
-function getRowMarkup(data, refTo) {
-    return {
-        inline_keyboard: data.map((item) => [{
-            text: item.name, callback_data: `${refTo}|${item.id}|0`
-        }])
-    }
-}
-
-function configureMenuData(data, page) {
-    const row_per_page = 10
-    const page_count = Math.floor(data.length / row_per_page)
-    if (page > page_count) {
-        page = 0
-    }
-    if (page < 0) {
-        page = page_count
-    }
-    const start_index = row_per_page * page;
-
-    return {
-        data: data.slice(start_index, start_index + row_per_page), page, page_count
-    }
-}
-
-function formatElapsedTime(timestamp) {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - timestamp) / 1000);
-
-    if (diffInSeconds < 60) {
-        return `✅ ${diffInSeconds} сек`;
-    } else if (diffInSeconds < 3600) {
-        const minutes = Math.floor(diffInSeconds / 60);
-        return `✅ ${minutes} мин`;
-    } else if (diffInSeconds < 86400) {
-        const hours = Math.floor(diffInSeconds / 3600);
-        return `👎 ${hours} ч`;
-    } else {
-        const days = Math.floor(diffInSeconds / 86400);
-        return `👎 ${days} дн`;
-    }
-}
-
-function formatTimestamp(timestamp) {
-    const date = new Date(timestamp);
-
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Месяцы в JavaScript нумеруются с 0 до 11, поэтому добавляем 1
-    const year = String(date.getFullYear()).slice(2); // Получаем последние две цифры года
-
-    return `${hours}:${minutes}:${seconds} | ${day}.${month}.${year}`;
-}
-
 class ScheduleController {
+    getRowMarkup(data, refTo) {
+        return {
+            inline_keyboard: data.map((item) => [{
+                text: item.name, callback_data: `${refTo}|${item.id}|0`
+            }])
+        }
+    }
+
+    configureMenuData(data, page) {
+        const row_per_page = 10
+        const page_count = Math.floor(data.length / row_per_page)
+        if (page > page_count) {
+            page = 0
+        }
+        if (page < 0) {
+            page = page_count
+        }
+        const start_index = row_per_page * page;
+
+        return {
+            data: data.slice(start_index, start_index + row_per_page), page, page_count
+        }
+    }
+
+    formatElapsedTime(timestamp) {
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - timestamp) / 1000);
+
+        if (diffInSeconds < 60) {
+            return `✅ ${diffInSeconds} сек`;
+        } else if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            return `✅ ${minutes} мин`;
+        } else if (diffInSeconds < 86400) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            return `👎 ${hours} ч`;
+        } else {
+            const days = Math.floor(diffInSeconds / 86400);
+            return `👎 ${days} дн`;
+        }
+    }
+
+    formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
     async getCurrentDayNumber() {
         const currentDate = new Date();
         if (currentDate.getHours() >= 18) {
@@ -79,9 +75,9 @@ class ScheduleController {
         try {
             const faculties = await facultyService.getAll()
 
-            const {data, page, page_count} = configureMenuData(faculties, prePage)
+            const {data, page, page_count} = this.configureMenuData(faculties, prePage)
 
-            let markup = getRowMarkup(data, 'program')
+            let markup = this.getRowMarkup(data, 'program')
 
             if (page_count > 0) {
                 markup.inline_keyboard.push([{text: '⬅️', callback_data: `faculty|${page - 1}`}, {
@@ -89,7 +85,7 @@ class ScheduleController {
                 }])
             }
 
-            await bot.editMessageText(`📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
+            await bot.editMessageText(`📌 Выбор факультета. \n📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
                 chat_id: message.chat.id, message_id: message.message_id, reply_markup: markup
             })
 
@@ -104,9 +100,9 @@ class ScheduleController {
             const programs = await programService.getByFacultyId(facultyId)
             const faculty = await facultyService.getById(facultyId)
 
-            const {data, page, page_count} = configureMenuData(programs, prePage)
+            const {data, page, page_count} = this.configureMenuData(programs, prePage)
 
-            let markup = getRowMarkup(data, `group|${facultyId}`)
+            let markup = this.getRowMarkup(data, `group|${facultyId}`)
 
             if (page_count > 0) {
                 markup.inline_keyboard.push([{text: '⬅️', callback_data: `program|${facultyId}|${page - 1}`}, {
@@ -116,7 +112,7 @@ class ScheduleController {
 
             markup.inline_keyboard.push([{text: 'Вернуться назад', callback_data: `faculty|0`}])
 
-            await bot.editMessageText(`🏛️ Факультет: ${faculty.name}\n📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
+            await bot.editMessageText(`📌 Выбор образовательной программы. \n🏛️ Факультет: ${faculty.name}\n📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
                 chat_id: message.chat.id, message_id: message.message_id, reply_markup: markup
             })
         } catch (e) {
@@ -129,7 +125,7 @@ class ScheduleController {
             const groups = await groupService.getByProgramId(programId)
             const program = await programService.getById(programId)
 
-            const {data, page, page_count} = configureMenuData(groups, prePage)
+            const {data, page, page_count} = this.configureMenuData(groups, prePage)
 
             const day = await this.getCurrentDayNumber()
 
@@ -149,7 +145,7 @@ class ScheduleController {
                 text: 'Вернуться назад', callback_data: `program|${facultyId}|0`
             }])
 
-            await bot.editMessageText(`📘 Образовательная программа: ${program.name}\n📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
+            await bot.editMessageText(`📌 Выбор группы. \n📘 Образовательная программа: ${program.name}\n📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
                 chat_id: message.chat.id, message_id: message.message_id, reply_markup: markup
             })
         } catch (e) {
@@ -171,8 +167,8 @@ class ScheduleController {
             dayNumber = 5
         }
 
-        const scheduleLifeTime = formatElapsedTime(timestamp)
-        const scheduleDateTime = formatTimestamp(timestamp)
+        const scheduleLifeTime = this.formatElapsedTime(timestamp)
+        const scheduleDateTime = this.formatTimestamp(timestamp)
 
         const schedule_day = data[dayNumber]['day']
         const schedule = data[dayNumber]['subjects']
@@ -185,7 +181,7 @@ class ScheduleController {
             schedule_text += '⌚️ ' + item.time + '\n'
             schedule_text += '📚 ' + item.subject + '\n'
         }
-        let end_text = `🕰 <i><b>Расписание загружено: ${scheduleDateTime} || ${scheduleLifeTime} назад.</b></i>\n` +
+        let end_text = `🕰 <i><b>Расписание загружено: 👇\n${scheduleLifeTime} назад || ${scheduleDateTime}   👈</b></i>\n` +
             '📖 Помощь: /help\n' +
             '🗞 Наш канал: https://t.me/ksutolyan \n' +
             '<tg-spoiler>Угостить компотом: /donate </tg-spoiler>'
@@ -281,7 +277,8 @@ class ScheduleController {
                 firstName: call.message.chat.first_name,
                 lastName: call.message.chat.last_name,
                 username: call.message.chat.username,
-                group: groupId
+                group: groupId,
+                scheduleType:"student"
             }).catch((e) => log.error("Ошибка при обновлении данных о пользователе при получении расписания. ", {
                 stack: e.stack, call, userId: call.message.chat.id
             }))

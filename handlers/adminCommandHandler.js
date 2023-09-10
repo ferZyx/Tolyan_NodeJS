@@ -9,8 +9,9 @@ import fs from "fs/promises"
 import UserActivityService from "../services/userActivityService.js";
 import userActivityService from "../services/userActivityService.js";
 import userRegistrationStatService from "../services/userRegistrationStatService.js";
-import teacherService from "../services/teacherProfileService.js";
 import departmentService from "../services/departmentService.js";
+import teacherService from "../services/teacherService.js";
+import teacherProfileService from "../services/teacherProfileService.js";
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -161,7 +162,7 @@ export default function setupAdminCommandHandler(bot) {
         }
     })
 
-    bot.onText(/^\/update_teachers$/, async (msg) => {
+    bot.onText(/^\/update_profiles$/, async (msg) => {
         if (!await userService.isAdmin(msg.from.id)) {
             return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
         }
@@ -173,7 +174,7 @@ export default function setupAdminCommandHandler(bot) {
             await axios.get(`https://api.tolyan.me/teacher/get_all_teachers`, {timeout: 60 * 1000})
                 .then(async(response) => {
                     const teachers = response.data
-                    await teacherService.updateAll(teachers)
+                    await teacherProfileService.updateAll(teachers)
 
                     await bot.sendMessage(msg.chat.id, "TeacherProfile list successfully updated! Congratulations!\n" +
                         `Было: ${old_teachers.length} || Стало: ${teachers.length} || Разница: ${teachers.length - old_teachers.length}`)
@@ -216,6 +217,62 @@ export default function setupAdminCommandHandler(bot) {
         } catch (e) {
             log.error(`ADMIN ERROR WHILE FACULTY LIST UPDATING`, {stack: e.stack})
             await bot.sendMessage(msg.chat.id, 'Произошла ошибка при парсинге факультетов')
+        }
+    })
+
+    bot.onText(/^\/update_teachers$/, async (msg) => {
+        if (!await userService.isAdmin(msg.from.id)) {
+            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+        }
+        await bot.sendMessage(msg.chat.id, "Teachers list updating is starting!")
+        const startTime = Date.now()
+
+        let teachers = []
+        let isErrorless = true
+        const old_teachers = await teacherService.getAll()
+        await departmentService.getAll()
+            .then(async (departments) => {
+                for (const department of departments) {
+                    const teachers_list = await get_teachers_list(department.id)
+                    for (const teacher of teachers_list) {
+                        teachers.push({
+                            name: teacher['name'],
+                            id: teacher['id'],
+                            href: teacher['href'],
+                            department: teacher['departmentId'],
+                        })
+                    }
+
+                    const stage = Math.floor(departments.indexOf(department) / departments.length * 100)
+                    await bot.sendMessage(msg.chat.id, `${department.name} || It is ${stage}%.`)
+                    await sleep(3000)
+                }
+            })
+            .catch((e) => {
+                isErrorless = false
+                log.error("Ошибка при получении списка departments при обновлении teachers_list.", {stack: e.stack})
+            })
+        if (isErrorless) {
+            await teacherService.updateAll(teachers)
+            const endTime = Date.now()
+            await bot.sendMessage(msg.chat.id, `Teachers updating finished successfully. Action time: ` +
+                `${Math.floor((endTime - startTime) / 1000)} сек.` +
+                `Было: ${old_teachers.length} || Стало: ${teachers.length} || Разница: ${teachers.length - old_teachers.length}`)
+
+        } else {
+            await bot.sendMessage(msg.chat.id, "Error while teacher updating( check logs!")
+        }
+
+        async function get_teachers_list(departmentId) {
+            try {
+                const response = await axios.get(`https://api.tolyan.me/teacherSchedule/get_teachers_list/${departmentId}`)
+                return response.data
+            } catch (e) {
+                log.error("Произошла ошибка при обновлении department. Через 5 минут попробую продолжить")
+                await sleep(5 * 60 * 1000)
+                return get_teachers_list(departmentId)
+            }
+
         }
     })
 

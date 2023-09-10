@@ -4,6 +4,7 @@ import TeacherController from "../controllers/TeacherProfileController.js";
 import config from "../config.js";
 import {commandAntiSpamMiddleware} from "../middlewares/bot/commandAntiSpamMiddleware.js";
 import {startCommandController} from "../controllers/commands/startCommandController.js";
+import {scheduleCommandController} from "../controllers/commands/scheduleCommandController.js";
 
 
 
@@ -16,30 +17,30 @@ export default function setupCommandHandlers(bot) {
                 await startCommandController(bot, msg)
             })
         } catch (e) {
-            log.error("ВАЖНО! ОШИБКА В СТАРТ ХЕНДЕРЕ!", {stack: e.stack, msg, userId: msg.chat.id})
+            log.error("ВАЖНО! ОШИБКА В СТАРТ Хендлере!", {stack: e.stack, msg, userId: msg.chat.id})
         }
     })
 
 
     bot.onText(/^\/schedule/i, async (msg) => {
-        await commandAntiSpamMiddleware(bot, msg, async () => {
-            await ScheduleController.getSchedule(bot, msg)
-                .catch(e => log.error("ВАЖНО! ОШИБКА В ШЕДУЛ КОМАНД ХЕДЛЕРЕ", {
-                    stack: e.stack,
-                    msg,
-                    userId: msg.chat.id
-                }))
-        })
+        try {
+            await commandAntiSpamMiddleware(bot, msg, async () => {
+                await scheduleCommandController(bot, msg)
+            })
+        }catch (e) {
+            log.error("ВАЖНО! ОШИБКА В schedule Хендлере!", {stack: e.stack, msg, userId: msg.chat.id})
+
+        }
     })
     bot.onText(/^расписание/i, async (msg) => {
-        await commandAntiSpamMiddleware(bot, msg, async () => {
-            await ScheduleController.getSchedule(bot, msg)
-                .catch(e => log.error("ВАЖНО! ОШИБКА В РАСПИСАНЕ КОМАНД ХЕДЛЕРЕ", {
-                    stack: e.stack,
-                    msg,
-                    userId: msg.chat.id
-                }))
-        })
+        try {
+            await commandAntiSpamMiddleware(bot, msg, async () => {
+                await scheduleCommandController(bot, msg)
+            })
+        }catch (e) {
+            log.error("ВАЖНО! ОШИБКА В schedule Хендлере!", {stack: e.stack, msg, userId: msg.chat.id})
+
+        }
     });
 
     bot.onText(/^профиль(\s(\S{2,}))?$/i, async (msg, match) => {

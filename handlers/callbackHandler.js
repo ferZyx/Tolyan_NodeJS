@@ -52,15 +52,7 @@ export default function setupCallbackHandlers(bot) {
 
             if (call.data.includes("schedule")) {
                 if (call.data.split("|").length < 2) {
-                    try {
-                        await bot.sendMessage(call.message.chat.id, "❗️ Секундочку, я эволюционирую.")
-                        return await ScheduleController.getSchedule(bot, call.message)
-                    } catch (e) {
-                        console.error(e)
-                        log.error("ВАЖНО! ОШИБКА В ШЕДУЛ КОЛБЕК ХЕНДЕРЕ ПРИ ПОПЫТКЕ ЭВОЛЮЦИОНИРОВАТЬ!", {
-                            userId: call.message.chat.id, stack: e.stack
-                        })
-                    }
+                    return await queryValidationErrorController(bot, call)
                 }
 
                 const [, , groupId,] = call.data.split("|")
@@ -102,6 +94,37 @@ export default function setupCallbackHandlers(bot) {
                     return await unexpectedCommandController(e, bot, call.message, call.data)
                 }
             }
+
+            if (call.data.includes("teacher")){
+                try {
+                    const [,departmentId, page] = call.data.split('|');
+                    if (isNaN(page)) {
+                        return await queryValidationErrorController(bot, call)
+                    }
+                    await TeacherScheduleController.getTeacherMenu(bot, call.message,departmentId, +page)
+                } catch (e) {
+                    return await unexpectedCommandController(e, bot, call.message, call.data)
+                }
+            }
+
+            if (call.data.includes("TeacherSchedule")) {
+                const [, teacherId,] = call.data.split("|")
+                if (!teacherId) {
+                    return await queryValidationErrorController(bot, call)
+                }
+                if (call.data.includes("refresh")) {
+                    delete schedule_cache[teacherId]
+                    call.data = call.data.replace('refresh', '')
+                }
+                try {
+                    await TeacherScheduleController.getScheduleMenu(bot, call)
+                } catch (e) {
+                    console.error(e)
+                    log.error("ОШИБКА В КОЛБЕК ХЕНДЕЛЕРЕ teacherSchedule", {userId: call.message.chat.id, stack: e.stack})
+                }
+
+            }
+
         })
 
     })

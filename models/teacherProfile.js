@@ -7,5 +7,5 @@ const teacherProfileSchema = new mongoose.Schema({
     href: {type: String},
 }, {timestamps:true});
 
-export const TeacherProfile = mongoose.model('TeacherProfile', teacherProfileSchema);
+export const TeacherProfile = mongoose.model('Teacher-Profile', teacherProfileSchema);
 

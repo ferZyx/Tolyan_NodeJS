@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema(
         lastName: {type: String},
         username: {type: String},
         group: {type: Number, ref: 'Group', field:"id"},
+        teacher: {type: Number, ref: 'Teacher', field:"id"},
+        scheduleType:{type:String},
         isAdmin:{type:Boolean}
     },
     {
