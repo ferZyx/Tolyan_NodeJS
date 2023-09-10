@@ -511,7 +511,7 @@ export default function setupAdminCommandHandler(bot) {
 
             let msg_text = `Group ${groupId} users: \n`
             for (const user of users){
-                msg_text += `${user.userId}\n`
+                msg_text += `/get_user${user.userId}\n`
             }
 
             await bot.sendMessage(msg.chat.id, msg_text)
