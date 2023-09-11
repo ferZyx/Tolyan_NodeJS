@@ -183,7 +183,7 @@ class ScheduleController {
         }
         let end_text = `🔥 МЕНЯ ОБНОВИЛИ! 🔥/news\n🕰 <i><b>Расписание загружено: 👇\n${scheduleLifeTime} назад || ${scheduleDateTime}   👈</b></i>\n` +
             '📖 Помощь: /help\n' +
-            '🗞 Наш канал: https://t.me/ksutolyan \n' +
+            '🗞 Наш канал: @ksutolyan \n' +
             '<tg-spoiler>Угостить компотом: /donate </tg-spoiler>'
         let msg_text = `${preMessage}👥 Группа: ${group.name} | Курс: ${group.age}\n📆 Расписание на <b>${schedule_day}</b>:\n` + schedule_text + end_text
 
