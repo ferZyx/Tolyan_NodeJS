@@ -662,6 +662,23 @@ export default function setupAdminCommandHandler(bot) {
 
     });
 
+    bot.onText(/^\/get_callback/i, async(msg) =>{
+        try{
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+            if (msg.text.split(" ") <2){
+                return await bot.sendMessage(msg.chat.id, "После команды должно быть значение колбека")
+            }
+            const callback_data = msg.text.replace('/get_callback ', '')
+            await bot.sendMessage(msg.chat.id, "here is your callback: " + callback_data, {
+                reply_markup:{inline_keyboard:[[{text:callback_data, callback_data}]]}
+            })
+        }catch (e) {
+            log.error({stack: e.stack})
+        }
+    })
+
     bot.onText(/^\/ahelp/i, async (msg) => {
         const msg_text = '/update_faculties \n' +
             '/update_programs \n' +
