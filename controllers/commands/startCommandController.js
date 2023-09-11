@@ -15,8 +15,4 @@ export async function startCommandController(bot, msg) {
     }finally {
         await userService.registerUser(msg).catch(e => log.error("Ошибка при попытке зарегистрировать пользователя: " + e.message, {stack:e.stack, userId: msg.chat.id}))
     }
-
-
-
-
 }

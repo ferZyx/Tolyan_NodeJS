@@ -470,25 +470,27 @@ export default function setupAdminCommandHandler(bot) {
                 msg_text += `Название: ${user.userTitle}\n\n`
             }else{
                 msg_text += `Имя: ${user.firstName}\n` +
-                    `Фамилия: ${user.lastName}\n\n`
+                    `Фамилия: ${user.lastName}\n`
             }
+            msg_text += `Тип расписания: ${user.scheduleType}\n`
 
             const group = await groupService.getById(user.group)
             if (group) {
                 const group_users = await userService.getUsersCountByGroupId(group.id)
-                msg_text += `Группа: ${group.name} | id: ${group.id}\n` +
+                msg_text += `\nГруппа: ${group.name} | id: ${group.id}\n` +
                     `В группе: ${group.studentCount} | Пользуются ботом: ${group_users}\n`
                 const program = await programService.getById(group.program)
                 const faculty = await facultyService.getById(program.faculty)
 
                 msg_text += `Программа: ${program.name} || id: ${program.id}\n`
                 msg_text += `Факультет: ${faculty.name} || id: ${faculty.id}\n`
-                msg_text += `Тип расписания: ${user.scheduleType}\n`
-                msg_text += `teacherId: ${user.teacher}\n`
-                msg_text += `last_activity: ${ScheduleController.formatElapsedTime((new Date(user.updatedAt).getTime()))} назад\n`
-
-
             }
+            const teacher = await teacherService.getById(user.teacher)
+            if (teacher) {
+                msg_text += `\nПрепод: ${teacher.name} | id: ${teacher.id}\n`
+            }
+            msg_text += `last_activity: ${ScheduleController.formatElapsedTime((new Date(user.updatedAt).getTime()))} назад\n`
+
 
             await bot.sendMessage(msg.chat.id, msg_text)
         } catch (e) {
