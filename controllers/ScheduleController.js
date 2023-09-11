@@ -181,7 +181,7 @@ class ScheduleController {
             schedule_text += '⌚️ ' + item.time + '\n'
             schedule_text += '📚 ' + item.subject + '\n'
         }
-        let end_text = `🕰 <i><b>Расписание загружено: 👇\n${scheduleLifeTime} назад || ${scheduleDateTime}   👈</b></i>\n` +
+        let end_text = `🔥 МЕНЯ ОБНОВИЛИ! 🔥/news\n🕰 <i><b>Расписание загружено: 👇\n${scheduleLifeTime} назад || ${scheduleDateTime}   👈</b></i>\n` +
             '📖 Помощь: /help\n' +
             '🗞 Наш канал: https://t.me/ksutolyan \n' +
             '<tg-spoiler>Угостить компотом: /donate </tg-spoiler>'
