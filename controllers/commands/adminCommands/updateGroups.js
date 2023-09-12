@@ -5,7 +5,7 @@ import axios from "axios";
 import {sleep} from "../../../handlers/adminCommandHandler.js";
 
 export async function updateGroupsCommandController(hard = false){
-    async function get_group_list(programId) {
+    async function getGroupList(programId) {
         try {
             const response = await axios.get(`https://api.tolyan.me/schedule/get_group_list_by_programId/${programId}`)
             if (response.status === 200){
@@ -14,13 +14,13 @@ export async function updateGroupsCommandController(hard = false){
         } catch (e) {
             log.error("Ошибка при получении списка групп. Жду 5 минут и пробую снова. programId: " + programId + "Ошибка: " + e.message, {stack: e.stack})
             await sleep(5 * 60 * 1000)
-            return get_group_list(programId)
+            return await getGroupList(programId)
         }
     }
 
 
     try {
-        log.warn("Начинаю обновление списка групп")
+        log.warn("Начинаю обновление списка групп. hard = " + hard)
 
         const startTime = Date.now()
 
@@ -32,7 +32,7 @@ export async function updateGroupsCommandController(hard = false){
         for (const program of programs) {
             await sleep(3000)
 
-            const group_list = await get_group_list(program.id)
+            const group_list = await getGroupList(program.id)
 
             for (const group of group_list) {
                 groups.push({
@@ -54,7 +54,7 @@ export async function updateGroupsCommandController(hard = false){
         const endTime = Date.now()
 
         if (groups.length > old_groups.length || hard){
-            // await groupService.updateAll(groups)
+            await groupService.updateAll(groups)
             log.warn(`Обновление групп прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +
                 `Было: ${old_groups.length} || Стало: ${groups.length} || Разница: ${groups.length - old_groups.length}`)

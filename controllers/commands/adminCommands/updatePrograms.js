@@ -20,7 +20,7 @@ export async function updateProgramsCommandController(hard = false) {
     }
 
     try {
-        log.warn("Начинаю обновление списка программ")
+        log.warn("Начинаю обновление списка программ. hard = " + hard)
 
         const startTime = Date.now()
 

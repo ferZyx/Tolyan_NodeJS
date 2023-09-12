@@ -5,6 +5,7 @@ import config from "../config.js";
 import {commandAntiSpamMiddleware} from "../middlewares/bot/commandAntiSpamMiddleware.js";
 import {startCommandController} from "../controllers/commands/startCommandController.js";
 import {scheduleCommandController} from "../controllers/commands/scheduleCommandController.js";
+import blackListService from "../services/blackListService.js";
 
 
 
@@ -110,7 +111,8 @@ export default function setupCommandHandlers(bot) {
     })
 
     bot.on('message', async (msg) => {
-        if (msg.chat.id !== -1001787183783) {
+        const isBlackListed = await blackListService.isBlackListed(msg.chat.id)
+        if (!isBlackListed) {
             if (msg.chat.type !== 'private') {
                 log.silly(`User ${msg.chat.id} || ${msg.from.id} написал в чат: ${msg.text}`, {
                     msg,

@@ -1,4 +1,3 @@
-import axios from "axios";
 import facultyService from "../services/facultyService.js";
 import log from "../logging/logging.js";
 import programService from "../services/programService.js";
@@ -9,13 +8,15 @@ import fs from "fs/promises"
 import UserActivityService from "../services/userActivityService.js";
 import userActivityService from "../services/userActivityService.js";
 import userRegistrationStatService from "../services/userRegistrationStatService.js";
-import departmentService from "../services/departmentService.js";
 import teacherService from "../services/teacherService.js";
-import teacherProfileService from "../services/teacherProfileService.js";
 import {isAdminMiddleware} from "../middlewares/bot/isAdminMiddleware.js";
 import {updateFacultiesCommandController} from "../controllers/commands/adminCommands/updateFaculties.js";
 import {updateProgramsCommandController} from "../controllers/commands/adminCommands/updatePrograms.js";
 import {updateGroupsCommandController} from "../controllers/commands/adminCommands/updateGroups.js";
+import {updateProfilesCommandController} from "../controllers/commands/adminCommands/updateProfiles.js";
+import blackListService from "../services/blackListService.js";
+import {updateDepartmentsCommandController} from "../controllers/commands/adminCommands/updateDepartments.js";
+import {updateTeachersCommandController} from "../controllers/commands/adminCommands/updateTeachers.js";
 
 export function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -23,136 +24,65 @@ export function sleep(ms) {
 
 
 export default function setupAdminCommandHandler(bot) {
-    bot.onText(/^\/update_faculties$/, async (msg) => {
+    bot.onText(/^\/updateFaculties/, async (msg) => {
         await isAdminMiddleware(bot, msg, async() => {
-            await updateFacultiesCommandController()
-        })
-    })
-
-    bot.onText(/^\/update_programs$/, async (msg) => {
-        await isAdminMiddleware(bot, msg, async () => {
-            await updateProgramsCommandController()
-        })
-    })
-
-    bot.onText(/^\/update_groups$/, async (msg) => {
-        await isAdminMiddleware(bot, msg, async() => {
-            await updateGroupsCommandController()
-        })
-    })
-
-    bot.onText(/^\/update_profiles$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)) {
-            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
-        }
-        try{
-            const old_teachers = await teacherService.getAll()
-
-            await bot.sendMessage(msg.chat.id, 'Начинаю получать преподов!')
-
-            await axios.get(`https://api.tolyan.me/teacher/get_all_teachers`, {timeout: 60 * 1000})
-                .then(async(response) => {
-                    const teachers = response.data
-                    await teacherProfileService.updateAll(teachers)
-
-                    await bot.sendMessage(msg.chat.id, "TeacherProfile list successfully updated! Congratulations!\n" +
-                        `Было: ${old_teachers.length} || Стало: ${teachers.length} || Разница: ${teachers.length - old_teachers.length}`)
-                })
-        }catch (e) {
-            await bot.sendMessage(msg.chat.id, "Error while teacher updating!")
-            log.error("Ошибка при обновлении тичеров!")
-            console.error(e)
-        }
-    })
-
-    bot.onText(/^\/update_departments$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)) {
-            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
-        }
-        await bot.sendMessage(msg.chat.id, 'Начинаю парсить departments, ИУ!')
-        try {
-            const old_departments = await departmentService.getAll()
-
-            await axios.get("https://api.tolyan.me/teacherSchedule/get_departments_list")
-                .then(async (response) => {
-                    if (response.status) {
-                        const departments = response.data
-
-                        await departmentService.updateAll(departments)
-
-                        await bot.sendMessage(msg.chat.id, "departments list successfully updated! Congratulations!\n" +
-                            `Было: ${old_departments.length} || Стало: ${departments.length} || Разница: ${departments.length - old_departments.length}`)
-                    } else {
-                        await bot.sendMessage(msg.chat.id, `Received ${response.status} status code.`)
-                    }
-                })
-                .catch((e) => {
-                    if (e.response) {
-                        bot.sendMessage(msg.chat.id, `Получен ${e.response.status} status code. Данные в бд не троагал.`)
-                    } else {
-                        log.error('Ошибка при парсинге departments')
-                    }
-                })
-        } catch (e) {
-            log.error(`ADMIN ERROR WHILE FACULTY LIST UPDATING`, {stack: e.stack})
-            await bot.sendMessage(msg.chat.id, 'Произошла ошибка при парсинге факультетов')
-        }
-    })
-
-    bot.onText(/^\/update_teachers$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)) {
-            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
-        }
-        await bot.sendMessage(msg.chat.id, "Teachers list updating is starting!")
-        const startTime = Date.now()
-
-        let teachers = []
-        let isErrorless = true
-        const old_teachers = await teacherService.getAll()
-        await departmentService.getAll()
-            .then(async (departments) => {
-                for (const department of departments) {
-                    const teachers_list = await get_teachers_list(department.id)
-                    for (const teacher of teachers_list) {
-                        teachers.push({
-                            name: teacher['name'],
-                            id: teacher['id'],
-                            href: teacher['href'],
-                            department: teacher['departmentId'],
-                        })
-                    }
-
-                    const stage = Math.floor(departments.indexOf(department) / departments.length * 100)
-                    await bot.sendMessage(msg.chat.id, `${department.name} || It is ${stage}%.`)
-                    await sleep(3000)
-                }
-            })
-            .catch((e) => {
-                isErrorless = false
-                log.error("Ошибка при получении списка departments при обновлении teachers_list.", {stack: e.stack})
-            })
-        if (isErrorless) {
-            await teacherService.updateAll(teachers)
-            const endTime = Date.now()
-            await bot.sendMessage(msg.chat.id, `Teachers updating finished successfully. Action time: ` +
-                `${Math.floor((endTime - startTime) / 1000)} сек.` +
-                `Было: ${old_teachers.length} || Стало: ${teachers.length} || Разница: ${teachers.length - old_teachers.length}`)
-
-        } else {
-            await bot.sendMessage(msg.chat.id, "Error while teacher updating( check logs!")
-        }
-
-        async function get_teachers_list(departmentId) {
-            try {
-                const response = await axios.get(`https://api.tolyan.me/teacherSchedule/get_teachers_list/${departmentId}`)
-                return response.data
-            } catch (e) {
-                log.error("Произошла ошибка при обновлении department. Через 5 минут попробую продолжить")
-                await sleep(5 * 60 * 1000)
-                return get_teachers_list(departmentId)
+            let hard = false
+            if(msg.text.includes("hard")){
+                hard = true
             }
+            await updateFacultiesCommandController(hard)
+        })
+    })
 
-        }
+    bot.onText(/^\/updatePrograms/, async (msg) => {
+        await isAdminMiddleware(bot, msg, async () => {
+            let hard = false
+            if(msg.text.includes("hard")){
+                hard = true
+            }
+            await updateProgramsCommandController(hard)
+        })
+    })
+
+    bot.onText(/^\/updateGroups/, async (msg) => {
+        await isAdminMiddleware(bot, msg, async() => {
+            let hard = false
+            if(msg.text.includes("hard")){
+                hard = true
+            }
+            await updateGroupsCommandController(hard)
+        })
+    })
+
+    bot.onText(/^\/updateProfiles/, async (msg) => {
+        await isAdminMiddleware(bot, msg, async () => {
+            let hard = false
+            if(msg.text.includes("hard")){
+                hard = true
+            }
+            await updateProfilesCommandController(hard)
+        })
+    })
+
+    bot.onText(/^\/updateDepartments/, async (msg) => {
+        await isAdminMiddleware(bot, msg, async () => {
+            let hard = false
+            if(msg.text.includes("hard")){
+                hard = true
+            }
+            await updateDepartmentsCommandController(hard)
+        })
+    })
+
+    bot.onText(/^\/updateTeachers/, async (msg) => {
+        await isAdminMiddleware(bot, msg, async () => {
+            let hard = false
+            if(msg.text.includes("hard")){
+                hard = true
+            }
+            await updateTeachersCommandController(hard)
+        })
+
     })
 
 
@@ -377,6 +307,25 @@ export default function setupAdminCommandHandler(bot) {
         }
 
     });
+
+    bot.onText(/^\/ignoreLogs/i, async (msg) => {
+        try {
+            if (!await userService.isAdmin(msg.from.id)) {
+                return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+            }
+            const userId = parseFloat(msg.text.replace('/ignoreLogs', ''))
+            if (isNaN(userId)) {
+                return await bot.sendMessage(msg.chat.id, "UserId is NaN")
+            }
+
+            await blackListService.addToBlackList(userId)
+
+            await bot.sendMessage(msg.chat.id, "Added to black list")
+        } catch (e) {
+            log.error("Ошибочка при /ignoreLogs", {stack: e.stack})
+        }
+    });
+
 
     bot.onText(/^\/get_users_by_group/i, async (msg) => {
         try {
