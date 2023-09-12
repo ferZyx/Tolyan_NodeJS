@@ -5,8 +5,7 @@ import groupService from "../services/groupService.js";
 import axios from "axios";
 import scheduleService from "../services/scheduleService.js";
 import userService from "../services/userService.js";
-import {startCommandController} from "./commands/startCommandController.js";
-import {unexpectedCommandController} from "../exceptions/bot/unexpectedCommandController.js";
+import {unexpectedErrorController} from "../exceptions/bot/unexpectedErrorController.js";
 
 export let schedule_cache = {}
 
@@ -80,10 +79,14 @@ class ScheduleController {
             let markup = this.getRowMarkup(data, 'program')
 
             if (page_count > 0) {
-                markup.inline_keyboard.push([{text: '⬅️', callback_data: `faculty|${page - 1}`}, {
-                    text: '➡️', callback_data: `faculty|${page + 1}`
-                }])
+                markup.inline_keyboard.push([{text: '⬅️Назад', callback_data: `faculty|${page - 1}`},
+                    {text: `📄 ${Number(page) + 1} из ${page_count + 1}`, callback_data: `nothing`},
+                    {text: 'Вперед➡️', callback_data: `faculty|${page + 1}`}])
             }
+
+            markup.inline_keyboard.push([{
+                text: 'Вернуться назад', callback_data: `start`
+            }])
 
             await bot.editMessageText(`📌 Выбор факультета. \n📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
                 chat_id: message.chat.id, message_id: message.message_id, reply_markup: markup
@@ -105,8 +108,9 @@ class ScheduleController {
             let markup = this.getRowMarkup(data, `group|${facultyId}`)
 
             if (page_count > 0) {
-                markup.inline_keyboard.push([{text: '⬅️', callback_data: `program|${facultyId}|${page - 1}`}, {
-                    text: '➡️', callback_data: `program|${facultyId}|${page + 1}`
+                markup.inline_keyboard.push([{text: '⬅️Назад', callback_data: `program|${facultyId}|${page - 1}`},
+                    {text: `📄 ${Number(page) + 1} из ${page_count + 1}`, callback_data: `nothing`},
+                    {text: 'Вперед➡️', callback_data: `program|${facultyId}|${page + 1}`
                 }])
             }
 
@@ -137,8 +141,9 @@ class ScheduleController {
 
             if (page_count > 0) {
                 markup.inline_keyboard.push([{
-                    text: '⬅️', callback_data: `group|${facultyId}|${programId}|${page - 1}`
-                }, {text: '➡️', callback_data: `group|${facultyId}|${programId}|${page + 1}`}])
+                    text: '⬅️Назад', callback_data: `group|${facultyId}|${programId}|${page - 1}`},
+                    {text: `📄 ${Number(page) + 1} из ${page_count + 1}`, callback_data: `nothing`},
+                    {text: 'Вперед➡️', callback_data: `group|${facultyId}|${programId}|${page + 1}`}])
             }
 
             markup.inline_keyboard.push([{
@@ -190,11 +195,11 @@ class ScheduleController {
         const preCallback = data_array.slice(0, -1).join("|")
 
         let markup = {
-            inline_keyboard: [[{text: `⬅️`, callback_data: preCallback + `|${+dayNumber - 1}`}, {
+            inline_keyboard: [[{text: `⬅️Назад`, callback_data: preCallback + `|${+dayNumber - 1}`}, {
                 text: `🔄`,
                 callback_data: 'refresh' + call.data
             }, {
-                text: `➡️`, callback_data: preCallback + `|${+dayNumber + 1}`
+                text: `Вперед➡️`, callback_data: preCallback + `|${+dayNumber + 1}`
             }],]
         }
         await bot.editMessageText(msg_text,
@@ -266,7 +271,7 @@ class ScheduleController {
                                 call,
                                 userId: call.message.chat.id
                             })
-                            return await unexpectedCommandController(e, bot, call.message, call.data)
+                            return await unexpectedErrorController(e, bot, call.message, call.data)
                         }
                     })
             }
@@ -284,47 +289,7 @@ class ScheduleController {
             }))
 
         } catch (e) {
-            return await unexpectedCommandController(e, bot, call.message, call.data)
-        }
-
-    }
-
-    async getSchedule(bot, msg) {
-        const answer = await bot.sendMessage(msg.chat.id, "🪄 Пытаюсь накодовать твое расписание. Вжух!", {parse_mode: 'HTML'})
-        try {
-            const User = await userService.getUserById(msg.chat.id)
-            if (!User) {
-                await bot.deleteMessage(msg.chat.id, answer.message_id);
-                return await startCommandController(bot, msg);
-            }
-
-            const groupId = User.group
-            if (!groupId) {
-                await bot.deleteMessage(msg.chat.id, answer.message_id);
-                return await startCommandController(bot, msg);
-            }
-            const Group = await groupService.getById(groupId)
-            if (!Group) {
-                log.error(`!!! USER ${msg.chat.id} УЧИТСЯ В ГРУППЕ КОТОРОЙ НЕТ В БД.`, {User, userId: msg.chat.id})
-                return bot.editMessageText("⚠️ Я не смог найти группу в которой ты учишься(\n" +
-                    "2 варианта. Либо я сломался что вероятнее всего. Либо произошла какая то ошибка. \n" +
-                    "Попробуй воспользоваться /start для получения расписания", {
-                    chat_id: answer.chat.id, message_id: answer.message_id
-                })
-            }
-            const language = Group.language
-            const day = await this.getCurrentDayNumber()
-
-            const call = {
-                data: `schedule|${language}|${groupId}|${day}`,
-                message: answer
-            }
-            await this.getScheduleMenu(bot, call)
-        } catch (e) {
-            log.error(`Ошибка при получении расписания через /schedule: ` + e.message)
-            await bot.editMessageText("⚠️ Произошла непредвиденная ошибочка. Попробуйте /start. Возможно я сломался и меня скоро починят.", {
-                chat_id: answer.chat.id, message_id: answer.message_id
-            })
+            return await unexpectedErrorController(e, bot, call.message, call.data)
         }
 
     }

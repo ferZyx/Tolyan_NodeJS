@@ -3,7 +3,7 @@ import ScheduleController, {schedule_cache} from "./ScheduleController.js";
 import teacherService from "../services/teacherService.js";
 import axios from "axios";
 import log from "../logging/logging.js";
-import {unexpectedCommandController} from "../exceptions/bot/unexpectedCommandController.js";
+import {unexpectedErrorController} from "../exceptions/bot/unexpectedErrorController.js";
 import userService from "../services/userService.js";
 import teacherScheduleService from "../services/teacherScheduleService.js";
 
@@ -40,9 +40,7 @@ class TeacherScheduleController {
         const linesWithSymbol = lines.map((line) => `${symbol} ${line}`);
 
         // Объединяем строки обратно в одну строку с символами новой строки "\n"
-        const resultString = linesWithSymbol.join('\n');
-
-        return resultString;
+        return linesWithSymbol.join('\n');
     }
 
     async getDepartmentMenu(bot, message, prePage) {
@@ -54,10 +52,15 @@ class TeacherScheduleController {
             let markup = ScheduleController.getRowMarkup(data, 'teacher')
 
             if (page_count > 0) {
-                markup.inline_keyboard.push([{text: '⬅️', callback_data: `department|${page - 1}`}, {
-                    text: '➡️', callback_data: `department|${page + 1}`
+                markup.inline_keyboard.push([{text: '⬅️Назад', callback_data: `department|${page - 1}`},
+                    {text: `📄 ${Number(page) + 1} из ${page_count + 1}`, callback_data: `nothing`},
+                    {text: 'Вперед➡️', callback_data: `department|${page + 1}`
                 }])
             }
+
+            markup.inline_keyboard.push([{
+                text: 'Вернуться назад', callback_data: `start`
+            }])
 
             await bot.editMessageText(`📌 Выбор кафедры. \n💡 P.S кафедру можно узнать используя команду "профиль". Подробнее /help\n` +
                 `📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
@@ -86,8 +89,9 @@ class TeacherScheduleController {
 
             if (page_count > 0) {
                 markup.inline_keyboard.push([{
-                    text: '⬅️', callback_data: `teacher|${departmentId}|${page - 1}`
-                }, {text: '➡️', callback_data: `teacher|${departmentId}|${page + 1}`}])
+                    text: '⬅️Назад', callback_data: `teacher|${departmentId}|${page - 1}`},
+                    {text: `📄 ${Number(page) + 1} из ${page_count + 1}`, callback_data: `nothing`},
+                    {text: 'Вперед➡️', callback_data: `teacher|${departmentId}|${page + 1}`}])
             }
 
             markup.inline_keyboard.push([{
@@ -139,11 +143,11 @@ class TeacherScheduleController {
         const preCallback = data_array.slice(0, -1).join("|")
 
         let markup = {
-            inline_keyboard: [[{text: `⬅️`, callback_data: preCallback + `|${+dayNumber - 1}`}, {
+            inline_keyboard: [[{text: `⬅️Назад`, callback_data: preCallback + `|${+dayNumber - 1}`}, {
                 text: `🔄`,
                 callback_data: 'refresh' + call.data
             }, {
-                text: `➡️`, callback_data: preCallback + `|${+dayNumber + 1}`
+                text: `Вперед➡️`, callback_data: preCallback + `|${+dayNumber + 1}`
             }],]
         }
         await bot.editMessageText(msg_text,
@@ -189,7 +193,7 @@ class TeacherScheduleController {
                                 call,
                                 userId: call.message.chat.id
                             })
-                            return await unexpectedCommandController(e, bot, call.message, call.data)
+                            return await unexpectedErrorController(e, bot, call.message, call.data)
                         }
                     })
             }
@@ -207,7 +211,7 @@ class TeacherScheduleController {
             }))
 
         } catch (e) {
-            return await unexpectedCommandController(e, bot, call.message, call.data)
+            return await unexpectedErrorController(e, bot, call.message, call.data)
         }
 
     }

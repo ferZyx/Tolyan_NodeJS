@@ -1,6 +1,6 @@
 import log from "../../logging/logging.js";
 
-export async function unexpectedCommandController(e, bot, message, callback_data) {
+export async function unexpectedErrorController(e, bot, message, callback_data) {
     try {
         if (e.response && e.response.body.description === 'Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message') {
             log.info(`User ${message.chat.id} получил ошибку о том шо сообщение нот модифайнед. Скипаю ошибочку`, {userId: message.chat.id})
@@ -15,7 +15,7 @@ export async function unexpectedCommandController(e, bot, message, callback_data
                     }
                 })
             }catch (e) {
-                await unexpectedCommandController(e, bot, message, callback_data)
+                await unexpectedErrorController(e, bot, message, callback_data)
             }
         }
     } catch (e) {

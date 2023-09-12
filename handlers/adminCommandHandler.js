@@ -12,154 +12,33 @@ import userRegistrationStatService from "../services/userRegistrationStatService
 import departmentService from "../services/departmentService.js";
 import teacherService from "../services/teacherService.js";
 import teacherProfileService from "../services/teacherProfileService.js";
+import {isAdminMiddleware} from "../middlewares/bot/isAdminMiddleware.js";
+import {updateFacultiesCommandController} from "../controllers/commands/adminCommands/updateFaculties.js";
+import {updateProgramsCommandController} from "../controllers/commands/adminCommands/updatePrograms.js";
+import {updateGroupsCommandController} from "../controllers/commands/adminCommands/updateGroups.js";
 
-function sleep(ms) {
+export function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 
 export default function setupAdminCommandHandler(bot) {
     bot.onText(/^\/update_faculties$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)) {
-            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
-        }
-        await bot.sendMessage(msg.chat.id, 'Начинаю парсить факульеты, ИУ!')
-        try {
-            const old_faculties = await facultyService.getAll()
-
-            await axios.get("https://api.tolyan.me/schedule/get_faculty_list")
-                .then(async (response) => {
-                    if (response.status) {
-                        const faculties = response.data
-
-                        await facultyService.updateAll(faculties)
-
-                        await bot.sendMessage(msg.chat.id, "Faculty list successfully updated! Congratulations!\n" +
-                            `Было: ${old_faculties.length} || Стало: ${faculties.length} || Разница: ${faculties.length - old_faculties.length}`)
-                    } else {
-                        await bot.sendMessage(msg.chat.id, `Received ${response.status} status code.`)
-                    }
-                })
-                .catch((e) => {
-                    if (e.response) {
-                        bot.sendMessage(msg.chat.id, `Получен ${e.response.status} status code. Данные в бд не троагал.`)
-                    } else {
-                        log.error('Ошибка при парсинге факультетов')
-                    }
-                })
-        } catch (e) {
-            log.error(`ADMIN ERROR WHILE FACULTY LIST UPDATING`, {stack: e.stack})
-            await bot.sendMessage(msg.chat.id, 'Произошла ошибка при парсинге факультетов')
-        }
+        await isAdminMiddleware(bot, msg, async() => {
+            await updateFacultiesCommandController()
+        })
     })
 
     bot.onText(/^\/update_programs$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)) {
-            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
-        }
-        await bot.sendMessage(msg.chat.id, "The program list updating is starting!")
-        const startTime = Date.now()
-
-        let programs = []
-        let isErrorless = true
-        const old_programs = await programService.getAll()
-        await facultyService.getAll()
-            .then(async (faculties) => {
-                for (const faculty of faculties) {
-                    try {
-                        const response = await axios.get(`https://api.tolyan.me/schedule/get_program_list_by_facultyId/${faculty.id}`)
-                        const program_list = response.data
-
-                        for (const program of program_list) {
-                            programs.push({
-                                name: program['name'],
-                                id: program['id'],
-                                href: program['href'],
-                                faculty: program['facultyId'],
-                            })
-                        }
-                    } catch (e) {
-                        log.error("Ошибка при получении списка программ при обновлении.", {stack: e.stack})
-                        isErrorless = false
-                        break
-                    }
-                    const stage = Math.floor(faculties.indexOf(faculty) / faculties.length * 100)
-                    await bot.sendMessage(msg.chat.id, `${faculty.name} || It is ${stage}%.`)
-                    await sleep(2000)
-                }
-            })
-            .catch((e) => {
-                isErrorless = false
-                log.error("Ошибка при получении списка факультетов при обновлении списка программ.", {stack: e.stack})
-            })
-        if (isErrorless) {
-            await programService.updateAll(programs)
-            const endTime = Date.now()
-            await bot.sendMessage(msg.chat.id, `Program updating finished successfully. Action time:` +
-                `${Math.floor((endTime - startTime) / 1000)} сек.\n` +
-                `Было: ${old_programs.length} || Стало: ${programs.length} || Разница: ${programs.length - old_programs.length}`)
-        } else {
-            await bot.sendMessage(msg.chat.id, "Error while program updating( check logs!")
-        }
+        await isAdminMiddleware(bot, msg, async () => {
+            await updateProgramsCommandController()
+        })
     })
 
     bot.onText(/^\/update_groups$/, async (msg) => {
-        if (!await userService.isAdmin(msg.from.id)) {
-            return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
-        }
-        await bot.sendMessage(msg.chat.id, "The group list updating is starting!")
-        const startTime = Date.now()
-
-        let groups = []
-        let isErrorless = true
-        const old_groups = await groupService.getAll()
-        await programService.getAll()
-            .then(async (programs) => {
-                for (const program of programs) {
-                    const group_list = await get_group_list(program)
-                    for (const group of group_list) {
-                        groups.push({
-                            name: group['name'],
-                            id: group['id'],
-                            language: group['language'],
-                            href: group['href'],
-                            age: group['age'],
-                            studentCount: group['studentCount'],
-                            program: group['programId'],
-                        })
-                    }
-
-                    const stage = Math.floor(programs.indexOf(program) / programs.length * 100)
-                    await bot.sendMessage(msg.chat.id, `${program.name} || It is ${stage}%.`)
-                    await sleep(3000)
-                }
-            })
-            .catch((e) => {
-                isErrorless = false
-                log.error("Ошибка при получении списка программ при обновлении списка групп.", {stack: e.stack})
-            })
-        if (isErrorless) {
-            await groupService.updateAll(groups)
-            const endTime = Date.now()
-            await bot.sendMessage(msg.chat.id, `Group updating finished successfully. Action time: ` +
-                `${Math.floor((endTime - startTime) / 1000)} сек.` +
-                `Было: ${old_groups.length} || Стало: ${groups.length} || Разница: ${groups.length - old_groups.length}`)
-
-        } else {
-            await bot.sendMessage(msg.chat.id, "Error while group updating( check logs!")
-        }
-
-        async function get_group_list(program) {
-            try {
-                const response = await axios.get(`https://api.tolyan.me/schedule/get_group_list_by_programId/${program['id']}`)
-                return response.data
-            } catch (e) {
-                log.error("Произошла ошибка при обновлении ебучих групп. Через 5 минут попробую продолжить")
-                await sleep(5 * 60 * 1000)
-                return get_group_list(program)
-            }
-
-        }
+        await isAdminMiddleware(bot, msg, async() => {
+            await updateGroupsCommandController()
+        })
     })
 
     bot.onText(/^\/update_profiles$/, async (msg) => {

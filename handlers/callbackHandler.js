@@ -4,13 +4,18 @@ import {schedule_cache} from "../controllers/ScheduleController.js";
 import {callbackAntiSpamMiddleware} from "../middlewares/bot/callbackAntiSpamMiddleware.js";
 import ProfileController from "../controllers/TeacherProfileController.js";
 import {queryValidationErrorController} from "../exceptions/bot/queryValidationErrorController.js";
-import {unexpectedCommandController} from "../exceptions/bot/unexpectedCommandController.js";
+import {unexpectedErrorController} from "../exceptions/bot/unexpectedErrorController.js";
 import TeacherScheduleController from "../controllers/TeacherScheduleController.js";
+import {redirectToStartMenu} from "../controllers/commands/startCommandController.js";
 
 export default function setupCallbackHandlers(bot) {
     bot.on('callback_query', async (call) => {
         log.silly(`User ${call.message.chat.id} clicked to btn ${call.data}`, {call, userId: call.message.chat.id})
         await callbackAntiSpamMiddleware(bot, call, async () => {
+            if (call.data === 'start'){
+                await redirectToStartMenu(bot, call)
+            }
+
             if (call.data.includes("faculty")) {
                 try {
                     const [, page] = call.data.split('|');
@@ -19,7 +24,7 @@ export default function setupCallbackHandlers(bot) {
                     }
                     await ScheduleController.getFacultyMenu(bot, call.message, +page)
                 } catch (e) {
-                    return await unexpectedCommandController(e, bot, call.message, call.data)
+                    return await unexpectedErrorController(e, bot, call.message, call.data)
                 }
 
             }
@@ -33,7 +38,7 @@ export default function setupCallbackHandlers(bot) {
                     }
                     await ScheduleController.getProgramMenu(bot, call.message, facultyId, +page)
                 } catch (e) {
-                    return await unexpectedCommandController(e, bot, call.message, call.data)
+                    return await unexpectedErrorController(e, bot, call.message, call.data)
                 }
             }
 
@@ -46,7 +51,7 @@ export default function setupCallbackHandlers(bot) {
                     }
                     await ScheduleController.getGroupMenu(bot, call.message, programId, facultyId, +page)
                 } catch (e) {
-                    return await unexpectedCommandController(e, bot, call.message, call.data)
+                    return await unexpectedErrorController(e, bot, call.message, call.data)
                 }
             }
 
@@ -80,7 +85,6 @@ export default function setupCallbackHandlers(bot) {
                     console.error(e)
                     log.error("ВАЖНО! ОШИБКА В ТИЧЕР КОЛБЕК ХЕНДЛЕРЕ!", {userId: call.message.chat.id, stack: e.stack})
                 }
-                await bot.answerCallbackQuery(call.id)
             }
 
             if (call.data.includes("department")){
@@ -91,7 +95,7 @@ export default function setupCallbackHandlers(bot) {
                     }
                     await TeacherScheduleController.getDepartmentMenu(bot, call.message, +page)
                 } catch (e) {
-                    return await unexpectedCommandController(e, bot, call.message, call.data)
+                    return await unexpectedErrorController(e, bot, call.message, call.data)
                 }
             }
 
@@ -103,7 +107,7 @@ export default function setupCallbackHandlers(bot) {
                     }
                     await TeacherScheduleController.getTeacherMenu(bot, call.message,departmentId, +page)
                 } catch (e) {
-                    return await unexpectedCommandController(e, bot, call.message, call.data)
+                    return await unexpectedErrorController(e, bot, call.message, call.data)
                 }
             }
 
@@ -123,6 +127,9 @@ export default function setupCallbackHandlers(bot) {
                     log.error("ОШИБКА В КОЛБЕК ХЕНДЕЛЕРЕ teacherSchedule", {userId: call.message.chat.id, stack: e.stack})
                 }
 
+            }
+            if (call.data === 'nothing'){
+                await bot.answerCallbackQuery(call.id)
             }
 
         })
