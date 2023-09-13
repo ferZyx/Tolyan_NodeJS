@@ -13,6 +13,8 @@ import router from "./router.js";
 import UserActivityService from "./services/userActivityService.js";
 import UserRegistrationStatService from "./services/userRegistrationStatService.js";
 import setupDocumentHandler from "./handlers/documentHandler.js";
+import {setupUserDailyStatisticsLogging} from "./cron/userDailyStatisticsLogging.js";
+import {setupDailyDataUpdate} from "./cron/dailyDataUpdate.js";
 
 const bot = new TelegramBot(config.TG_TOKEN, {
     polling: {
@@ -46,12 +48,8 @@ export const userLastRequest = {};
     await setupCallbackHandlers(bot);
     await setupDocumentHandler(bot)
 
-    cron.schedule('59 23 * * *', () => {
-        log.warn("[beta] Произошла запись активности юзеров! /online2 to check")
-        UserActivityService.dailyUserActivityLogging()
-        log.warn("[beta] Произошла запись зарегестрированных юзеров! /regs2 to check")
-        UserRegistrationStatService.dailyRegisteredUserCountLogging()
-    });
+    await setupUserDailyStatisticsLogging()
+    await setupDailyDataUpdate()
 })().catch(async (e) => {
     console.error(e)
     await bot.sendMessage(config.LOG_CHANEL_ID, "Прозошла какая то лютая ошибка. Сработал кетч из апп.жс. Данные об ошибке в логах pm2 будут.")

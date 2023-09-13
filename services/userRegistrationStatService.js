@@ -1,5 +1,6 @@
 import {userRegistrationStat} from "../models/user-regiistration-stat.js";
 import {User} from "../models/user.js";
+import log from "../logging/logging.js";
 
 class UserRegistrationStatService {
     async getTodayRegisteredUserCount(){
@@ -15,7 +16,8 @@ class UserRegistrationStatService {
     async dailyRegisteredUserCountLogging(){
         try{
             const registeredUsers = await this.getTodayRegisteredUserCount()
-            return await userRegistrationStat.create({registeredUsers})
+            userRegistrationStat.create({registeredUsers})
+                .then(() => log.warn("Произошла запись зарегестрированных юзеров!"))
         }catch (e) {
             throw new Error("Ошибка при логировании кол-ва зарегестрированных юзеров сегодня: " + e.stack)
         }
