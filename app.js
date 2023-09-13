@@ -1,7 +1,6 @@
 import TelegramBot from "node-telegram-bot-api"
 import express from "express"
 import cors from "cors"
-import cron from "node-cron"
 import log from "./logging/logging.js"
 import db from "./db/connection.js"
 import config from "./config.js"
@@ -10,8 +9,6 @@ import setupCallbackHandlers from "./handlers/callbackHandler.js";
 import setupAdminCommandHandler from "./handlers/adminCommandHandler.js";
 import errorMiddleware from "./middlewares/errorMiddleware.js";
 import router from "./router.js";
-import UserActivityService from "./services/userActivityService.js";
-import UserRegistrationStatService from "./services/userRegistrationStatService.js";
 import setupDocumentHandler from "./handlers/documentHandler.js";
 import {setupUserDailyStatisticsLogging} from "./cron/userDailyStatisticsLogging.js";
 import {setupDailyDataUpdate} from "./cron/dailyDataUpdate.js";
@@ -36,7 +33,7 @@ export const userLastRequest = {};
 (async () => {
     await db.connect(config.DB_URI)
         .then(() => {
-            log.info("Успешное подключение к базе данных. БОТ РАБОТАЕТ КОРРЕКТНО ПО ИДЕЕ!", {test:'heeey'})
+            log.info("Успешное подключение к базе данных. БОТ РАБОТАЕТ КОРРЕКТНО ПО ИДЕЕ!")
         })
         .catch((e) => {
             log.error("Ошибка подключения к базе данных! ВЫЗЫВАЮ ФИКСИКОВ ВИУ ВИУ ВИУ!", {stack: e.stack})
