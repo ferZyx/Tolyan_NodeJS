@@ -5,6 +5,8 @@ import groupService from "./services/groupService.js";
 import userService from "./services/userService.js";
 import scheduleService from "./services/scheduleService.js";
 import LogService from "./services/logService.js";
+import teacherService from "./services/teacherService.js";
+import teacherScheduleService from "./services/teacherScheduleService.js";
 
 const router = new Router()
 
@@ -16,46 +18,74 @@ router.post("/log", async (req,res) => {
 
 router.get('/get_user_schedule', async (req, res) => {
     const userId = req.query.userId
-    log.warn(`Поступил запрос на веб апп. userId: ${userId}`)
+    log.info(`User ${userId} used a WebApp!`)
     if (!userId || isNaN(userId)) {
-        log.error(`Веб апп получил некорректный userId:${userId}`)
         return res.status(400).json("Айдишник забыл, брат. Или он некорректный")
     }
     const user = await userService.getUserById(userId)
     if (!user) {
-        log.error(`Веб апп получил некорректный userId:${userId}   Такого юзера в бд нет!`)
         return res.status(404).json("Пользователь не найден")
     }
+
+    const data = {scheduleType: user.scheduleType ? user.scheduleType : 'student'}
+
     const group = await groupService.getById(user.group)
-    if (!group) {
-        log.error(`Веб апп получил некорректный userId:${userId}   У такого юзера в бд нет группы!`)
-        return res.status(404).json("Пользователь не зарегистрирован")
-    }
-    const groupId = group.id;
-    const language = group.language;
+    if (group) {
+        const groupId = group.id;
+        const language = group.language;
+        try {
+            const response = await axios.get(`https://api.tolyan.me/schedule/get_schedule_by_groupId/${groupId}/${language}`)
 
-    try {
-        const response = await axios.get(`http://79.133.182.125:5000/api/schedule/get_schedule_by_groupId/${groupId}/${language}`)
+            data.studentSchedule = {
+                schedule:response.data,
+                updatedAt: Date.now(),
+                group,
+                isNew:true
+            }
+        } catch (e) {
+            const schedule = await scheduleService.getByGroupId(groupId)
+            if (schedule) {
+                const updateAt = new Date(schedule.updatedAt)
+                data.studentSchedule = {
+                    schedule: schedule.data,
+                    updatedAt: updateAt.getTime(),
+                    group,
+                    isNew:false
+                }
+            }
 
-        return res.json({
-            schedule: response.data,
-            updatedAt: Date.now(),
-            group,
-            user
-        })
-    } catch (e) {
-        const schedule = await scheduleService.getByGroupId(groupId)
-        if (!schedule) {
-            return res.status(404).json("Резервное расписание не найдено в базе данных.")
         }
-        const updateAt = new Date(schedule.updatedAt)
-        return res.json({
-            schedule: schedule.data,
-            updatedAt: updateAt.getTime(),
-            group,
-            user
-        })
     }
+
+    const teacher = await teacherService.getById(user.teacher)
+    if (teacher) {
+        const teacherId = teacher.id;
+        try {
+            const response = await axios.get(`https://api.tolyan.me/teacherSchedule/get_teacher_schedule/${teacherId}`)
+
+            data.teacherSchedule = {
+                schedule:response.data,
+                updatedAt: Date.now(),
+                teacher,
+                isNew:true
+            }
+        } catch (e) {
+            const schedule = await teacherScheduleService.getByTeacherId(teacherId)
+            if (schedule) {
+                const updateAt = new Date(schedule.updatedAt)
+
+                data.teacherSchedule = {
+                    schedule:schedule.data,
+                    updatedAt: updateAt,
+                    teacher,
+                    isNew:false
+                }
+            }
+
+        }
+    }
+
+    return res.json(data)
 })
 
 router.get('/get_user_activity_logs', async (req, res) => {
