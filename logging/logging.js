@@ -1,5 +1,6 @@
 import "dotenv/config";
 import "winston-mongodb"
+import DailyRotateFile from "winston-daily-rotate-file"
 import {createLogger, transports, format} from "winston"
 import CustomTransport from "./customTransport.js";
 import config from "../config.js";
@@ -27,6 +28,15 @@ const log = createLogger({
             level: 'error',
             format: format.combine(format.timestamp(), format.json())
         }),
+        new DailyRotateFile({
+            level: 'silly',
+            format: format.combine(format.timestamp(), format.json()),
+            filename: 'logs/%DATE%.log',
+            datePattern: 'DD.MM.YYYY',
+            zippedArchive: true,
+            maxSize: '20m', // Максимальный размер файла
+            maxFiles: '30d'  // Максимальное количество файлов хранения (30 дней)
+        })
     ],
 });
 

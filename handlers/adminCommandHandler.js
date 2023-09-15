@@ -274,7 +274,7 @@ export default function setupAdminCommandHandler(bot) {
             }
             let msg_text = `Информация о юзере id: ${userId}\n` +
                 `Тип: ${user.userType}\n` +
-                `username: ${user.username}\n`
+                `username: @${user.username}\n`
 
             if (user.userType !== 'private'){
                 msg_text += `Название: ${user.userTitle}\n\n`

@@ -12,6 +12,7 @@ import router from "./router.js";
 import setupDocumentHandler from "./handlers/documentHandler.js";
 import {setupUserDailyStatisticsLogging} from "./cron/userDailyStatisticsLogging.js";
 import {setupDailyDataUpdate} from "./cron/dailyDataUpdate.js";
+import {setupLoggingPathUpdate} from "./cron/loggingPathUpdate.js";
 
 const bot = new TelegramBot(config.TG_TOKEN, {
     polling: {
@@ -47,6 +48,7 @@ export const userLastRequest = {};
 
     await setupUserDailyStatisticsLogging()
     await setupDailyDataUpdate()
+    await setupLoggingPathUpdate()
 })().catch(async (e) => {
     console.error(e)
     await bot.sendMessage(config.LOG_CHANEL_ID, "Прозошла какая то лютая ошибка. Сработал кетч из апп.жс. Данные об ошибке в логах pm2 будут.")

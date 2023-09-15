@@ -5,3 +5,4 @@ temp
 logs.log
 error_logs.log
 temp/group_stat.json
+logs
