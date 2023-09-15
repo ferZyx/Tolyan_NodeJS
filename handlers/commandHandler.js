@@ -1,6 +1,6 @@
 import ScheduleController from "../controllers/ScheduleController.js";
 import log from "../logging/logging.js";
-import TeacherController from "../controllers/TeacherProfileController.js";
+import TeacherController from "../controllers/ProfileController.js";
 import config from "../config.js";
 import {commandAntiSpamMiddleware} from "../middlewares/bot/commandAntiSpamMiddleware.js";
 import {startCommandController} from "../controllers/commands/startCommandController.js";

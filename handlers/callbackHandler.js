@@ -2,7 +2,7 @@ import ScheduleController from "../controllers/ScheduleController.js";
 import log from "../logging/logging.js";
 import {schedule_cache} from "../controllers/ScheduleController.js";
 import {callbackAntiSpamMiddleware} from "../middlewares/bot/callbackAntiSpamMiddleware.js";
-import ProfileController from "../controllers/TeacherProfileController.js";
+import ProfileController from "../controllers/ProfileController.js";
 import {queryValidationErrorController} from "../exceptions/bot/queryValidationErrorController.js";
 import {unexpectedErrorController} from "../exceptions/bot/unexpectedErrorController.js";
 import TeacherScheduleController from "../controllers/TeacherScheduleController.js";
@@ -83,7 +83,7 @@ export default function setupCallbackHandlers(bot) {
                     await ProfileController.getProfile(bot, call, _id)
                 } catch (e) {
                     console.error(e)
-                    log.error("ВАЖНО! ОШИБКА В ТИЧЕР КОЛБЕК ХЕНДЛЕРЕ!", {userId: call.message.chat.id, stack: e.stack})
+                    log.error("ВАЖНО! ОШИБКА В PROFILE КОЛБЕК ХЕНДЛЕРЕ!", {userId: call.message.chat.id, stack: e.stack})
                 }
             }
 

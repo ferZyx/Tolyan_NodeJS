@@ -1,10 +1,10 @@
-import teacherProfileService from "../services/teacherProfileService.js";
+import profileService from "../services/profileService.js";
 import log from "../logging/logging.js";
 
-class TeacherProfileController {
+class ProfileController {
     async findProfiles(bot, message, surname) {
         try {
-            const teachers = await teacherProfileService.findByName(surname)
+            const teachers = await profileService.findByName(surname)
             if (!teachers.length) {
                 await bot.editMessageText(`⚠️ К сожалению по запросу: <b>${surname}</b> ничего не найдено.\n` + `✍️ Проверьте корректность ввода.\n` + `Если всё в порядке и я не могу найти - значит сори 🙃`, {
                     message_id: message.message_id, chat_id: message.chat.id, parse_mode: 'HTML'
@@ -35,11 +35,16 @@ class TeacherProfileController {
 
     async getProfile(bot, call, _id) {
         try {
-            const teacher = await teacherProfileService.getById(_id)
+            const teacher = await profileService.getById(_id)
 
             await bot.sendDocument(call.message.chat.id, teacher.href, {
                 caption: `👩‍🚀: ${teacher.name}\n🌏: ${teacher.faculty}\n🚀: ${teacher.department}`
             })
+                .catch(async (e) => {
+                    await bot.sendMessage(call.message.chat.id, `⚠️ Произошла ошибка при отправке документа. Скорее всего он недоступен. Вот ссылочка на него:\n${teacher.href}`)
+                    log.warn(`Произошла ошибка при попытке отправить профиль. Чел не пострадал, получил ссылочку. Ошибка: ${e.message}`, {stack:e.stack})
+                })
+
             await bot.deleteMessage(call.message.chat.id, call.message.message_id)
         } catch (e) {
             log.error(`User ${call.message.chat.id} got an error when was clicking to the teacher profile`, {
@@ -55,4 +60,4 @@ class TeacherProfileController {
     }
 }
 
-export default new TeacherProfileController()
+export default new ProfileController()

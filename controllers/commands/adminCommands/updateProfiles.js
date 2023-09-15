@@ -1,5 +1,5 @@
 import axios from "axios";
-import teacherProfileService from "../../../services/teacherProfileService.js";
+import teacherProfileService from "../../../services/profileService.js";
 import log from "../../../logging/logging.js";
 import {sleep} from "../../../handlers/adminCommandHandler.js";
 

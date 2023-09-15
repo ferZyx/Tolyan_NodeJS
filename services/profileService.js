@@ -1,6 +1,6 @@
 import {TeacherProfile} from "../models/teacherProfile.js"
 
-class teacherProfileService {
+class profileService {
     updateAll = async (teachers) => {
         try {
             await TeacherProfile.deleteMany({})
@@ -36,4 +36,4 @@ class teacherProfileService {
     }
 }
 
-export default new teacherProfileService()
+export default new profileService()
