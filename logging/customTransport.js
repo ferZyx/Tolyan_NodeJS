@@ -21,7 +21,7 @@ class CustomTransport extends Transport {
 
             const text = `[${BASE_DIR}][${info.level}]%20` + info.message.replace(" ", "%20");
 
-            const token = config.TG_TOKEN
+            const token = config.LOGGER_TG_TOKEN
             const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${log_chanel_id}&text=${text}`
 
             https.get(url)

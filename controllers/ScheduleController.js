@@ -176,7 +176,16 @@ class ScheduleController {
         const scheduleDateTime = this.formatTimestamp(timestamp)
 
         const schedule_day = data[dayNumber]['day']
-        const schedule = data[dayNumber]['subjects']
+        const schedule = data[dayNumber]['subjects'];
+
+        // Нужно удалить будет.
+        for(const dailySchedule of schedule){
+            if (dailySchedule.subject !== '\n'){
+                preMessage += '\n⚠️Возможно у вас неккоректно отображается рассписание. Сверьтесь с schedule.ksu.kz. Простите за неудобства🥹. Разработчики уже знают о вашей проблеме, надеюсь вы больше никогда не увидете это сообщение.\n'
+                log.warn(`Вижу кривое расписание у группы ${group.id}`)
+                break
+            }
+        }
 
         let schedule_text = ``
         if (!schedule.length) {
