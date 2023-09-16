@@ -269,8 +269,8 @@ class ScheduleController {
                     })
                     .catch(async (e) => {
                         try {
-                            log.info(`User ${call.message.chat.id} gets a cached schedule.`, {
-                                e,
+                            log.warn(`Student ${call.message.chat.id} gets a cached schedule.`, {
+                                stack:e.stack,
                                 userId: call.message.chat.id
                             })
                             await this.getReservedSchedule(bot, call, groupId)

@@ -182,7 +182,7 @@ class TeacherScheduleController {
                     })
                     .catch(async (e) => {
                         try {
-                            log.info(`User ${call.message.chat.id} gets a cached Teacher schedule.`, {
+                            log.warn(`Teacher ${call.message.chat.id} gets a cached Teacher schedule.`, {
                                 e,
                                 userId: call.message.chat.id
                             })
