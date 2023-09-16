@@ -20,10 +20,10 @@ export async function inactiveSpamCommandController(bot, msg) {
         for (const user of users) {
             try {
                 await bot.sendMessage(user.userId, msg_text)
-                log.info(`User ${user.userId} получил inactiveSpam message`)
+                log.info(`User ${user.userId} получил inactiveSpam message. User index: ${users.indexOf(user)}`)
                 success.push(user.userId)
             } catch (e) {
-                log.info(`User ${user.userId} не получил inactiveSpam message.`, {stack: e.stack})
+                log.info(`User ${user.userId} не получил inactiveSpam message. User index: ${users.indexOf(user)}`, {stack: e.stack})
                 bad.push(user.userId)
             }
             await sleep(60 * 1000)
