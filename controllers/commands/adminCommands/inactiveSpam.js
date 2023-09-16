@@ -18,7 +18,6 @@ export async function inactiveSpamCommandController(bot, msg) {
         const startTime = Date.now()
 
         for (const user of users) {
-            await sleep(60 * 1000)
             try {
                 await bot.sendMessage(user.userId, msg_text)
                 log.info(`User ${user.userId} получил inactiveSpam message`)
@@ -27,6 +26,7 @@ export async function inactiveSpamCommandController(bot, msg) {
                 log.info(`User ${user.userId} не получил inactiveSpam message.`, {stack: e.stack})
                 bad.push(user.userId)
             }
+            await sleep(60 * 1000)
         }
         const endTime = Date.now()
         const actionTime = Math.floor((endTime - startTime) / 1000)
