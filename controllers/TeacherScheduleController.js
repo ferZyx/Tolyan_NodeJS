@@ -124,7 +124,9 @@ class TeacherScheduleController {
         const scheduleDateTime = ScheduleController.formatTimestamp(timestamp)
 
         const schedule_day = data[dayNumber]['day']
-        const schedule = data[dayNumber]['groups']
+        const preSchedule = data[dayNumber]['groups']
+
+        const schedule = preSchedule.filter(obj => obj.group !== '')
 
         let schedule_text = ``
         if (!schedule.length) {
