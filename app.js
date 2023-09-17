@@ -13,6 +13,7 @@ import setupDocumentHandler from "./handlers/documentHandler.js";
 import {setupUserDailyStatisticsLogging} from "./cron/userDailyStatisticsLogging.js";
 import {setupDailyDataUpdate} from "./cron/dailyDataUpdate.js";
 import {setupLoggingPathUpdate} from "./cron/loggingPathUpdate.js";
+import setupNewChatMemberHandler from "./handlers/newChatMemberHandler.js";
 
 const bot = new TelegramBot(config.TG_TOKEN, {
     polling: {
@@ -45,6 +46,7 @@ export const userLastRequest = {};
     await setupAdminCommandHandler(bot);
     await setupCallbackHandlers(bot);
     await setupDocumentHandler(bot)
+    await setupNewChatMemberHandler(bot)
 
     await setupUserDailyStatisticsLogging()
     await setupDailyDataUpdate()

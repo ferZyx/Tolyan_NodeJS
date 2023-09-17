@@ -1,7 +1,7 @@
 import config from "../config.js";
 import blackListService from "../services/blackListService.js";
 
-export default function setupDocumentHandler(bot) {
+export default async function setupDocumentHandler(bot) {
     bot.on('document', async (msg) => {
         const isBlackListed = await blackListService.isBlackListed(msg.chat.id)
         if (!isBlackListed) {
