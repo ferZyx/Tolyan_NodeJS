@@ -176,7 +176,9 @@ class ScheduleController {
         const scheduleDateTime = this.formatTimestamp(timestamp)
 
         const schedule_day = data[dayNumber]['day']
-        const schedule = data[dayNumber]['subjects'];
+        const preSchedule = data[dayNumber]['subjects'];
+
+        const schedule = preSchedule.filter(obj => obj.subject !== '')
 
         // Нужно удалить будет.
         for(const dailySchedule of schedule){
