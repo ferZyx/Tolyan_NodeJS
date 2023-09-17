@@ -227,7 +227,7 @@ class TeacherScheduleController {
 
             const teacher = await teacherService.getById(teacherId)
             schedule_cache[teacherId] = {data: response.data, timestamp, teacher}
-            await this.sendSchedule(bot, call, schedule_cache[teacherId], "<b>⚠️ schedule.ksu.kz не отвечает. \n" +
+            await this.sendSchedule(bot, call, schedule_cache[teacherId], "<b>⚠️ Ведутся технические работы. Загляните ко мне попозже. \n" +
                 "🫡 Последнее загруженное расписание:\n\n</b>")
         } else {
             await bot.editMessageText("⚠️ Официальный сайт КарУ - упал, а резервного расписания для данного преподавателя я не могу найти( \n" +

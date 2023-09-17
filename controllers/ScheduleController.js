@@ -232,7 +232,7 @@ class ScheduleController {
 
             const group = await groupService.getById(groupId)
             schedule_cache[groupId] = {data: response.data, timestamp, group}
-            await this.sendSchedule(bot, call, schedule_cache[groupId], "<b>⚠️ schedule.ksu.kz не отвечает. \n" +
+            await this.sendSchedule(bot, call, schedule_cache[groupId], "<b>⚠️ Ведутся технические работы. Загляните ко мне попозже. \n" +
                 "🫡 Последнее загруженное расписание:\n\n</b>")
         } else {
             await bot.editMessageText("🙈 Первопроходец от своей группы?\n" +
