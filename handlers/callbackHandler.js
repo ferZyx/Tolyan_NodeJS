@@ -128,10 +128,7 @@ export default function setupCallbackHandlers(bot) {
                 }
 
             }
-            if (call.data === 'nothing'){
-                await bot.answerCallbackQuery(call.id)
-            }
-
+            await bot.answerCallbackQuery(call.id).catch(e => log.info("Ошибка с ответов на колбек" + e.message))
         })
 
     })

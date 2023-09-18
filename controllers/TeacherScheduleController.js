@@ -107,59 +107,63 @@ class TeacherScheduleController {
     }
 
     async sendSchedule(bot, call, schedule_cache, preMessage = '') {
-        const timestamp = schedule_cache.timestamp
-        const data = schedule_cache.data
-        const teacher = schedule_cache.teacher
+        try{
+            const timestamp = schedule_cache.timestamp
+            const data = schedule_cache.data
+            const teacher = schedule_cache.teacher
 
-        const data_array = call.data.split('|');
-        let [, , dayNumber] = data_array
-        if (+dayNumber > 5) {
-            dayNumber = 0
+            const data_array = call.data.split('|');
+            let [, , dayNumber] = data_array
+            if (+dayNumber > 5) {
+                dayNumber = 0
+            }
+            if (+dayNumber < 0) {
+                dayNumber = 5
+            }
+
+            const scheduleLifeTime = ScheduleController.formatElapsedTime(timestamp)
+            const scheduleDateTime = ScheduleController.formatTimestamp(timestamp)
+
+            const schedule_day = data[dayNumber]['day']
+            const preSchedule = data[dayNumber]['groups']
+
+            const schedule = preSchedule.filter(obj => obj.group !== '')
+
+            let schedule_text = ``
+            if (!schedule.length) {
+                schedule_text = "🥳 <b>ВЫХОДНОЙ!</b>\n"
+            }
+            for (const item of schedule) {
+                schedule_text += '⌚️ ' + item.time + '\n'
+                schedule_text += this.addSymbolToEachLine(this.transformGroupString(item.group), '📚') + '\n\n'
+            }
+            let end_text = `🕰 <i><b>Расписание загружено: 👇\n${scheduleLifeTime} назад || ${scheduleDateTime}   👈</b></i>\n` +
+                '📖 Помощь: /help\n' +
+                '🗞 Наш канал: https://t.me/ksutolyan \n' +
+                '<tg-spoiler>Угостить компотом: /donate </tg-spoiler>'
+            let msg_text = `${preMessage}👥 <u>${teacher.name}</u>\n📆 Расписание на <b>${schedule_day}</b>:\n` + schedule_text + end_text
+
+            const preCallback = data_array.slice(0, -1).join("|")
+
+            let markup = {
+                inline_keyboard: [[{text: `⬅️Назад`, callback_data: preCallback + `|${+dayNumber - 1}`}, {
+                    text: `🔄`,
+                    callback_data: 'refresh' + call.data
+                }, {
+                    text: `Вперед➡️`, callback_data: preCallback + `|${+dayNumber + 1}`
+                }],]
+            }
+            await bot.editMessageText(msg_text,
+                {
+                    message_id: call.message.message_id,
+                    chat_id: call.message.chat.id,
+                    parse_mode: "HTML",
+                    reply_markup: markup,
+                    disable_web_page_preview: true
+                })
+        }catch (e) {
+            await unexpectedErrorController(e, bot, call.message, call.data)
         }
-        if (+dayNumber < 0) {
-            dayNumber = 5
-        }
-
-        const scheduleLifeTime = ScheduleController.formatElapsedTime(timestamp)
-        const scheduleDateTime = ScheduleController.formatTimestamp(timestamp)
-
-        const schedule_day = data[dayNumber]['day']
-        const preSchedule = data[dayNumber]['groups']
-
-        const schedule = preSchedule.filter(obj => obj.group !== '')
-
-        let schedule_text = ``
-        if (!schedule.length) {
-            schedule_text = "🥳 <b>ВЫХОДНОЙ!</b>\n"
-        }
-        for (const item of schedule) {
-            schedule_text += '⌚️ ' + item.time + '\n'
-            schedule_text += this.addSymbolToEachLine(this.transformGroupString(item.group), '📚') + '\n\n'
-        }
-        let end_text = `🕰 <i><b>Расписание загружено: 👇\n${scheduleLifeTime} назад || ${scheduleDateTime}   👈</b></i>\n` +
-            '📖 Помощь: /help\n' +
-            '🗞 Наш канал: https://t.me/ksutolyan \n' +
-            '<tg-spoiler>Угостить компотом: /donate </tg-spoiler>'
-        let msg_text = `${preMessage}👥 <u>${teacher.name}</u>\n📆 Расписание на <b>${schedule_day}</b>:\n` + schedule_text + end_text
-
-        const preCallback = data_array.slice(0, -1).join("|")
-
-        let markup = {
-            inline_keyboard: [[{text: `⬅️Назад`, callback_data: preCallback + `|${+dayNumber - 1}`}, {
-                text: `🔄`,
-                callback_data: 'refresh' + call.data
-            }, {
-                text: `Вперед➡️`, callback_data: preCallback + `|${+dayNumber + 1}`
-            }],]
-        }
-        await bot.editMessageText(msg_text,
-            {
-                message_id: call.message.message_id,
-                chat_id: call.message.chat.id,
-                parse_mode: "HTML",
-                reply_markup: markup,
-                disable_web_page_preview: true
-            })
     }
 
     async getScheduleMenu(bot, call) {
@@ -188,7 +192,16 @@ class TeacherScheduleController {
                                 e,
                                 userId: call.message.chat.id
                             })
-                            await this.getReservedSchedule(bot, call, teacherId)
+                            let error_text = "⚠️ Произошла непредвиденная ошибка. Разработчики уже уведомлены о вашей проблеме. Простите. Пожалуйста. 🥹"
+                            if(e.response){
+                                if (e.response.status === 503)
+                                    error_text = "⚠️ schedule.ksu.kz не отвечает..."
+
+                                if (e.response.status === 500){
+                                    error_text = "⚠️ Произошла непредвиденная ошибка на стороне нашего сервера. Попробуйте обновить расписание."
+                                }
+                            }
+                            await this.getReservedSchedule(bot, call, teacherId, error_text)
                         } catch (e) {
                             log.error("Ошбика при получении резервного Teacher расписания.", {
                                 stack: e.stack,
@@ -218,8 +231,8 @@ class TeacherScheduleController {
 
     }
 
-    async getReservedSchedule(bot, call, teacherId) {
-        await bot.editMessageText('💀 schedule.ksu.kz не отвечает. Сейчас поищу твое расписание в своих недрах...', {
+    async getReservedSchedule(bot, call, teacherId, error_text) {
+        await bot.editMessageText('💀 Произшла ошибка. Сейчас поищу твое расписание в своих недрах...', {
             chat_id: call.message.chat.id, message_id: call.message.message_id
         })
         const response = await teacherScheduleService.getByTeacherId(teacherId)
@@ -229,21 +242,20 @@ class TeacherScheduleController {
 
             const teacher = await teacherService.getById(teacherId)
             schedule_cache[teacherId] = {data: response.data, timestamp, teacher}
-            await this.sendSchedule(bot, call, schedule_cache[teacherId], "<b>⚠️ Ведутся технические работы. Загляните ко мне попозже. \n" +
+            await this.sendSchedule(bot, call, schedule_cache[teacherId], `<b>${error_text} \n` +
                 "🫡 Последнее загруженное расписание:\n\n</b>")
         } else {
-            await bot.editMessageText("⚠️ Официальный сайт КарУ - упал, а резервного расписания для данного преподавателя я не могу найти( \n" +
-                "🫢 P.S. После получения расписания в нашем боте, оно записывается в базу данных.\n" +
-                "А дальше уже дело за малым, при следующем таком падении официального сайта мы возьмем расписание из нашей базы)\n" +
-                "😉 Загрузи расписание как только schedule.ksu.kz встанет на ноги и больше ты не увидишь это дурацкое сообщение!", {
+            await bot.editMessageText("🙈 Первопроходец от своей группы?\n" +
+                "⚠️ Я не смог получить твое расписание из schedule.ksu.kz, а резервного расписания для твоей группы я не могу найти( \n" +
+                "🫢 P.S. После получения расписания в нашем боте, оно подгружается в базу данных.\n" +
+                "А дальше уже дело за малым, при следующем таком недразумении мы возьмем твое расписание из нашей базы)\n" +
+                "😉 Загрузи расписание как только всё встанет на ноги и больше ты больше не увидишь это дурацкое сообщение!", {
                 chat_id: call.message.chat.id, message_id: call.message.message_id, reply_markup: {
                     inline_keyboard: [[{text: "Попробовать снова", callback_data: call.data}]]
                 }
             })
         }
     }
-
-
 }
 
 export default new TeacherScheduleController()
