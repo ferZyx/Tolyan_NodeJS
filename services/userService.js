@@ -66,9 +66,10 @@ class UserService {
     async isAdmin(userId) {
         try {
             const user = await User.findOne({userId})
-            return Boolean(user.isAdmin)
+
+            return user ? Boolean(user.isAdmin) : false
         } catch (e) {
-            throw new Error("Ошибка при проверке юзера на админа: " + e.stack)
+            throw new Error("Ошибка при проверке юзера на админа: " + userId + e.stack)
         }
     }
 
