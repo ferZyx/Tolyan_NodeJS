@@ -261,7 +261,7 @@ class ScheduleController {
             if (groupId in schedule_cache && Date.now() - schedule_cache[groupId].timestamp <= 30 * 60 * 1000) {
                 await this.sendSchedule(bot, call, schedule_cache[groupId])
             } else {
-                await axios.get(`https://api.tolyan.me/schedule/get_schedule_by_groupId/${groupId}/${language}`, {
+                await axios.get(`http://localhost:5000/schedule/get_schedule_by_groupId/${groupId}/${language}`, {
                     timeout: 10000
                 })
                     .then(async (response) => {
