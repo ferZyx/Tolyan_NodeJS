@@ -6,8 +6,24 @@ import axios from "axios";
 import scheduleService from "../services/scheduleService.js";
 import userService from "../services/userService.js";
 import {unexpectedErrorController} from "../exceptions/bot/unexpectedErrorController.js";
+import {bot} from "../app.js";
 
 export let schedule_cache = {}
+
+async function downloadSchedule(groupId, language, attemption = 1) {
+    try {
+        return await axios.get(`https://api.tolyan.me/schedule/get_schedule_by_groupId/${groupId}/${language}`, {
+            timeout: 5000
+        })
+    } catch (e) {
+        if (attemption < 2) {
+            log.info(`group ${groupId} попала в рекурсивную функцию по получению расписания!`)
+            return await downloadSchedule(groupId, language, ++attemption)
+        }else {
+            throw e
+        }
+    }
+}
 
 class ScheduleController {
     getRowMarkup(data, refTo) {
@@ -70,7 +86,7 @@ class ScheduleController {
         return (currentDate.getDay() + 6) % 7;
     }
 
-    async getFacultyMenu(bot, message, prePage) {
+    async getFacultyMenu(message, prePage) {
         try {
             const faculties = await facultyService.getAll()
 
@@ -98,7 +114,7 @@ class ScheduleController {
 
     }
 
-    async getProgramMenu(bot, message, facultyId, prePage) {
+    async getProgramMenu(message, facultyId, prePage) {
         try {
             const programs = await programService.getByFacultyId(facultyId)
             const faculty = await facultyService.getById(facultyId)
@@ -110,8 +126,9 @@ class ScheduleController {
             if (page_count > 0) {
                 markup.inline_keyboard.push([{text: '⬅️Назад', callback_data: `program|${facultyId}|${page - 1}`},
                     {text: `📄 ${Number(page) + 1} из ${page_count + 1}`, callback_data: `nothing`},
-                    {text: 'Вперед➡️', callback_data: `program|${facultyId}|${page + 1}`
-                }])
+                    {
+                        text: 'Вперед➡️', callback_data: `program|${facultyId}|${page + 1}`
+                    }])
             }
 
             markup.inline_keyboard.push([{text: 'Вернуться назад', callback_data: `faculty|0`}])
@@ -124,7 +141,7 @@ class ScheduleController {
         }
     }
 
-    async getGroupMenu(bot, message, programId, facultyId, prePage) {
+    async getGroupMenu(message, programId, facultyId, prePage) {
         try {
             const groups = await groupService.getByProgramId(programId)
             const program = await programService.getById(programId)
@@ -141,7 +158,8 @@ class ScheduleController {
 
             if (page_count > 0) {
                 markup.inline_keyboard.push([{
-                    text: '⬅️Назад', callback_data: `group|${facultyId}|${programId}|${page - 1}`},
+                    text: '⬅️Назад', callback_data: `group|${facultyId}|${programId}|${page - 1}`
+                },
                     {text: `📄 ${Number(page) + 1} из ${page_count + 1}`, callback_data: `nothing`},
                     {text: 'Вперед➡️', callback_data: `group|${facultyId}|${programId}|${page + 1}`}])
             }
@@ -158,8 +176,8 @@ class ScheduleController {
         }
     }
 
-    async sendSchedule(bot, call, schedule_cache, preMessage = '') {
-        try{
+    async sendSchedule(call, schedule_cache, preMessage = '') {
+        try {
             const timestamp = schedule_cache.timestamp
             const data = schedule_cache.data
             const group = schedule_cache.group
@@ -182,8 +200,8 @@ class ScheduleController {
             const schedule = preSchedule.filter(obj => obj.subject !== '')
 
             // Нужно удалить будет.
-            for(const dailySchedule of schedule){
-                if (dailySchedule.subject === '\n'){
+            for (const dailySchedule of schedule) {
+                if (dailySchedule.subject === '\n') {
                     preMessage += '\n⚠️Возможно у вас неккоректно отображается рассписание. Сверьтесь с schedule.ksu.kz. Простите за неудобства🥹. Разработчики уже знают о вашей проблеме, надеюсь вы больше никогда не увидете это сообщение.\n'
                     log.warn(`Вижу кривое расписание у группы ${group.id}`)
                     break
@@ -222,12 +240,12 @@ class ScheduleController {
                     reply_markup: markup,
                     disable_web_page_preview: true
                 })
-        }catch (e) {
-            await unexpectedErrorController(e, bot, call.message, call.data)
+        } catch (e) {
+            await unexpectedErrorController(e, call.message, call.data)
         }
     }
 
-    async getReservedSchedule(bot, call, groupId, error_text) {
+    async getReservedSchedule(call, groupId, error_text) {
         await bot.editMessageText(`💀 Произшла ошибка. Сейчас поищу твое расписание в своих недрах...`, {
             chat_id: call.message.chat.id, message_id: call.message.message_id
         })
@@ -238,7 +256,7 @@ class ScheduleController {
 
             const group = await groupService.getById(groupId)
             schedule_cache[groupId] = {data: response.data, timestamp, group}
-            await this.sendSchedule(bot, call, schedule_cache[groupId], `<b>${error_text} \n` +
+            await this.sendSchedule(call, schedule_cache[groupId], `<b>${error_text} \n` +
                 "🫡 Последнее загруженное расписание:\n\n</b>")
         } else {
             await bot.editMessageText("🙈 Первопроходец от своей группы?\n" +
@@ -253,21 +271,19 @@ class ScheduleController {
         }
     }
 
-    async getScheduleMenu(bot, call) {
+    async getScheduleMenu(call) {
         try {
             const data_array = call.data.split('|');
             let [, language, groupId] = data_array
 
             if (groupId in schedule_cache && Date.now() - schedule_cache[groupId].timestamp <= 30 * 60 * 1000) {
-                await this.sendSchedule(bot, call, schedule_cache[groupId])
+                await this.sendSchedule(call, schedule_cache[groupId])
             } else {
-                await axios.get(`http://localhost:5000/schedule/get_schedule_by_groupId/${groupId}/${language}`, {
-                    timeout: 10000
-                })
+                await downloadSchedule(groupId, language)
                     .then(async (response) => {
                         const group = await groupService.getById(groupId)
                         schedule_cache[groupId] = {data: response.data, timestamp: Date.now(), group}
-                        await this.sendSchedule(bot, call, schedule_cache[groupId])
+                        await this.sendSchedule(call, schedule_cache[groupId])
 
                         await scheduleService.updateByGroupId(groupId, response.data).catch(e => log.error(`Ошибка при попытке сохранить резервную копию расписания в бд. groupId:${groupId}. Пользователь никак не пострадал.`, {
                             stack: e.stack, call, userId: call.message.chat.id
@@ -275,27 +291,26 @@ class ScheduleController {
                     })
                     .catch(async (e) => {
                         try {
-                            log.warn(`Student ${call.message.chat.id} gets a cached schedule.`, {
-                                stack:e.stack,
-                                userId: call.message.chat.id
-                            })
                             let error_text = "⚠️ Произошла непредвиденная ошибка. Разработчики уже уведомлены о вашей проблеме. Простите. Пожалуйста. 🥹"
-                            if(e.response){
+                            if (e.response) {
                                 if (e.response.status === 503)
                                     error_text = "⚠️ schedule.ksu.kz не отвечает..."
 
-                                if (e.response.status === 500){
+                                if (e.response.status === 500) {
                                     error_text = "⚠️ Произошла непредвиденная ошибка на стороне нашего сервера. Попробуйте обновить расписание."
                                 }
                             }
-                            await this.getReservedSchedule(bot, call, groupId, error_text)
+                            log.warn(`Student ${call.message.chat.id} gets a cached schedule.` + error_text + e.message, {
+                                stack: e.stack,
+                            })
+                            await this.getReservedSchedule(call, groupId, error_text)
                         } catch (e) {
                             log.error("Ошбика при получении резервного расписания.", {
                                 stack: e.stack,
                                 call,
                                 userId: call.message.chat.id
                             })
-                            return await unexpectedErrorController(e, bot, call.message, call.data)
+                            return await unexpectedErrorController(e, call.message, call.data)
                         }
                     })
             }
@@ -307,13 +322,13 @@ class ScheduleController {
                 lastName: call.message.chat.last_name,
                 username: call.message.chat.username,
                 group: groupId,
-                scheduleType:"student"
+                scheduleType: "student"
             }).catch((e) => log.error("Ошибка при обновлении данных о пользователе при получении расписания. ", {
                 stack: e.stack, call, userId: call.message.chat.id
             }))
 
         } catch (e) {
-            return await unexpectedErrorController(e, bot, call.message, call.data)
+            return await unexpectedErrorController(e, call.message, call.data)
         }
 
     }

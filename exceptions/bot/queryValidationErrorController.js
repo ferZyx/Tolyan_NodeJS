@@ -6,7 +6,7 @@ export async function queryValidationErrorController(bot, call) {
         log.error(`User ${call.message.chat.id} used an incorrect callback: ${call.data}. Данные об ошибке в метаданных. Делаю редирект на главную`, {
             call
         })
-        await redirectToStartMenu(bot,call)
+        await redirectToStartMenu(call)
     } catch (e) {
         log.error("УЛЬТРА МЕГА ВАЖНО! ОШИБКА ПРИ ПОПЫТКЕ ОБРАБОТАТЬ ОШИБКУ! queryValidationErrorController." + e.message,
             {call, stack: e.stack})

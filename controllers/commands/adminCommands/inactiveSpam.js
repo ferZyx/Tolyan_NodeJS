@@ -1,8 +1,9 @@
 import userActivityService from "../../../services/userActivityService.js";
 import log from "../../../logging/logging.js";
 import {sleep} from "../../../handlers/adminCommandHandler.js";
+import {bot} from "../../../app.js";
 
-export async function inactiveSpamCommandController(bot, msg) {
+export async function inactiveSpamCommandController( msg) {
     try {
         const split_data = msg.text.split(" ")
         if (split_data.length < 2) {

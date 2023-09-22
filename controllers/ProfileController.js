@@ -1,8 +1,9 @@
 import profileService from "../services/profileService.js";
 import log from "../logging/logging.js";
+import {bot} from "../app.js";
 
 class ProfileController {
-    async findProfiles(bot, message, surname) {
+    async findProfiles(message, surname) {
         try {
             const teachers = await profileService.findByName(surname)
             if (!teachers.length) {
@@ -33,7 +34,7 @@ class ProfileController {
 
     }
 
-    async getProfile(bot, call, _id) {
+    async getProfile(call, _id) {
         try {
             const teacher = await profileService.getById(_id)
 
@@ -42,7 +43,7 @@ class ProfileController {
             })
                 .catch(async (e) => {
                     await bot.sendMessage(call.message.chat.id, `⚠️ Произошла ошибка при отправке документа. Скорее всего он недоступен. Вот ссылочка на него:\n${teacher.href}`)
-                    log.warn(`Произошла ошибка при попытке отправить профиль. Чел не пострадал, получил ссылочку. Ошибка: ${e.message}`, {stack:e.stack})
+                    log.warn(`Произошла ошибка при попытке отправить профиль. Чел не пострадал, получил ссылочку. Ошибка: ${e.message}`, {stack: e.stack})
                 })
 
             await bot.deleteMessage(call.message.chat.id, call.message.message_id)

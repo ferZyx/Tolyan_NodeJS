@@ -4,7 +4,7 @@ import cors from "cors"
 import log from "./logging/logging.js"
 import db from "./db/connection.js"
 import config from "./config.js"
-import setupCommandHandlers from "./handlers/commandHandler.js";
+import {setupCommandHandlers} from "./handlers/commandHandler.js";
 import setupCallbackHandlers from "./handlers/callbackHandler.js";
 import setupAdminCommandHandler from "./handlers/adminCommandHandler.js";
 import errorMiddleware from "./middlewares/errorMiddleware.js";
@@ -14,8 +14,9 @@ import {setupUserDailyStatisticsLogging} from "./cron/userDailyStatisticsLogging
 import {setupDailyDataUpdate} from "./cron/dailyDataUpdate.js";
 import {setupLoggingPathUpdate} from "./cron/loggingPathUpdate.js";
 import setupNewChatMemberHandler from "./handlers/newChatMemberHandler.js";
+import {setupAnyMessageHandler} from "./handlers/anyMessageHandler.js";
 
-const bot = new TelegramBot(config.TG_TOKEN, {
+export const bot = new TelegramBot(config.TG_TOKEN, {
     polling: {
         autoStart: true
     }
@@ -42,11 +43,12 @@ export const userLastRequest = {};
         })
 
 
-    await setupCommandHandlers(bot);
-    await setupAdminCommandHandler(bot);
-    await setupCallbackHandlers(bot);
-    await setupDocumentHandler(bot)
-    await setupNewChatMemberHandler(bot)
+    await setupCommandHandlers();
+    await setupAdminCommandHandler();
+    await setupCallbackHandlers();
+    await setupDocumentHandler()
+    await setupNewChatMemberHandler()
+    await setupAnyMessageHandler();
 
     await setupUserDailyStatisticsLogging()
     await setupDailyDataUpdate()

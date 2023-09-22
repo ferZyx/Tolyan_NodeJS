@@ -2,8 +2,9 @@ import blackListService from "../services/blackListService.js";
 import log from "../logging/logging.js";
 import config from "../config.js";
 import UserService from "../services/userService.js";
+import {bot} from "../app.js";
 
-export default async function setupNewChatMemberHandler(bot) {
+export default async function setupNewChatMemberHandler() {
     bot.on('new_chat_members', async (msg) => {
         try{
             const newMembers = msg.new_chat_members;

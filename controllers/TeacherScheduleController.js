@@ -6,6 +6,22 @@ import log from "../logging/logging.js";
 import {unexpectedErrorController} from "../exceptions/bot/unexpectedErrorController.js";
 import userService from "../services/userService.js";
 import teacherScheduleService from "../services/teacherScheduleService.js";
+import {bot} from "../app.js";
+
+async function downloadSchedule(teacherId, attemption = 1) {
+    try {
+        return await axios.get(`https://api.tolyan.me/teacherSchedule/get_teacher_schedule/${teacherId}`, {
+            timeout: 5000
+        })
+    } catch (e) {
+        if (attemption < 2) {
+            log.info(`teacher ${teacherId} попал в рекурсивную функцию по получению расписания!`)
+            return await downloadSchedule(teacherId, ++attemption)
+        }else {
+            throw e
+        }
+    }
+}
 
 class TeacherScheduleController {
     transformGroupString(inputString) {
@@ -43,7 +59,7 @@ class TeacherScheduleController {
         return linesWithSymbol.join('\n');
     }
 
-    async getDepartmentMenu(bot, message, prePage) {
+    async getDepartmentMenu(message, prePage) {
         try {
             const departments = await departmentService.getAll()
 
@@ -54,8 +70,9 @@ class TeacherScheduleController {
             if (page_count > 0) {
                 markup.inline_keyboard.push([{text: '⬅️Назад', callback_data: `department|${page - 1}`},
                     {text: `📄 ${Number(page) + 1} из ${page_count + 1}`, callback_data: `nothing`},
-                    {text: 'Вперед➡️', callback_data: `department|${page + 1}`
-                }])
+                    {
+                        text: 'Вперед➡️', callback_data: `department|${page + 1}`
+                    }])
             }
 
             markup.inline_keyboard.push([{
@@ -72,7 +89,7 @@ class TeacherScheduleController {
         }
     }
 
-    async getTeacherMenu(bot, message, departmentId, prePage) {
+    async getTeacherMenu(message, departmentId, prePage) {
         try {
             const teachers = await teacherService.getByDepartmentId(departmentId)
             const department = await departmentService.getById(departmentId)
@@ -89,7 +106,8 @@ class TeacherScheduleController {
 
             if (page_count > 0) {
                 markup.inline_keyboard.push([{
-                    text: '⬅️Назад', callback_data: `teacher|${departmentId}|${page - 1}`},
+                    text: '⬅️Назад', callback_data: `teacher|${departmentId}|${page - 1}`
+                },
                     {text: `📄 ${Number(page) + 1} из ${page_count + 1}`, callback_data: `nothing`},
                     {text: 'Вперед➡️', callback_data: `teacher|${departmentId}|${page + 1}`}])
             }
@@ -106,8 +124,8 @@ class TeacherScheduleController {
         }
     }
 
-    async sendSchedule(bot, call, schedule_cache, preMessage = '') {
-        try{
+    async sendSchedule(call, schedule_cache, preMessage = '') {
+        try {
             const timestamp = schedule_cache.timestamp
             const data = schedule_cache.data
             const teacher = schedule_cache.teacher
@@ -161,26 +179,24 @@ class TeacherScheduleController {
                     reply_markup: markup,
                     disable_web_page_preview: true
                 })
-        }catch (e) {
-            await unexpectedErrorController(e, bot, call.message, call.data)
+        } catch (e) {
+            await unexpectedErrorController(e, call.message, call.data)
         }
     }
 
-    async getScheduleMenu(bot, call) {
+    async getScheduleMenu(call) {
         try {
             const data_array = call.data.split('|');
             let [, teacherId] = data_array
 
             if (teacherId in schedule_cache && Date.now() - schedule_cache[teacherId].timestamp <= 30 * 60 * 1000) {
-                await this.sendSchedule(bot, call, schedule_cache[teacherId])
+                await this.sendSchedule(call, schedule_cache[teacherId])
             } else {
-                await axios.get(`https://api.tolyan.me/teacherSchedule/get_teacher_schedule/${teacherId}`, {
-                    timeout: 10000
-                })
+                await downloadSchedule(teacherId)
                     .then(async (response) => {
                         const teacher = await teacherService.getById(teacherId)
                         schedule_cache[teacherId] = {data: response.data, timestamp: Date.now(), teacher}
-                        await this.sendSchedule(bot, call, schedule_cache[teacherId])
+                        await this.sendSchedule(call, schedule_cache[teacherId])
 
                         await teacherScheduleService.updateByTeacherId(teacherId, response.data).catch(e => log.error(`Ошибка при попытке сохранить резервную копию teacher расписания в бд. teacherId:${teacherId}. Пользователь никак не пострадал.`, {
                             stack: e.stack, call, userId: call.message.chat.id
@@ -193,22 +209,22 @@ class TeacherScheduleController {
                                 userId: call.message.chat.id
                             })
                             let error_text = "⚠️ Произошла непредвиденная ошибка. Разработчики уже уведомлены о вашей проблеме. Простите. Пожалуйста. 🥹"
-                            if(e.response){
+                            if (e.response) {
                                 if (e.response.status === 503)
                                     error_text = "⚠️ schedule.ksu.kz не отвечает..."
 
-                                if (e.response.status === 500){
+                                if (e.response.status === 500) {
                                     error_text = "⚠️ Произошла непредвиденная ошибка на стороне нашего сервера. Попробуйте обновить расписание."
                                 }
                             }
-                            await this.getReservedSchedule(bot, call, teacherId, error_text)
+                            await this.getReservedSchedule(call, teacherId, error_text)
                         } catch (e) {
                             log.error("Ошбика при получении резервного Teacher расписания.", {
                                 stack: e.stack,
                                 call,
                                 userId: call.message.chat.id
                             })
-                            return await unexpectedErrorController(e, bot, call.message, call.data)
+                            return await unexpectedErrorController(e, call.message, call.data)
                         }
                     })
             }
@@ -226,12 +242,12 @@ class TeacherScheduleController {
             }))
 
         } catch (e) {
-            return await unexpectedErrorController(e, bot, call.message, call.data)
+            return await unexpectedErrorController(e, call.message, call.data)
         }
 
     }
 
-    async getReservedSchedule(bot, call, teacherId, error_text) {
+    async getReservedSchedule(call, teacherId, error_text) {
         await bot.editMessageText('💀 Произшла ошибка. Сейчас поищу твое расписание в своих недрах...', {
             chat_id: call.message.chat.id, message_id: call.message.message_id
         })
@@ -242,7 +258,7 @@ class TeacherScheduleController {
 
             const teacher = await teacherService.getById(teacherId)
             schedule_cache[teacherId] = {data: response.data, timestamp, teacher}
-            await this.sendSchedule(bot, call, schedule_cache[teacherId], `<b>${error_text} \n` +
+            await this.sendSchedule(call, schedule_cache[teacherId], `<b>${error_text} \n` +
                 "🫡 Последнее загруженное расписание:\n\n</b>")
         } else {
             await bot.editMessageText("🙈 Первопроходец от своей группы?\n" +
