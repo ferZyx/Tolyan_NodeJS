@@ -106,7 +106,7 @@ export default function setupAdminCommandHandler() {
                 const keyboard = {
                     keyboard: [
                         [{text: '📢 Новости'}, {text: '🗓 Меню'}, {text: '💡 Помощь'}],
-                        [{text: '🗓 Преподавателя'}, {text: '🗓 Группы'}],
+                        [{text: '🗓 Расп. преподавателя'}, {text: '🗓 Расп. группы'}],
                     ],
                     resize_keyboard: true,
                     one_time_keyboard: false,

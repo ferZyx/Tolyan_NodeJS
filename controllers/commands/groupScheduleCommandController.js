@@ -42,9 +42,13 @@ export async function groupScheduleCommandController(msg) {
         try {
             const User = await userService.getUserById(msg.chat.id)
 
-            if (!User || !User.group) {
+            if (!User) {
                 await bot.deleteMessage(msg.chat.id, answer.message_id);
-                return await bot.sendMessage(msg.chat.id, "❗️ У вас нет ранее загруженного студенческого расписания! Используйте /start")
+                return await bot.sendMessage(msg.chat.id, `❗️ Я тебя не знаю! Воспользуйся /start для регистрации!`)
+            }
+            if (!User.group) {
+                await bot.deleteMessage(msg.chat.id, answer.message_id);
+                return await bot.sendMessage(msg.chat.id, `❗️ У вас нет ранее загруженного студенческого расписания! Воспользуйтесь кнопочкой "🗒 Новое расписание"`)
             }
 
             await sendUserGroupSchedule(User, msg, answer)

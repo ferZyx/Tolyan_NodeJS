@@ -7,18 +7,22 @@ import {newsCommandController} from "../controllers/commands/newsCommandControll
 import {donateCommandController} from "../controllers/commands/donateCommandController.js";
 import {teacherScheduleCommandController} from "../controllers/commands/teacherScheduleCommandController.js";
 import {groupScheduleCommandController} from "../controllers/commands/groupScheduleCommandController.js";
+import {newScheduleCommandController} from "../controllers/commands/newScheduleCommandController.js";
 
 
 export function setupCommandHandlers() {
     bot.onText(/^\/start/i, startCommandController);
-    bot.onText(/^🗓 Меню/i, startCommandController);
+
+    bot.onText(/^🗒 Новое расписание/i, newScheduleCommandController);
+    bot.onText(/^\/new$/i, newScheduleCommandController);
+    bot.onText(/^\/new (.+)/i, newScheduleCommandController);
 
     bot.onText(/^\/schedule/i, scheduleCommandController);
     bot.onText(/^расписание/i, scheduleCommandController);
 
-    bot.onText(/^🗓 Преподавателя/i, teacherScheduleCommandController);
+    bot.onText(/^🗓 Расписание преподавателя/i, teacherScheduleCommandController);
 
-    bot.onText(/^🗓 Группы/i, groupScheduleCommandController);
+    bot.onText(/^🗓 Расписание студента/i, groupScheduleCommandController);
 
     bot.onText(/^профиль/i, profileCommandController);
 
@@ -29,4 +33,6 @@ export function setupCommandHandlers() {
     bot.onText(/^📢 Новости/i, newsCommandController)
 
     bot.onText(/^\/donate/i, donateCommandController)
+
+    // bot.onText(/^Г/i, searchGroupCommandController)
 }

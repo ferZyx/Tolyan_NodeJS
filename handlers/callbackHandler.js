@@ -6,17 +6,12 @@ import ProfileController from "../controllers/ProfileController.js";
 import {queryValidationErrorController} from "../exceptions/bot/queryValidationErrorController.js";
 import {unexpectedErrorController} from "../exceptions/bot/unexpectedErrorController.js";
 import TeacherScheduleController from "../controllers/TeacherScheduleController.js";
-import {redirectToStartMenu} from "../controllers/commands/startCommandController.js";
 import {bot} from "../app.js";
 
 export default function setupCallbackHandlers() {
     bot.on('callback_query', async (call) => {
         log.silly(`User ${call.message.chat.id} clicked to btn ${call.data}`, {call, userId: call.message.chat.id})
         await callbackAntiSpamMiddleware(call, async () => {
-            if (call.data === 'start') {
-                await redirectToStartMenu(call)
-            }
-
             if (call.data === "delete") {
                 await bot.deleteMessage(call.message.chat.id, call.message.message_id)
                     .catch((e) => log.warn(`User ${call.message.chat.id} получил ошибку при попытке удалить менюшку. Юзер никак не пострадал.` + e.message, {stack: e.stack}))

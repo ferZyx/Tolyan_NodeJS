@@ -17,11 +17,6 @@ export async function profileCommandController(msg) {
 
         if (!splittedText[1] || splittedText[1].length<2){
             return await bot.sendMessage(msg.chat.id, '⚠️ Фамилия для поиска профиля должна состоять как минимум из 2 символов.')
-                .catch(e => log.error("ВАЖНО! ОШИБКА В ПРОФИЛЬ КОМАНД ХЕДЛЕРЕ", {
-                    stack: e.stack,
-                    msg,
-                    userId: msg.chat.id
-                }))
         }else{
             surname = splittedText.slice(1).join(" ")
         }

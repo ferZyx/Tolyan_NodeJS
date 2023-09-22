@@ -44,9 +44,13 @@ export async function teacherScheduleCommandController(msg) {
         try {
             const User = await userService.getUserById(msg.chat.id)
 
-            if (!User || !User.teacher) {
+            if (!User) {
                 await bot.deleteMessage(msg.chat.id, answer.message_id);
-                return await bot.sendMessage(msg.chat.id, "❗️ У вас нет загруженного ранее расписания преподавателя! Используйте /start")
+                return await bot.sendMessage(msg.chat.id, "❗️ Я тебя не знаю! Воспользуйся /start для регистрации!")
+            }
+            if (!User.teacher) {
+                await bot.deleteMessage(msg.chat.id, answer.message_id);
+                return await bot.sendMessage(msg.chat.id, "❗️ У вас нет загруженного ранее расписания преподавателя! Воспользуйтесь кнопочкой \"🗒 Новое расписание\"")
             }
 
             await sendUserTeacherSchedule(User, msg, answer)
