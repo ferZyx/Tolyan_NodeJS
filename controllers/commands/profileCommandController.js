@@ -1,7 +1,7 @@
 import log from "../../logging/logging.js";
 import {bot} from "../../app.js";
 import {commandAntiSpamMiddleware} from "../../middlewares/bot/commandAntiSpamMiddleware.js";
-import TeacherController from "../ProfileController.js";
+import ProfileController from "../ProfileController.js";
 
 const errorCatch = async (e, msg) =>{
     log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В profileCommandController. Юзеру сказано что бот прибоел.` + e.message, {stack: e.stack, userId: msg.chat.id})
@@ -29,7 +29,7 @@ export async function profileCommandController(msg) {
 
             const answer = await bot.sendMessage(msg.chat.id, `🪄 Пытаюсь накодовать профиль препода с фамилией: ${surname}. Вжух!`, {parse_mode: 'HTML'});
 
-            await TeacherController.findProfiles( answer, surname);
+            await ProfileController.findProfiles( answer, surname);
         } catch (e) {
             await errorCatch(e, msg)
         }

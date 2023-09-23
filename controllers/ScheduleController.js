@@ -78,7 +78,7 @@ class ScheduleController {
         return `${hours}:${minutes}:${seconds}`;
     }
 
-    async getCurrentDayNumber() {
+    getCurrentDayNumber() {
         const currentDate = new Date();
         if (currentDate.getHours() >= 18) {
             return ((currentDate.getDay() + 6) % 7) + 1;
@@ -148,7 +148,7 @@ class ScheduleController {
 
             const {data, page, page_count} = this.configureMenuData(groups, prePage)
 
-            const day = await this.getCurrentDayNumber()
+            const day = this.getCurrentDayNumber()
 
             let markup = {
                 inline_keyboard: data.map((item) => [{

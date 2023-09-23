@@ -234,7 +234,7 @@ export default function setupAdminCommandHandler() {
                 }
 
                 const call = {
-                    data: `schedule|${Group.language}|${groupId}|${await ScheduleController.getCurrentDayNumber()}`,
+                    data: `schedule|${Group.language}|${groupId}|${ScheduleController.getCurrentDayNumber()}`,
                     message: answer
                 }
                 await ScheduleController.getScheduleMenu(bot, call)
@@ -260,7 +260,7 @@ export default function setupAdminCommandHandler() {
                 }
 
                 const call = {
-                    data: `schedule|${Group.language}|${groupId}|${await ScheduleController.getCurrentDayNumber()}`,
+                    data: `schedule|${Group.language}|${groupId}|${ScheduleController.getCurrentDayNumber()}`,
                     message: answer
                 }
                 await ScheduleController.getReservedSchedule(bot, call, groupId)

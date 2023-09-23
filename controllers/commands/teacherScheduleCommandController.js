@@ -29,7 +29,7 @@ export async function sendUserTeacherSchedule(User, msg, answer) {
             chat_id: answer.chat.id, message_id: answer.message_id
         })
     }
-    const day = await ScheduleController.getCurrentDayNumber()
+    const day = ScheduleController.getCurrentDayNumber()
 
     const call = {
         data: `TeacherSchedule|${teacherId}|${day}`,

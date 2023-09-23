@@ -27,7 +27,7 @@ router.get('/get_user_schedule', async (req, res) => {
         return res.status(404).json("Пользователь не найден")
     }
 
-    const data = {scheduleType: user.scheduleType ? user.scheduleType : 'student'}
+    const data = {scheduleType: user.scheduleType ?? 'student'}
 
     const group = await groupService.getById(user.group)
     if (group) {
@@ -55,6 +55,8 @@ router.get('/get_user_schedule', async (req, res) => {
             }
 
         }
+    }else{
+        data.studentSchedule = null
     }
 
     const teacher = await teacherService.getById(user.teacher)
@@ -83,6 +85,8 @@ router.get('/get_user_schedule', async (req, res) => {
             }
 
         }
+    }else{
+        data.teacherSchedule = null
     }
 
     return res.json(data)

@@ -96,7 +96,7 @@ class TeacherScheduleController {
 
             const {data, page, page_count} = ScheduleController.configureMenuData(teachers, prePage)
 
-            const day = await ScheduleController.getCurrentDayNumber()
+            const day = ScheduleController.getCurrentDayNumber()
 
             let markup = {
                 inline_keyboard: data.map((item) => [{

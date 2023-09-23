@@ -27,7 +27,7 @@ export async function sendUserGroupSchedule(User, msg, answer) {
             "Попробуй воспользоваться /start для получения расписания повторно.")
     }
     const language = Group.language
-    const day = await ScheduleController.getCurrentDayNumber()
+    const day = ScheduleController.getCurrentDayNumber()
 
     const call = {
         data: `schedule|${language}|${groupId}|${day}`,
