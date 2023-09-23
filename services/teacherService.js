@@ -1,7 +1,7 @@
 import {Teacher} from "../models/teacher.js";
 
 
-class teacherService{
+class teacherService {
     getById = async (id) => {
         try {
             return await Teacher.findOne({id})
@@ -10,27 +10,36 @@ class teacherService{
         }
     }
     getByDepartmentId = async (departmentId) => {
-        try{
+        try {
             return await Teacher.find({department: departmentId}).sort('name')
-        }catch (e) {
+        } catch (e) {
             throw new Error("Ошибка при получении Teacher по DepartmentId: " + e.stack)
         }
     }
     getAll = async () => {
-        try{
+        try {
             return await Teacher.find({}).sort('name')
-        }catch (e) {
+        } catch (e) {
             throw new Error("Ошибка при получении всех Teacher: " + e.stack)
         }
     }
 
-    updateAll = async (teachers) =>{
-        try{
+    updateAll = async (teachers) => {
+        try {
             await Teacher.deleteMany({})
 
             await Teacher.insertMany(teachers)
-        }catch (e) {
+        } catch (e) {
             console.log(teachers)
+            throw new Error("Ошибка при обновлении всех Teacher: " + e.stack)
+        }
+    }
+
+    findByName = async (name) => {
+        try{
+            const regExp = new RegExp(name, "i")
+            return await Teacher.find({name:{$regex:regExp}}).sort('name')
+        }catch (e) {
             throw new Error("Ошибка при обновлении всех Teacher: " + e.stack)
         }
     }

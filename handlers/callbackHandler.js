@@ -7,6 +7,8 @@ import {queryValidationErrorController} from "../exceptions/bot/queryValidationE
 import {unexpectedErrorController} from "../exceptions/bot/unexpectedErrorController.js";
 import TeacherScheduleController from "../controllers/TeacherScheduleController.js";
 import {bot} from "../app.js";
+import SearchGroupController from "../controllers/SearchGroupController.js";
+import SearchTeacherController from "../controllers/SearchTeacherController.js";
 
 export default function setupCallbackHandlers() {
     bot.on('callback_query', async (call) => {
@@ -17,7 +19,7 @@ export default function setupCallbackHandlers() {
                     .catch((e) => log.warn(`User ${call.message.chat.id} получил ошибку при попытке удалить менюшку. Юзер никак не пострадал.` + e.message, {stack: e.stack}))
             }
 
-            if (call.data.includes("faculty")) {
+            if (call.data.includes("faculty|")) {
                 try {
                     const [, page] = call.data.split('|');
                     if (isNaN(parseFloat(page))) {
@@ -30,7 +32,7 @@ export default function setupCallbackHandlers() {
 
             }
 
-            if (call.data.includes("program")) {
+            if (call.data.includes("program|")) {
                 try {
                     const [, facultyId, page] = call.data.split('|');
                     if (!facultyId || !page) {
@@ -43,7 +45,7 @@ export default function setupCallbackHandlers() {
                 }
             }
 
-            if (call.data.includes("group")) {
+            if (call.data.includes("group|")) {
                 try {
                     const [, facultyId, programId, page] = call.data.split('|');
                     if (!facultyId || !programId || !page) {
@@ -56,7 +58,7 @@ export default function setupCallbackHandlers() {
                 }
             }
 
-            if (call.data.includes("schedule")) {
+            if (call.data.includes("schedule|")) {
                 if (call.data.split("|").length < 2) {
                     return await queryValidationErrorController(call)
                 }
@@ -78,7 +80,7 @@ export default function setupCallbackHandlers() {
 
             }
 
-            if (call.data.includes("profile")) {
+            if (call.data.includes("profile|")) {
                 try {
                     const [, _id] = call.data.split("|")
                     await ProfileController.getProfile(call, _id)
@@ -91,7 +93,7 @@ export default function setupCallbackHandlers() {
                 }
             }
 
-            if (call.data.includes("department")) {
+            if (call.data.includes("department|")) {
                 try {
                     const [, page] = call.data.split('|');
                     if (isNaN(parseFloat(page))) {
@@ -103,7 +105,7 @@ export default function setupCallbackHandlers() {
                 }
             }
 
-            if (call.data.includes("teacher")) {
+            if (call.data.includes("teacher|")) {
                 try {
                     const [, departmentId, page] = call.data.split('|');
                     if (isNaN(parseFloat(page))) {
@@ -115,7 +117,7 @@ export default function setupCallbackHandlers() {
                 }
             }
 
-            if (call.data.includes("TeacherSchedule")) {
+            if (call.data.includes("TeacherSchedule|")) {
                 const [, teacherId,] = call.data.split("|")
                 if (!teacherId) {
                     return await queryValidationErrorController(call)
@@ -135,6 +137,26 @@ export default function setupCallbackHandlers() {
                 }
 
             }
+            if (call.data.includes("searchGroup|")) {
+                try {
+                    const [, groupName, page] = call.data.split("|")
+
+                    await SearchGroupController.getSearchGroupMenu(call.message, groupName, +page)
+                } catch (e) {
+                    return await unexpectedErrorController(e, call.message, call.data)
+                }
+            }
+
+            if (call.data.includes("searchTeacher|")) {
+                try {
+                    const [, teacher, page] = call.data.split("|")
+
+                    await SearchTeacherController.getSearchTeacherMenu(call.message, teacher, +page)
+                } catch (e) {
+                    return await unexpectedErrorController(e, call.message, call.data)
+                }
+            }
+
             await bot.answerCallbackQuery(call.id).catch(e => log.info("Ошибка с ответов на колбек" + e.message))
         })
 

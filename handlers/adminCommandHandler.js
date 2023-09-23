@@ -237,7 +237,7 @@ export default function setupAdminCommandHandler() {
                     data: `schedule|${Group.language}|${groupId}|${ScheduleController.getCurrentDayNumber()}`,
                     message: answer
                 }
-                await ScheduleController.getScheduleMenu(bot, call)
+                await ScheduleController.getScheduleMenu(call)
             } catch (e) {
                 log.error({stack: e.stack})
             }
@@ -263,7 +263,7 @@ export default function setupAdminCommandHandler() {
                     data: `schedule|${Group.language}|${groupId}|${ScheduleController.getCurrentDayNumber()}`,
                     message: answer
                 }
-                await ScheduleController.getReservedSchedule(bot, call, groupId)
+                await ScheduleController.getReservedSchedule(call, groupId)
             } catch (e) {
                 log.error({stack: e.stack})
             }
@@ -403,7 +403,7 @@ export default function setupAdminCommandHandler() {
 
         bot.onText(/^\/inactiveSpam/i, async (msg) => {
             await isAdminMiddleware(msg, async () => {
-                await inactiveSpamCommandController(bot, msg)
+                await inactiveSpamCommandController(msg)
             })
         });
 

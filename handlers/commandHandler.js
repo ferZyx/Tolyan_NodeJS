@@ -9,6 +9,7 @@ import {teacherScheduleCommandController} from "../controllers/commands/teacherS
 import {groupScheduleCommandController} from "../controllers/commands/groupScheduleCommandController.js";
 import {newScheduleCommandController} from "../controllers/commands/newScheduleCommandController.js";
 import {searchGroupCommandController} from "../controllers/commands/searchGroupCommandController.js";
+import {searchTeacherCommandController} from "../controllers/commands/searchTeacherCommandController.js";
 
 
 export function setupCommandHandlers() {
@@ -36,4 +37,8 @@ export function setupCommandHandlers() {
     bot.onText(/^\/donate/i, donateCommandController)
 
     bot.onText(/^Г (.+)/i, searchGroupCommandController)
+    bot.onText(/^Г$/i, searchGroupCommandController)
+
+    bot.onText(/^П (.+)/i, searchTeacherCommandController)
+    bot.onText(/^П$/i, searchTeacherCommandController)
 }

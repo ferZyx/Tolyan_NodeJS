@@ -38,7 +38,7 @@ class groupService {
     findByName = async (name) => {
         try {
             const regExp = new RegExp(name, "i")
-            return await Group.find({name:{$regex:regExp}})
+            return await Group.find({name:{$regex:regExp}}).sort('name')
         }catch (e) {
             throw new Error("Ошибка при поиске группы по названию." + e.stack)
         }

@@ -3,6 +3,7 @@ import {bot} from "../../app.js";
 import {commandAntiSpamMiddleware} from "../../middlewares/bot/commandAntiSpamMiddleware.js";
 import GroupService from "../../services/groupService.js";
 import ScheduleController from "../ScheduleController.js";
+import SearchGroupController from "../SearchGroupController.js";
 
 const errorCatch = async (e, msg) =>{
     log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В searchGroupCommandController. Юзеру сказано что бот прибоел.` + e.message, {stack: e.stack, userId: msg.chat.id})
@@ -16,30 +17,29 @@ export async function searchGroupCommandController(msg){
         try{
             const splittedText = msg.text.split(" ")
 
-            let groupName = ''
+            let groupName = splittedText.slice(1).join(" ").replaceAll(" ", "-")
 
-            if (!splittedText[1] || splittedText[1].length<2){
+            if (!groupName || groupName.length<2){
                 return await bot.sendMessage(msg.chat.id, '⚠️ Название группы должно состоять как минимум из 2 символов.')
             }
 
             groupName = splittedText.slice(1).join(" ").replaceAll(" ", "-")
 
             const groups = await GroupService.findByName(groupName)
+
             if (!groups.length){
-                await bot.sendMessage(msg.chat.id, `⚠️ К сожалению по запросу: <b>${groupName}</b> ничего не найдено.\n` +
+                return await bot.sendMessage(msg.chat.id, `⚠️ К сожалению по запросу: <b>${groupName}</b> ничего не найдено.\n` +
                     `✍️ Проверьте корректность ввода.\n` +
                     `Если всё в порядке и я не могу найти - значит сори 🙃`, {parse_mode:"HTML"})
             }
 
-            let markup = {
-                inline_keyboard: groups.slice(0, 10).map((group) => [{
-                    text: group.name, callback_data: `schedule|${group.language}|${group.id}|${ScheduleController.getCurrentDayNumber()}`
-                }])
-            }
+            searchGroupMenuCache[groupName] = {groups, time:Date.now()}
 
-            await bot.sendMessage(msg.chat.id, groupName, {reply_markup:markup})
+            const {data, page, page_count} = ScheduleController.configureMenuData(groups, 0)
 
+            let markup = SearchGroupController.getMenuMarkup(data, groupName, page_count, page)
 
+            await bot.sendMessage(msg.chat.id, `✅По вашему запросу: <b>${groupName}</b> найдено ${groups.length} групп!🙉`, {reply_markup:markup, parse_mode:"HTML"})
         }catch (e) {
             await errorCatch();
         }

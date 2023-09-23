@@ -24,6 +24,16 @@ async function downloadSchedule(teacherId, attemption = 1) {
 }
 
 class TeacherScheduleController {
+    getTeachersRowMarkup(data){
+        const day = ScheduleController.getCurrentDayNumber()
+
+        return {
+            inline_keyboard: data.map((item) => [{
+                text: item.name, callback_data: `TeacherSchedule|${item.id}|${day}`
+            }])
+        }
+    }
+
     transformGroupString(inputString) {
         // Используем регулярное выражение для поиска всех вхождений "(X/Y)" в строке
         const regex = /\((\d+)\/(\d+)\)/g;
@@ -96,13 +106,7 @@ class TeacherScheduleController {
 
             const {data, page, page_count} = ScheduleController.configureMenuData(teachers, prePage)
 
-            const day = ScheduleController.getCurrentDayNumber()
-
-            let markup = {
-                inline_keyboard: data.map((item) => [{
-                    text: item.name, callback_data: `TeacherSchedule|${item.id}|${day}`
-                }])
-            }
+            let markup = this.getTeachersRowMarkup(data)
 
             if (page_count > 0) {
                 markup.inline_keyboard.push([{

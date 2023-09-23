@@ -26,6 +26,16 @@ async function downloadSchedule(groupId, language, attemption = 1) {
 }
 
 class ScheduleController {
+    getGroupsRowMarkup(data){
+        const day = this.getCurrentDayNumber()
+
+        return {
+            inline_keyboard: data.map((item) => [{
+                text: item.name, callback_data: `schedule|${item.language}|${item.id}|${day}`
+            }])
+        }
+    }
+
     getRowMarkup(data, refTo) {
         return {
             inline_keyboard: data.map((item) => [{
@@ -148,13 +158,8 @@ class ScheduleController {
 
             const {data, page, page_count} = this.configureMenuData(groups, prePage)
 
-            const day = this.getCurrentDayNumber()
 
-            let markup = {
-                inline_keyboard: data.map((item) => [{
-                    text: item.name, callback_data: `schedule|${item.language}|${item.id}|${day}`
-                }])
-            }
+            let markup = this.getGroupsRowMarkup(data)
 
             if (page_count > 0) {
                 markup.inline_keyboard.push([{
