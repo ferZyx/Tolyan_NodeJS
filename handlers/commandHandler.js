@@ -37,7 +37,7 @@ export function setupCommandHandlers() {
 
     bot.onText(/^\/donate/i, donateCommandController)
 
-    bot.onText(/^\/removeButtons/i, removeKeyboardCommandController)
+    bot.onText(/^\/remove/i, removeKeyboardCommandController)
 
     // bot.onText(/^Г (.+)/i, searchGroupCommandController)
     // bot.onText(/^Г$/i, searchGroupCommandController)
