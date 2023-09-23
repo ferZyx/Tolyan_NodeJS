@@ -24,7 +24,10 @@ router.get('/get_user_schedule', async (req, res) => {
     }
     const user = await userService.getUserById(userId)
     if (!user) {
-        return res.status(404).json("Пользователь не найден")
+        return res.json({
+            studentSchedule:null,
+            teacherSchedule:null
+        })
     }
 
     const data = {scheduleType: user.scheduleType ?? 'student'}
