@@ -18,8 +18,9 @@ import {updateProfilesCommandController} from "../controllers/commands/adminComm
 import blackListService from "../services/blackListService.js";
 import {updateDepartmentsCommandController} from "../controllers/commands/adminCommands/updateDepartments.js";
 import {updateTeachersCommandController} from "../controllers/commands/adminCommands/updateTeachers.js";
-import {inactiveSpamCommandController} from "../controllers/commands/adminCommands/inactiveSpam.js";
+import {inactiveSpamAdminCommandController} from "../controllers/commands/adminCommands/inactiveSpamAdminCommandController.js";
 import config from "../config.js";
+import {piarAdminCommandController} from "../controllers/commands/adminCommands/piarAdminCommandController.js";
 
 export function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -27,7 +28,7 @@ export function sleep(ms) {
 
 
 export default function setupAdminCommandHandler() {
-    if (!config.DEBUG) {
+    if (true) {
         bot.onText(/^\/updateFaculties/, async (msg) => {
             await isAdminMiddleware(msg, async () => {
                 let hard = false
@@ -401,11 +402,10 @@ export default function setupAdminCommandHandler() {
 
         });
 
-        bot.onText(/^\/inactiveSpam/i, async (msg) => {
-            await isAdminMiddleware(msg, async () => {
-                await inactiveSpamCommandController(msg)
-            })
-        });
+        bot.onText(/^\/inactiveSpam/i, inactiveSpamAdminCommandController);
+        bot.onText(/^\/piar/i, piarAdminCommandController);
+
+
 
         bot.onText(/^\/spam/i, async (msg) => {
             let stop = false

@@ -64,6 +64,21 @@ class UserActivityService {
             throw new Error("Ошибка при получении неактивных пользователей: " + e.stack)
         }
     }
+    async getAbsolutelyUnactiveUsers() {
+        try {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Обнуляем время для сравнения с началом дня
+
+            const oneWeekAgo = new Date(today);
+            oneWeekAgo.setDate(today.getDate() - 21);
+
+            return await User.find({
+                updatedAt: {$lte: oneWeekAgo} // Между месяц назад и сегодняшней датой
+            });
+        } catch (e) {
+            throw new Error("Ошибка при получении неактивных пользователей: " + e.stack)
+        }
+    }
 }
 
 export default new UserActivityService()
