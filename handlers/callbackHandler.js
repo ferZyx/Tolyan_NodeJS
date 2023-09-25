@@ -9,6 +9,7 @@ import TeacherScheduleController from "../controllers/TeacherScheduleController.
 import {bot} from "../app.js";
 import SearchGroupController from "../controllers/SearchGroupController.js";
 import SearchTeacherController from "../controllers/SearchTeacherController.js";
+import {redirectToNewScheduleMenu} from "../controllers/commands/newScheduleCommandController.js";
 
 export default function setupCallbackHandlers() {
     bot.on('callback_query', async (call) => {
@@ -17,6 +18,10 @@ export default function setupCallbackHandlers() {
             if (call.data === "delete") {
                 await bot.deleteMessage(call.message.chat.id, call.message.message_id)
                     .catch((e) => log.warn(`User ${call.message.chat.id} получил ошибку при попытке удалить менюшку. Юзер никак не пострадал.` + e.message, {stack: e.stack}))
+            }
+
+            if (call.data === 'start'){
+                await redirectToNewScheduleMenu(call.message)
             }
 
             if (call.data.includes("faculty|")) {

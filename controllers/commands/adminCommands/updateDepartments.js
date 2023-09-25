@@ -26,7 +26,7 @@ export async function updateDepartmentsCommandController(hard = false){
 
         const endTime = Date.now()
 
-        if (departments.length > old_departments.length || hard){
+        if (departments.length >= old_departments.length || hard){
             await departmentService.updateAll(departments)
             log.warn(`Обновление кафедр прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +

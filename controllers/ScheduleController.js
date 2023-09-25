@@ -7,6 +7,7 @@ import scheduleService from "../services/scheduleService.js";
 import userService from "../services/userService.js";
 import {unexpectedErrorController} from "../exceptions/bot/unexpectedErrorController.js";
 import {bot} from "../app.js";
+import {sleep} from "../handlers/adminCommandHandler.js";
 
 export let schedule_cache = {}
 
@@ -17,6 +18,7 @@ async function downloadSchedule(groupId, language, attemption = 1) {
         })
     } catch (e) {
         if (attemption < 2) {
+            await sleep(1000)
             log.info(`group ${groupId} попала в рекурсивную функцию по получению расписания!`)
             return await downloadSchedule(groupId, language, ++attemption)
         }else {
@@ -305,7 +307,7 @@ class ScheduleController {
                                     error_text = "⚠️ Произошла непредвиденная ошибка на стороне нашего сервера. Попробуйте обновить расписание."
                                 }
                             }
-                            log.warn(`Student ${call.message.chat.id} gets a cached schedule.` + error_text + e.message, {
+                            log.warn(`Student ${call.message.chat.id} from group ${groupId} gets a cached schedule.` + error_text + e.message, {
                                 stack: e.stack,
                             })
                             await this.getReservedSchedule(call, groupId, error_text)

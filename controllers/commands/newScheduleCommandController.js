@@ -26,3 +26,11 @@ export async function newScheduleCommandController(msg){
         await errorCatch(e,msg)
     }
 }
+
+export async function redirectToNewScheduleMenu(msg){
+    try{
+        await bot.editMessageText(msg_text, {message_id:msg.message_id, chat_id:msg.chat.id ,reply_markup: inline_keyboard})
+    }catch (e) {
+        await errorCatch(e,msg)
+    }
+}

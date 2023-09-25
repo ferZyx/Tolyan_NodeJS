@@ -28,7 +28,7 @@ export async function updateFacultiesCommandController(hard = false) {
 
         const endTime = Date.now()
 
-        if (faculties.length > old_faculties.length || hard){
+        if (faculties.length >= old_faculties.length || hard){
             await facultyService.updateAll(faculties)
             log.warn(`Обновление факультетов прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +

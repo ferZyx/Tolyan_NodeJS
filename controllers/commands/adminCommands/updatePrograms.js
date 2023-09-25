@@ -49,7 +49,7 @@ export async function updateProgramsCommandController(hard = false) {
         }
 
         const endTime = Date.now()
-        if (programs.length > old_programs.length || hard){
+        if (programs.length >= old_programs.length || hard){
             await programService.updateAll(programs)
             log.warn(`Обновление программ прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +

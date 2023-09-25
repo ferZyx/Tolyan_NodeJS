@@ -27,7 +27,7 @@ export async function updateProfilesCommandController(hard = false){
 
         const endTime = Date.now()
 
-        if (profiles.length > old_profiles.length || hard){
+        if (profiles.length >= old_profiles.length || hard){
             await teacherProfileService.updateAll(profiles)
             log.warn(`Обновление профилей прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +

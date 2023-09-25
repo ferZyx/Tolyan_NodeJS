@@ -53,7 +53,7 @@ export async function updateGroupsCommandController(hard = false){
 
         const endTime = Date.now()
 
-        if (groups.length > old_groups.length || hard){
+        if (groups.length >= old_groups.length || hard){
             await groupService.updateAll(groups)
             log.warn(`Обновление групп прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +

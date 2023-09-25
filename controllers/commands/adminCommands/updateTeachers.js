@@ -49,7 +49,7 @@ export async function updateTeachersCommandController(hard = false) {
 
         const endTime = Date.now()
 
-        if (teachers.length > old_teachers.length || hard){
+        if (teachers.length >= old_teachers.length || hard){
             await teacherService.updateAll(teachers)
             log.warn(`Обновление преподов прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +

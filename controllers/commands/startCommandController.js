@@ -12,7 +12,7 @@ const keyboard = {
     one_time_keyboard: false
 }
 
-const msg_text = "🧙 Рад тебя видеть! Для получения расписания воспользуйся кнопочками либо командами, которые ты можешь найти в /help"
+const msg_text = "🧙 Рад тебя видеть! Для получения расписания воспользуйся кнопочками снизу или командами, которые ты можешь найти в /help"
 
 const errorCatch = async (e, msg) => {
     log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В startCommandController. Юзеру сказано что бот прибоел.` + e.message, {stack: e.stack})
@@ -32,18 +32,4 @@ export async function startCommandController(msg) {
                 }))
         }
     });
-}
-
-export async function redirectToStartMenu(call) {
-    try {
-        await bot.editMessageText(msg_text, {
-            chat_id: call.message.chat.id, message_id: call.message.message_id, reply_markup: keyboard
-        })
-    } catch (e) {
-        await errorCatch(e, call.message)
-    } finally {
-        await userService.registerUser(call.message).catch(e => log.error("Ошибка при попытке зарегистрировать пользователя: " + e.message, {
-            stack: e.stack, userId: call.message.chat.id
-        }))
-    }
 }
