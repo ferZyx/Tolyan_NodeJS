@@ -9,7 +9,7 @@ import {sleep} from "../../../handlers/adminCommandHandler.js";
 export async function piarAdminCommandController(msg) {
     await isAdminMiddleware(msg, async () => {
         try {
-            const msg_text = msg.text.replace("/piar ", "")
+            const msg_text = msg.text.replace("/piar", "")
             if (!msg_text){
                 return await bot.sendMessage(msg.chat.id, "Забыл пиар-текст написать, брат!")
             }
