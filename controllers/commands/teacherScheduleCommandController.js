@@ -5,6 +5,7 @@ import userService from "../../services/userService.js";
 import ScheduleController from "../ScheduleController.js";
 import teacherService from "../../services/teacherService.js";
 import TeacherScheduleController from "../TeacherScheduleController.js";
+import teacherScheduleController from "../TeacherScheduleController.js";
 
 const errorCatch = async (e, msg) => {
     log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В teacherScheduleCommandController. Юзеру сказано что бот прибоел.` + e.message, {
@@ -49,8 +50,7 @@ export async function teacherScheduleCommandController(msg) {
                 return await bot.sendMessage(msg.chat.id, "❗️ Я тебя не знаю! Воспользуйся /start для регистрации!")
             }
             if (!User.teacher) {
-                await bot.deleteMessage(msg.chat.id, answer.message_id);
-                return await bot.sendMessage(msg.chat.id, "❗️ У вас нет загруженного ранее расписания преподавателя! Воспользуйтесь кнопочкой \"🗒 Новое расписание\"")
+                return await teacherScheduleController.getDepartmentMenu(answer, 0)
             }
 
             await sendUserTeacherSchedule(User, msg, answer)

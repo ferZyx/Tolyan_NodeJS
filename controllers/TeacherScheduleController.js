@@ -69,7 +69,7 @@ class TeacherScheduleController {
         return linesWithSymbol.join('\n');
     }
 
-    async getDepartmentMenu(message, prePage) {
+    async getDepartmentMenu(msgToEdit, prePage) {
         try {
             const departments = await departmentService.getAll()
 
@@ -91,7 +91,7 @@ class TeacherScheduleController {
 
             await bot.editMessageText(`📌 Выбор кафедры. \n💡 P.S кафедру можно узнать используя команду "профиль". Подробнее /help\n` +
                 `📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
-                chat_id: message.chat.id, message_id: message.message_id, reply_markup: markup
+                chat_id: msgToEdit.chat.id, message_id: msgToEdit.message_id, reply_markup: markup
             })
 
         } catch (e) {
@@ -99,7 +99,7 @@ class TeacherScheduleController {
         }
     }
 
-    async getTeacherMenu(message, departmentId, prePage) {
+    async getTeacherMenu(msgToEdit, departmentId, prePage) {
         try {
             const teachers = await teacherService.getByDepartmentId(departmentId)
             const department = await departmentService.getById(departmentId)
@@ -121,7 +121,7 @@ class TeacherScheduleController {
             }])
 
             await bot.editMessageText(`📌 Выбор преподавателя.\n📘 Кафедра: ${department.name}\n📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
-                chat_id: message.chat.id, message_id: message.message_id, reply_markup: markup
+                chat_id: msgToEdit.chat.id, message_id: msgToEdit.message_id, reply_markup: markup
             })
         } catch (e) {
             throw e

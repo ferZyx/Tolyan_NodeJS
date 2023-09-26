@@ -98,7 +98,7 @@ class ScheduleController {
         return (currentDate.getDay() + 6) % 7;
     }
 
-    async getFacultyMenu(message, prePage) {
+    async getFacultyMenu(msgToEdit, prePage) {
         try {
             const faculties = await facultyService.getAll()
 
@@ -117,7 +117,7 @@ class ScheduleController {
             }])
 
             await bot.editMessageText(`📌 Выбор факультета. \n📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
-                chat_id: message.chat.id, message_id: message.message_id, reply_markup: markup
+                chat_id: msgToEdit.chat.id, message_id: msgToEdit.message_id, reply_markup: markup
             })
 
         } catch (e) {
@@ -126,7 +126,7 @@ class ScheduleController {
 
     }
 
-    async getProgramMenu(message, facultyId, prePage) {
+    async getProgramMenu(msgToEdit, facultyId, prePage) {
         try {
             const programs = await programService.getByFacultyId(facultyId)
             const faculty = await facultyService.getById(facultyId)
@@ -146,14 +146,14 @@ class ScheduleController {
             markup.inline_keyboard.push([{text: 'Вернуться назад', callback_data: `faculty|0`}])
 
             await bot.editMessageText(`📌 Выбор образовательной программы. \n🏛️ Факультет: ${faculty.name}\n📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
-                chat_id: message.chat.id, message_id: message.message_id, reply_markup: markup
+                chat_id: msgToEdit.chat.id, message_id: msgToEdit.message_id, reply_markup: markup
             })
         } catch (e) {
             throw e
         }
     }
 
-    async getGroupMenu(message, programId, facultyId, prePage) {
+    async getGroupMenu(msgToEdit, programId, facultyId, prePage) {
         try {
             const groups = await groupService.getByProgramId(programId)
             const program = await programService.getById(programId)
@@ -176,7 +176,7 @@ class ScheduleController {
             }])
 
             await bot.editMessageText(`📌 Выбор группы. \n📘 Образовательная программа: ${program.name}\n📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
-                chat_id: message.chat.id, message_id: message.message_id, reply_markup: markup
+                chat_id: msgToEdit.chat.id, message_id: msgToEdit.message_id, reply_markup: markup
             })
         } catch (e) {
             throw e

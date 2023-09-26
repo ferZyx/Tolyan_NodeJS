@@ -27,10 +27,10 @@ export async function newScheduleCommandController(msg){
     }
 }
 
-export async function redirectToNewScheduleMenu(msg){
+export async function redirectToNewScheduleMenu(msgToEdit){
     try{
-        await bot.editMessageText(msg_text, {message_id:msg.message_id, chat_id:msg.chat.id ,reply_markup: inline_keyboard})
+        await bot.editMessageText(msg_text, {message_id:msgToEdit.message_id, chat_id:msgToEdit.chat.id ,reply_markup: inline_keyboard})
     }catch (e) {
-        await errorCatch(e,msg)
+        await errorCatch(e,msgToEdit)
     }
 }

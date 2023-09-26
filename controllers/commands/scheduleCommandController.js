@@ -4,6 +4,7 @@ import {bot} from "../../app.js";
 import {commandAntiSpamMiddleware} from "../../middlewares/bot/commandAntiSpamMiddleware.js";
 import {sendUserGroupSchedule} from "./groupScheduleCommandController.js";
 import {sendUserTeacherSchedule} from "./teacherScheduleCommandController.js";
+import {redirectToNewScheduleMenu} from "./newScheduleCommandController.js";
 
 const errorCatch = async (e, msg) => {
     log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В scheduleCommandController. Юзеру сказано что бот прибоел.` + e.message, {
@@ -20,15 +21,14 @@ export async function scheduleCommandController(msg) {
             const User = await userService.getUserById(msg.chat.id)
 
             if (!User || !User.scheduleType) {
-                await bot.deleteMessage(msg.chat.id, answer.message_id);
-                return await bot.sendMessage(msg.chat.id, "❗️ У вас нет ранее загруженного расписания! Используйте /start")
+                return await redirectToNewScheduleMenu(answer)
             }
 
             if (User.scheduleType === "student") {
-                await sendUserGroupSchedule(User, msg, answer)
+                return await sendUserGroupSchedule(User, msg, answer)
             }
             if (User.scheduleType === "teacher") {
-                await sendUserTeacherSchedule(User, msg, answer)
+                return await sendUserTeacherSchedule(User, msg, answer)
             }
         } catch (e) {
             await errorCatch(e, msg)

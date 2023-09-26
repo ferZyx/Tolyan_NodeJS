@@ -47,8 +47,7 @@ export async function groupScheduleCommandController(msg) {
                 return await bot.sendMessage(msg.chat.id, `❗️ Я тебя не знаю! Воспользуйся /start для регистрации!`)
             }
             if (!User.group) {
-                await bot.deleteMessage(msg.chat.id, answer.message_id);
-                return await bot.sendMessage(msg.chat.id, `❗️ У вас нет ранее загруженного студенческого расписания! Воспользуйтесь кнопочкой "🗒 Новое расписание"`)
+                return await ScheduleController.getFacultyMenu(answer, 0)
             }
 
             await sendUserGroupSchedule(User, msg, answer)
