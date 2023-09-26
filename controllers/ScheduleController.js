@@ -14,7 +14,7 @@ export let schedule_cache = {}
 async function downloadSchedule(groupId, language, attemption = 1) {
     try {
         return await axios.get(`https://api.tolyan.me/schedule/get_schedule_by_groupId/${groupId}/${language}`, {
-            timeout: 5000
+            timeout: 7000
         })
     } catch (e) {
         if (attemption < 2) {
@@ -304,7 +304,7 @@ class ScheduleController {
                                     error_text = "⚠️ schedule.ksu.kz не отвечает..."
 
                                 if (e.response.status === 500) {
-                                    error_text = "⚠️ Произошла непредвиденная ошибка на стороне нашего сервера. Попробуйте обновить расписание."
+                                    error_text = "⚠️ Произошла непредвиденная ошибка при попытке загрузить ваше расписание с schedule.ksu.kz. Попробуйте обновить расписание. "
                                 }
                             }
                             log.warn(`Student ${call.message.chat.id} from group ${groupId} gets a cached schedule.` + error_text + e.message, {
