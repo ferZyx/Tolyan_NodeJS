@@ -208,19 +208,18 @@ class TeacherScheduleController {
                     })
                     .catch(async (e) => {
                         try {
-                            log.warn(`Teacher ${call.message.chat.id} gets a cached Teacher schedule.`, {
-                                e,
-                                userId: call.message.chat.id
-                            })
-                            let error_text = "⚠️ Произошла непредвиденная ошибка. Разработчики уже уведомлены о вашей проблеме. Простите. Пожалуйста. 🥹"
+                            let error_text = "⚠️ Произошла непредвиденная ошибка. Попробуйте обновить расписание."
                             if (e.response) {
                                 if (e.response.status === 503)
                                     error_text = "⚠️ schedule.ksu.kz не отвечает..."
 
                                 if (e.response.status === 500) {
-                                    error_text = "⚠️ Произошла непредвиденная ошибка на стороне нашего сервера. Попробуйте обновить расписание."
+                                    error_text = "⚠️ Произошла непредвиденная ошибка при попытке загрузить ваше расписание с schedule.ksu.kz. Попробуйте обновить расписание. "
                                 }
                             }
+                            log.warn(`Teacher ${call.message.chat.id} | ${teacherId} gets a cached schedule.` + error_text + e.message, {
+                                stack: e.stack,
+                            })
                             await this.getReservedSchedule(call, teacherId, error_text)
                         } catch (e) {
                             log.error("Ошбика при получении резервного Teacher расписания.", {
