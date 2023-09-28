@@ -14,7 +14,7 @@ export let schedule_cache = {}
 async function downloadSchedule(groupId, language, attemption = 1) {
     try {
         return await axios.get(`https://api.tolyan.me/schedule/get_schedule_by_groupId/${groupId}/${language}`, {
-            timeout: 7000
+            timeout: 10000
         })
     } catch (e) {
         if (attemption < 1) {

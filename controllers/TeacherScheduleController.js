@@ -11,7 +11,7 @@ import {bot} from "../app.js";
 async function downloadSchedule(teacherId, attemption = 1) {
     try {
         return await axios.get(`https://api.tolyan.me/teacherSchedule/get_teacher_schedule/${teacherId}`, {
-            timeout: 7000
+            timeout: 10000
         })
     } catch (e) {
         if (attemption < 1) {
