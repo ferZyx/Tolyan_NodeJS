@@ -11,10 +11,10 @@ import {bot} from "../app.js";
 async function downloadSchedule(teacherId, attemption = 1) {
     try {
         return await axios.get(`https://api.tolyan.me/teacherSchedule/get_teacher_schedule/${teacherId}`, {
-            timeout: 5000
+            timeout: 7000
         })
     } catch (e) {
-        if (attemption < 2) {
+        if (attemption < 1) {
             log.info(`teacher ${teacherId} попал в рекурсивную функцию по получению расписания!`)
             return await downloadSchedule(teacherId, ++attemption)
         }else {
@@ -208,7 +208,7 @@ class TeacherScheduleController {
                     })
                     .catch(async (e) => {
                         try {
-                            let error_text = "⚠️ Произошла непредвиденная ошибка. Попробуйте обновить расписание."
+                            let error_text = "⚠️ Произошла непредвиденная ошибка. Не получилось загрузить ваше расписание. Попробуйте обновить расписание."
                             if (e.response) {
                                 if (e.response.status === 503)
                                     error_text = "⚠️ schedule.ksu.kz не отвечает..."

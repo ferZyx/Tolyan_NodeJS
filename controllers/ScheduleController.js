@@ -17,7 +17,7 @@ async function downloadSchedule(groupId, language, attemption = 1) {
             timeout: 7000
         })
     } catch (e) {
-        if (attemption < 2) {
+        if (attemption < 1) {
             await sleep(1000)
             log.info(`group ${groupId} попала в рекурсивную функцию по получению расписания!`)
             return await downloadSchedule(groupId, language, ++attemption)
@@ -298,7 +298,7 @@ class ScheduleController {
                     })
                     .catch(async (e) => {
                         try {
-                            let error_text = "⚠️ Произошла непредвиденная ошибка. Попробуйте обновить расписание."
+                            let error_text = "⚠️ Произошла непредвиденная ошибка. Не получилось загрузить твое расписание. Попробуйте обновить расписание."
                             if (e.response) {
                                 if (e.response.status === 503)
                                     error_text = "⚠️ schedule.ksu.kz не отвечает..."
