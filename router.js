@@ -37,7 +37,7 @@ router.get('/get_user_schedule', async (req, res) => {
         const groupId = group.id;
         const language = group.language;
         try {
-            const response = await axios.get(`https://api.tolyan.me/schedule/get_schedule_by_groupId/${groupId}/${language}`)
+            const response = await axios.get(`https://api.tolyan.me/schedule/get_schedule_by_groupId/${groupId}/${language}`, {timeout:10000})
 
             data.studentSchedule = {
                 schedule:response.data,
