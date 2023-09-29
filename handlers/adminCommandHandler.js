@@ -21,6 +21,7 @@ import {updateTeachersCommandController} from "../controllers/commands/adminComm
 import {inactiveSpamAdminCommandController} from "../controllers/commands/adminCommands/inactiveSpamAdminCommandController.js";
 import config from "../config.js";
 import {piarAdminCommandController} from "../controllers/commands/adminCommands/piarAdminCommandController.js";
+import axios from "axios";
 
 export function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -104,18 +105,9 @@ export default function setupAdminCommandHandler() {
                 return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
             }
             try {
-                const keyboard = {
-                    keyboard: [
-                        [{text: '📢 Новости'}, {text: '🗓 Меню'}, {text: '💡 Помощь'}],
-                        [{text: '🗓 Расп. преподавателя'}, {text: '🗓 Расп. группы'}],
-                    ],
-                    resize_keyboard: true,
-                    one_time_keyboard: false,
-                };
-                await bot.sendMessage(msg.chat.id, "Отправляю тебе кнопошку.", {
-                    reply_markup: keyboard
-                })
+                await axios.get("https://schedule.ksu.kz")
             } catch (e) {
+                console.log(e)
                 log.error("Ошибочка в /test", {stack: e.stack})
             }
         })
