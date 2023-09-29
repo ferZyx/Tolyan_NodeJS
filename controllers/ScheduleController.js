@@ -227,7 +227,7 @@ class ScheduleController {
                 '📖 Помощь: /help\n' +
                 '🗞 Наш канал: @ksutolyan \n' +
                 '<tg-spoiler>Угостить компотом: /donate </tg-spoiler>'
-            let msg_text = `${preMessage}👥 Группа: ${group.name} | Курс: ${group.age}\n📆 Расписание на <b>${schedule_day}</b>:\n` + schedule_text + end_text
+            let msg_text = `${preMessage}👥 Группа: ${group.name} | Курс: ${group.age}\n📆 Расписание на <b>${schedule_day}</b>:\n` + schedule_text + "🔥НОВОЕ ОБНОВЛЕНИЕ! /news \n"+ end_text
 
             const preCallback = data_array.slice(0, -1).join("|")
 

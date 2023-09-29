@@ -8,9 +8,10 @@ import {donateCommandController} from "../controllers/commands/donateCommandCont
 import {teacherScheduleCommandController} from "../controllers/commands/teacherScheduleCommandController.js";
 import {groupScheduleCommandController} from "../controllers/commands/groupScheduleCommandController.js";
 import {newScheduleCommandController} from "../controllers/commands/newScheduleCommandController.js";
-// import {searchGroupCommandController} from "../controllers/commands/searchGroupCommandController.js";
-// import {searchTeacherCommandController} from "../controllers/commands/searchTeacherCommandController.js";
+import {searchGroupCommandController} from "../controllers/commands/searchGroupCommandController.js";
+import {searchTeacherCommandController} from "../controllers/commands/searchTeacherCommandController.js";
 import {removeKeyboardCommandController} from "../controllers/commands/removeKeyboardCommandController.js";
+import {searchHelpCommandController} from "../controllers/commands/searchHelpCommandController.js";
 
 
 export function setupCommandHandlers() {
@@ -39,9 +40,15 @@ export function setupCommandHandlers() {
 
     bot.onText(/^\/remove/i, removeKeyboardCommandController)
 
-    // bot.onText(/^Г (.+)/i, searchGroupCommandController)
-    // bot.onText(/^Г$/i, searchGroupCommandController)
+    bot.onText(/^Г (.+)/i, searchGroupCommandController)
+    bot.onText(/^Г$/i, searchGroupCommandController)
+    bot.onText(/^Группа/i, searchGroupCommandController)
 
-    // bot.onText(/^П (.+)/i, searchTeacherCommandController)
-    // bot.onText(/^П$/i, searchTeacherCommandController)
+    bot.onText(/^П (.+)/i, searchTeacherCommandController)
+    bot.onText(/^П$/i, searchTeacherCommandController)
+    bot.onText(/^Преподаватель/i, searchTeacherCommandController)
+
+    bot.onText(/^\/search/i, searchHelpCommandController)
+    bot.onText(/^Поиск/i, searchHelpCommandController)
+
 }

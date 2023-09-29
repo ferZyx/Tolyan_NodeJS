@@ -11,7 +11,9 @@ const inline_keyboard = {
     }]]
 }
 
-const msg_text = "👋 Чье расписание тебе нужно?"
+const msg_text = '👋 Чье расписание тебе нужно?\n\n' +
+    '<i>P.S. Если тебе лень тыкать по кнопочкам - можешь воспользоваться</i> <b>Поиском</b>.\n' +
+    'Подробнее /search'
 
 const errorCatch = async (e, msg) => {
     log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В newScheduleCommandController. Юзеру сказано что бот прибоел.` + e.message, {stack: e.stack})
@@ -21,7 +23,7 @@ const errorCatch = async (e, msg) => {
 
 export async function newScheduleCommandController(msg){
     try{
-        await bot.sendMessage(msg.chat.id, msg_text, {reply_markup: inline_keyboard})
+        await bot.sendMessage(msg.chat.id, msg_text, {reply_markup: inline_keyboard, parse_mode:"HTML"})
     }catch (e) {
         await errorCatch(e,msg)
     }
@@ -29,7 +31,7 @@ export async function newScheduleCommandController(msg){
 
 export async function redirectToNewScheduleMenu(msgToEdit){
     try{
-        await bot.editMessageText(msg_text, {message_id:msgToEdit.message_id, chat_id:msgToEdit.chat.id ,reply_markup: inline_keyboard})
+        await bot.editMessageText(msg_text, {message_id:msgToEdit.message_id, chat_id:msgToEdit.chat.id ,reply_markup: inline_keyboard, parse_mode:"HTML"})
     }catch (e) {
         await errorCatch(e,msgToEdit)
     }

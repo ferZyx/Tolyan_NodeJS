@@ -9,7 +9,7 @@ class SearchGroupController {
         log.error(`User ${message.chat.id} get an error at SearchGroupController.` + e.message, {
             stack: e.stack, message
         });
-        await bot.editMessageText('⚠️ Я не знаю что произошло, но по какой-то никому не известной причине произошла ошибочка. Не переживай, фиксики уже в пути. Прости(', {
+        await bot.editMessageText('⚠️ Я не знаю что произошло, но по какой-то никому неизвестной причине произошла ошибочка. Не переживай, фиксики уже в пути. Прости(', {
             chat_id: message.chat.id, message_id: message.message_id
         });
     }
