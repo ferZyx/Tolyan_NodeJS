@@ -3,15 +3,14 @@ import GroupService from "../services/groupService.js";
 import log from "../logging/logging.js";
 import {bot} from "../app.js";
 import ScheduleController from "./ScheduleController.js";
+import {criticalErrorController} from "../exceptions/bot/criticalErrorController.js";
 
 class SearchGroupController {
     async errorCatch(e, message) {
         log.error(`User ${message.chat.id} get an error at SearchGroupController.` + e.message, {
             stack: e.stack, message
         });
-        await bot.editMessageText('⚠️ Я не знаю что произошло, но по какой-то никому неизвестной причине произошла ошибочка. Не переживай, фиксики уже в пути. Прости(', {
-            chat_id: message.chat.id, message_id: message.message_id
-        });
+        await criticalErrorController(message)
     }
 
     getMenuMarkup(data, groupName, page_count, page) {

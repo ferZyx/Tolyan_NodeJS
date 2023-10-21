@@ -4,16 +4,19 @@ import userService from "../../services/userService.js";
 import groupService from "../../services/groupService.js";
 import log from "../../logging/logging.js";
 import ScheduleController from "../ScheduleController.js";
+import i18next from "i18next";
+import {criticalErrorController} from "../../exceptions/bot/criticalErrorController.js";
 
 const errorCatch = async (e, msg) => {
     log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В groupScheduleCommandController. Юзеру сказано что бот прибоел.` + e.message, {
         stack: e.stack,
         userId: msg.chat.id
     })
-    bot.sendMessage(msg.chat.id, "⚠️ Бот немножко приболел, попробуйте позже. ").catch(e => console.error(e))
+    await criticalErrorController(msg)
 }
 
 export async function sendUserGroupSchedule(User, msg, answer) {
+    const user_language = await userService.getUserLanguage(msg.chat.id)
     const groupId = User.group
 
     const Group = await groupService.getById(groupId)
@@ -22,9 +25,10 @@ export async function sendUserGroupSchedule(User, msg, answer) {
             User,
             userId: msg.chat.id
         })
-        return bot.sendMessage(msg.chat.id, "⚠️ Я не смог найти группу в которой ты учишься(\n" +
-            "2 варианта. Либо я сломался что вероятнее всего. Либо произошла какая то ошибка. \n" +
-            "Попробуй воспользоваться /start для получения расписания повторно.")
+        const msg_text = i18next.t('group_not_found', {lng:user_language})
+        return bot.editMessageText(msg_text, {
+            chat_id: answer.chat.id, message_id: answer.message_id
+        })
     }
     const language = Group.language
     const day = ScheduleController.getCurrentDayNumber()
@@ -33,18 +37,20 @@ export async function sendUserGroupSchedule(User, msg, answer) {
         data: `schedule|${language}|${groupId}|${day}`,
         message: answer
     }
-    await ScheduleController.getScheduleMenu(call)
+    await ScheduleController.chooseScheduleLanguage(call)
 }
 
 export async function groupScheduleCommandController(msg) {
     await commandAntiSpamMiddleware(msg, async () => {
-        const answer = await bot.sendMessage(msg.chat.id, "🪄 Пытаюсь накодовать расписание группы. Вжух!", {parse_mode: 'HTML'})
+        const user_language = await userService.getUserLanguage(msg.chat.id)
+        const answer = await bot.sendMessage(msg.chat.id, `🪄 ${i18next.t('schedule_loading', { lng: user_language })}`, {parse_mode: 'HTML'})
         try {
             const User = await userService.getUserById(msg.chat.id)
 
             if (!User) {
                 await bot.deleteMessage(msg.chat.id, answer.message_id);
-                return await bot.sendMessage(msg.chat.id, `❗️ Я тебя не знаю! Воспользуйся /start для регистрации!`)
+                const msg_text = i18next.t('who_are_you', {lng:user_language})
+                return await bot.sendMessage(msg.chat.id, msg_text)
             }
             if (!User.group) {
                 return await ScheduleController.getFacultyMenu(answer, 0)

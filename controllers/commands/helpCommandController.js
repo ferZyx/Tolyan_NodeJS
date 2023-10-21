@@ -1,31 +1,24 @@
-import {commandAntiSpamMiddleware} from "../../middlewares/bot/commandAntiSpamMiddleware.js";
 import {bot} from "../../app.js";
 import log from "../../logging/logging.js";
+import userService from "../../services/userService.js";
+import i18next from "i18next";
+import {criticalErrorController} from "../../exceptions/bot/criticalErrorController.js";
 
-const errorCatch = async (e, msg) =>{
-    log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В helpCommandController. Юзеру сказано что бот прибоел.` + e.message, {stack: e.stack, userId: msg.chat.id})
-    bot.sendMessage(msg.chat.id, "⚠️ Бот немножко приболел, попробуйте позже. ").catch(e => console.error(e))
+const errorCatch = async (e, msg) => {
+    log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В helpCommandController. Юзеру сказано что бот прибоел.` + e.message, {
+        stack: e.stack,
+        userId: msg.chat.id
+    })
+    await criticalErrorController(msg)
 }
 
-export async function helpCommandController(msg){
-    await commandAntiSpamMiddleware(msg, async () => {
-        try{
-            const msg_text = "📝 Доступные команды:\n\n" +
-                "🔴 /start - Получить навигационные кнопочки.\n" +
-                "🟢 /remove - Удалить надоедливые кнопочки. \n" +
-                "🔵 /new - Получить новое расписание.\n" +
-                "🔴 /schedule - Получить своё расписание.\n" +
-                "🟢 /search - Информация про поиск.\n" +
-                "🔵 Расписание (без /) - Аналог /schedule.\n" +
-                "🔴 Профиль [Фамилия преподавателя] (без /) - Получить профиль с данными преподавателя. (пример: профиль Иванов)\n" +
-                "🟢 Поиск (без /) - аналог /search \n" +
-                "🔵 /news - Получить новости о последнем обновлении бота, дальнейших планах.  \n" +
-                "🔴 /donate - Поддержать Толяна.\n\n" +
-                "❗️ В случае возникновения ошибок вы всегда можете обратиться к разработчикам напрямую: @lena_nebot\n" +
-                "🥹 Будем благодарны, если Вы расскажете о нас своим друзьям(🐒) или преподавателям(👩‍🏫).\n"
-            await bot.sendMessage(msg.chat.id, msg_text)
-        }catch (e) {
-            await errorCatch(e, msg)
-        }
-    })
+export async function helpCommandController(msg) {
+    try {
+        const user_language = await userService.getUserLanguage(msg.chat.id)
+
+        const msg_text = i18next.t('help_command_content', {lng:user_language})
+        await bot.sendMessage(msg.chat.id, msg_text)
+    } catch (e) {
+        await errorCatch(e, msg)
+    }
 }

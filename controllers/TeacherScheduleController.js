@@ -3,10 +3,11 @@ import ScheduleController, {schedule_cache} from "./ScheduleController.js";
 import teacherService from "../services/teacherService.js";
 import axios from "axios";
 import log from "../logging/logging.js";
-import {unexpectedErrorController} from "../exceptions/bot/unexpectedErrorController.js";
+import {unexpectedCallbackErrorController} from "../exceptions/bot/unexpectedCallbackErrorController.js";
 import userService from "../services/userService.js";
 import teacherScheduleService from "../services/teacherScheduleService.js";
 import {bot} from "../app.js";
+import i18next from 'i18next'
 
 async function downloadSchedule(teacherId, attemption = 1) {
     try {
@@ -71,26 +72,22 @@ class TeacherScheduleController {
 
     async getDepartmentMenu(msgToEdit, prePage) {
         try {
+            const user_language = await userService.getUserLanguage(msgToEdit.chat.id)
+
             const departments = await departmentService.getAll()
 
-            const {data, page, page_count} = ScheduleController.configureMenuData(departments, prePage)
+            const {data, page, page_count, currentPageText} = ScheduleController.configureMenuData(departments, prePage, user_language)
 
             let markup = ScheduleController.getRowMarkup(data, 'teacher')
+            markup = ScheduleController.addPaginationBtnsToMarkup(markup, page_count, page, 'department', user_language)
+            markup = ScheduleController.addGoBackBtnToMarkup(markup, 'start', user_language)
 
-            if (page_count > 0) {
-                markup.inline_keyboard.push([{text: '⬅️Назад', callback_data: `department|${page - 1}`},
-                    {text: `📄 ${Number(page) + 1} из ${page_count + 1}`, callback_data: `nothing`},
-                    {
-                        text: 'Вперед➡️', callback_data: `department|${page + 1}`
-                    }])
-            }
+            const currentMenuText = `📌 ${i18next.t('department_pick', { lng: user_language })}`
+            const menuHint = i18next.t('department_pick_hint', {lng:user_language})
 
-            markup.inline_keyboard.push([{
-                text: 'Вернуться назад', callback_data: `start`
-            }])
+            const msgText = `${currentMenuText}\n${menuHint}\n${currentPageText}`
 
-            await bot.editMessageText(`📌 Выбор кафедры. \n💡 P.S кафедру можно узнать используя команду "профиль". Подробнее /help\n` +
-                `📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
+            await bot.editMessageText(msgText, {
                 chat_id: msgToEdit.chat.id, message_id: msgToEdit.message_id, reply_markup: markup
             })
 
@@ -101,26 +98,21 @@ class TeacherScheduleController {
 
     async getTeacherMenu(msgToEdit, departmentId, prePage) {
         try {
+            const user_language = await userService.getUserLanguage(msgToEdit.chat.id)
+
             const teachers = await teacherService.getByDepartmentId(departmentId)
             const department = await departmentService.getById(departmentId)
 
-            const {data, page, page_count} = ScheduleController.configureMenuData(teachers, prePage)
+            const {data, page, page_count, currentPageText} = ScheduleController.configureMenuData(teachers, prePage, user_language)
 
             let markup = this.getTeachersRowMarkup(data)
+            markup = ScheduleController.addPaginationBtnsToMarkup(markup, page_count, page, `teacher|${departmentId}`, user_language)
+            markup = ScheduleController.addGoBackBtnToMarkup(markup, 'department|0', user_language)
 
-            if (page_count > 0) {
-                markup.inline_keyboard.push([{
-                    text: '⬅️Назад', callback_data: `teacher|${departmentId}|${page - 1}`
-                },
-                    {text: `📄 ${Number(page) + 1} из ${page_count + 1}`, callback_data: `nothing`},
-                    {text: 'Вперед➡️', callback_data: `teacher|${departmentId}|${page + 1}`}])
-            }
+            const currentMenuText = `📌 ${i18next.t('teacher_pick', { lng: user_language })}\n📘 ${i18next.t('department', { lng: user_language, departmentName: department.name })}`
+            const msgText = `${currentMenuText}\n${currentPageText}`
 
-            markup.inline_keyboard.push([{
-                text: 'Вернуться назад', callback_data: `department|0`
-            }])
-
-            await bot.editMessageText(`📌 Выбор преподавателя.\n📘 Кафедра: ${department.name}\n📄 Страница: ${Number(page) + 1} из ${page_count + 1}`, {
+            await bot.editMessageText(msgText, {
                 chat_id: msgToEdit.chat.id, message_id: msgToEdit.message_id, reply_markup: markup
             })
         } catch (e) {
@@ -130,6 +122,8 @@ class TeacherScheduleController {
 
     async sendSchedule(call, schedule_cache, preMessage = '') {
         try {
+            const user_language = await userService.getUserLanguage(call.message.chat.id)
+
             const timestamp = schedule_cache.timestamp
             const data = schedule_cache.data
             const teacher = schedule_cache.teacher
@@ -143,7 +137,7 @@ class TeacherScheduleController {
                 dayNumber = 5
             }
 
-            const scheduleLifeTime = ScheduleController.formatElapsedTime(timestamp)
+            const scheduleLifeTime = ScheduleController.formatElapsedTime(timestamp, user_language)
             const scheduleDateTime = ScheduleController.formatTimestamp(timestamp)
 
             const schedule_day = data[dayNumber]['day']
@@ -152,27 +146,30 @@ class TeacherScheduleController {
             const schedule = preSchedule.filter(obj => obj.group !== '')
 
             let schedule_text = ``
+            const headerText = `👥 <u>${teacher.name}</u>\n📆 ${i18next.t('schedule_by_day', { lng: user_language, dayName: schedule_day })}\n`
+
             if (!schedule.length) {
-                schedule_text = "🥳 <b>ВЫХОДНОЙ!</b>\n"
+                schedule_text = `🥳 <b>${i18next.t('vacation', { lng: user_language })}</b>\n`
             }
             for (const item of schedule) {
                 schedule_text += '⌚️ ' + item.time + '\n'
                 schedule_text += this.addSymbolToEachLine(this.transformGroupString(item.group), '📚') + '\n\n'
             }
-            let end_text = `🕰 <i><b>Расписание загружено: 👇\n${scheduleLifeTime} назад || ${scheduleDateTime}   👈</b></i>\n` +
-                '📖 Помощь: /help\n' +
-                '🗞 Наш канал: https://t.me/ksutolyan \n' +
-                '<tg-spoiler>Угостить компотом: /donate </tg-spoiler>'
-            let msg_text = `${preMessage}👥 <u>${teacher.name}</u>\n📆 Расписание на <b>${schedule_day}</b>:\n` + schedule_text + "🔥НОВОЕ ОБНОВЛЕНИЕ! /news\n" + end_text
+            let end_text = `🕰 <i><b>${i18next.t('schedule_downloaded', {lng:user_language, timeAgo:scheduleLifeTime})} || ${scheduleDateTime}</b></i>\n` +
+                `📖 ${i18next.t('for_help', {lng:user_language})}\n` +
+                `🗞 ${i18next.t('our_chanel', {lng:user_language, link:'@ksutolyan'})} \n` +
+                `<tg-spoiler>${i18next.t('donate_command_description', {lng:user_language})}</tg-spoiler>`
+
+            let msg_text = preMessage + headerText + schedule_text + end_text
 
             const preCallback = data_array.slice(0, -1).join("|")
 
             let markup = {
-                inline_keyboard: [[{text: `⬅️Назад`, callback_data: preCallback + `|${+dayNumber - 1}`}, {
+                inline_keyboard: [[{ text: `⬅️${i18next.t('go_back', {lng:user_language})}`, callback_data: preCallback + `|${+dayNumber - 1}` }, {
                     text: `🔄`,
                     callback_data: 'refresh' + call.data
                 }, {
-                    text: `Вперед➡️`, callback_data: preCallback + `|${+dayNumber + 1}`
+                    text: `${i18next.t('go_forward', {lng:user_language})}➡️`, callback_data: preCallback + `|${+dayNumber + 1}`
                 }],]
             }
             await bot.editMessageText(msg_text,
@@ -184,7 +181,7 @@ class TeacherScheduleController {
                     disable_web_page_preview: true
                 })
         } catch (e) {
-            await unexpectedErrorController(e, call.message, call.data)
+            await unexpectedCallbackErrorController(e, call.message, call.data)
         }
     }
 
@@ -208,13 +205,15 @@ class TeacherScheduleController {
                     })
                     .catch(async (e) => {
                         try {
+                            const user_language = await userService.getUserLanguage(call.message.chat.id)
+
                             let error_text = "⚠️ Произошла непредвиденная ошибка. Не получилось загрузить ваше расписание. Попробуйте обновить расписание."
                             if (e.response) {
                                 if (e.response.status === 503)
-                                    error_text = "⚠️ schedule.ksu.kz не отвечает..."
+                                    error_text = i18next.t('schedule_error_503')
 
                                 if (e.response.status === 500) {
-                                    error_text = "⚠️ Произошла непредвиденная ошибка при попытке загрузить ваше расписание с schedule.ksu.kz. Попробуйте обновить расписание. "
+                                    error_text = i18next.t('schedule_error_500')
                                 }
                             }
                             log.warn(`Teacher ${call.message.chat.id} | ${teacherId} gets a cached schedule.` + error_text + e.message, {
@@ -227,7 +226,7 @@ class TeacherScheduleController {
                                 call,
                                 userId: call.message.chat.id
                             })
-                            return await unexpectedErrorController(e, call.message, call.data)
+                            return await unexpectedCallbackErrorController(e, call.message, call.data)
                         }
                     })
             }
@@ -245,13 +244,16 @@ class TeacherScheduleController {
             }))
 
         } catch (e) {
-            return await unexpectedErrorController(e, call.message, call.data)
+            return await unexpectedCallbackErrorController(e, call.message, call.data)
         }
 
     }
 
     async getReservedSchedule(call, teacherId, error_text) {
-        await bot.editMessageText('💀 Произшла ошибка. Сейчас поищу твое расписание в своих недрах...', {
+        const user_language = await userService.getUserLanguage(call.message.chat.id)
+        const answer_msg_text = i18next.t('finding_reserved_schedule', {lng:user_language})
+
+        await bot.editMessageText(answer_msg_text, {
             chat_id: call.message.chat.id, message_id: call.message.message_id
         })
         const response = await teacherScheduleService.getByTeacherId(teacherId)
@@ -262,15 +264,12 @@ class TeacherScheduleController {
             const teacher = await teacherService.getById(teacherId)
             schedule_cache[teacherId] = {data: response.data, timestamp, teacher}
             await this.sendSchedule(call, schedule_cache[teacherId], `<b>${error_text} \n` +
-                "🫡 Последнее загруженное расписание:\n\n</b>")
+                `${i18next.t('reserved_schedule_header', {lng:user_language})}\n\n</b>`)
         } else {
-            await bot.editMessageText("🙈 Первопроходец от своей группы?\n" +
-                "⚠️ Я не смог получить твое расписание из schedule.ksu.kz, а резервного расписания для твоей группы я не могу найти( \n" +
-                "🫢 P.S. После получения расписания в нашем боте, оно подгружается в базу данных.\n" +
-                "А дальше уже дело за малым, при следующем таком недразумении мы возьмем твое расписание из нашей базы)\n" +
-                "😉 Загрузи расписание как только всё встанет на ноги и больше ты больше не увидишь это дурацкое сообщение!", {
+            const msg_text = i18next.t('reserved_schedule_not_found', {lng:user_language})
+            await bot.editMessageText(msg_text, {
                 chat_id: call.message.chat.id, message_id: call.message.message_id, reply_markup: {
-                    inline_keyboard: [[{text: "Попробовать снова", callback_data: call.data}]]
+                    inline_keyboard: [[{text: i18next.t('try_again', {lng:user_language}), callback_data: call.data}]]
                 }
             })
         }

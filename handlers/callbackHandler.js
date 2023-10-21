@@ -4,12 +4,14 @@ import {schedule_cache} from "../controllers/ScheduleController.js";
 import {callbackAntiSpamMiddleware} from "../middlewares/bot/callbackAntiSpamMiddleware.js";
 import ProfileController from "../controllers/ProfileController.js";
 import {queryValidationErrorController} from "../exceptions/bot/queryValidationErrorController.js";
-import {unexpectedErrorController} from "../exceptions/bot/unexpectedErrorController.js";
+import {unexpectedCallbackErrorController} from "../exceptions/bot/unexpectedCallbackErrorController.js";
 import TeacherScheduleController from "../controllers/TeacherScheduleController.js";
 import {bot} from "../app.js";
 import SearchGroupController from "../controllers/SearchGroupController.js";
 import SearchTeacherController from "../controllers/SearchTeacherController.js";
 import {redirectToNewScheduleMenu} from "../controllers/commands/newScheduleCommandController.js";
+import userService from "../services/userService.js";
+import {welcomePageRedirectController} from "../controllers/commands/startCommandController.js";
 
 export default function setupCallbackHandlers() {
     bot.on('callback_query', async (call) => {
@@ -32,7 +34,7 @@ export default function setupCallbackHandlers() {
                     }
                     await ScheduleController.getFacultyMenu(call.message, +page)
                 } catch (e) {
-                    return await unexpectedErrorController(e, call.message, call.data)
+                    return await unexpectedCallbackErrorController(e, call.message, call.data)
                 }
 
             }
@@ -46,7 +48,7 @@ export default function setupCallbackHandlers() {
                     }
                     await ScheduleController.getProgramMenu(call.message, facultyId, +page)
                 } catch (e) {
-                    return await unexpectedErrorController(e, call.message, call.data)
+                    return await unexpectedCallbackErrorController(e, call.message, call.data)
                 }
             }
 
@@ -59,7 +61,7 @@ export default function setupCallbackHandlers() {
                     }
                     await ScheduleController.getGroupMenu(call.message, programId, facultyId, +page)
                 } catch (e) {
-                    return await unexpectedErrorController(e, call.message, call.data)
+                    return await unexpectedCallbackErrorController(e, call.message, call.data)
                 }
             }
 
@@ -85,6 +87,17 @@ export default function setupCallbackHandlers() {
 
             }
 
+            if (call.data.startsWith("chooseScheduleLanguage|")){
+                const [, , groupId,] = call.data.split("|")
+
+                try{
+                    await ScheduleController.chooseScheduleLanguage(call)
+                }catch (e){
+                    console.error(e)
+                    log.error("ОШИБКА В КОЛБЕК ХЕНДЕЛЕРЕ chooseScheduleLanguage", {userId: call.message.chat.id, stack: e.stack})    
+                }
+            }
+
             if (call.data.includes("profile|")) {
                 try {
                     const [, _id] = call.data.split("|")
@@ -106,7 +119,7 @@ export default function setupCallbackHandlers() {
                     }
                     await TeacherScheduleController.getDepartmentMenu(call.message, +page)
                 } catch (e) {
-                    return await unexpectedErrorController(e, call.message, call.data)
+                    return await unexpectedCallbackErrorController(e, call.message, call.data)
                 }
             }
 
@@ -118,7 +131,7 @@ export default function setupCallbackHandlers() {
                     }
                     await TeacherScheduleController.getTeacherMenu(call.message, departmentId, +page)
                 } catch (e) {
-                    return await unexpectedErrorController(e, call.message, call.data)
+                    return await unexpectedCallbackErrorController(e, call.message, call.data)
                 }
             }
 
@@ -148,7 +161,7 @@ export default function setupCallbackHandlers() {
 
                     await SearchGroupController.getSearchGroupMenu(call.message, groupName, +page)
                 } catch (e) {
-                    return await unexpectedErrorController(e, call.message, call.data)
+                    return await unexpectedCallbackErrorController(e, call.message, call.data)
                 }
             }
 
@@ -158,7 +171,18 @@ export default function setupCallbackHandlers() {
 
                     await SearchTeacherController.getSearchTeacherMenu(call.message, teacher, +page)
                 } catch (e) {
-                    return await unexpectedErrorController(e, call.message, call.data)
+                    return await unexpectedCallbackErrorController(e, call.message, call.data)
+                }
+            }
+
+            if (call.data.includes("languageIs")){
+                try{
+                    const language = call.data.replace("languageIs", "").toLowerCase()
+                    await userService.setUserLanguage(call.message.chat.id, language)
+
+                    await welcomePageRedirectController(call)
+                }catch (e) {
+                    return await unexpectedCallbackErrorController(e, call.message, call.data)
                 }
             }
 

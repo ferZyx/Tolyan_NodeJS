@@ -1,5 +1,7 @@
+import i18next from "i18next";
 import {bot, userLastRequest} from "../../app.js";
 import log from "../../logging/logging.js";
+import userService from "../../services/userService.js";
 
 export async function callbackAntiSpamMiddleware(call, next) {
     try {
@@ -12,7 +14,10 @@ export async function callbackAntiSpamMiddleware(call, next) {
 
             if (timeDiff < 750) {
                 // Отправляем уведомление о спаме пользователю
-                await bot.answerCallbackQuery(call.id, {text: "🚯 Не спамь, пожалуйста!", show_alert: false})
+                const user_language = await userService.getUserLanguage(call.message.chat.id)
+                const msg_text = i18next.t('antispam', {lng:user_language})
+
+                await bot.answerCallbackQuery(call.id, {text: msg_text, show_alert: false})
                     .catch(async (e) => {
                         try {
                             log.error(`User ${call.message.chat.id} got an error в коллбек антиспам мидлваре` + e.message, {stack: e.stack})

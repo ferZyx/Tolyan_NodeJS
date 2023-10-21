@@ -1,8 +1,11 @@
 import {bot, userLastRequest} from "../../app.js";
 import log from "../../logging/logging.js";
+import userService from "../../services/userService.js";
+import i18next from "i18next";
 
 export async function commandAntiSpamMiddleware(msg, next) {
     try {
+
         const userId = msg.chat.id;
         const currentTime = new Date().getTime();
 
@@ -12,8 +15,10 @@ export async function commandAntiSpamMiddleware(msg, next) {
 
             // Если прошло менее секунды с предыдущего запроса, считаем это спамом
             if (timeDiff < 1000) {
+                const user_language = await userService.getUserLanguage(msg.chat.id)
+                const msg_text = i18next.t('antispam', {lng:user_language})
                 // Отправляем уведомление о спаме пользователю
-                await bot.sendMessage(msg.chat.id, "🚯 Не спамь! ", {reply_to_message_id: msg.message_id})
+                await bot.sendMessage(msg.chat.id, msg_text, {reply_to_message_id: msg.message_id})
                     .catch(e => {
                         log.error(`User ${msg.chat.id} got an error в command антиспам мидлваре` + e.message, {stack: e.stack})
                     })

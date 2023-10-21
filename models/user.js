@@ -11,7 +11,8 @@ const userSchema = new mongoose.Schema(
         group: {type: Number, ref: 'Group', field:"id"},
         teacher: {type: Number, ref: 'Teacher', field:"id"},
         scheduleType:{type:String},
-        isAdmin:{type:Boolean}
+        isAdmin:{type:Boolean},
+        language:{type:String}
     },
     {
         timestamps: true, // Указываем использовать timestamps

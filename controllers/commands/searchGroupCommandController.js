@@ -4,10 +4,13 @@ import {commandAntiSpamMiddleware} from "../../middlewares/bot/commandAntiSpamMi
 import GroupService from "../../services/groupService.js";
 import ScheduleController from "../ScheduleController.js";
 import SearchGroupController from "../SearchGroupController.js";
+import userService from "../../services/userService.js";
+import i18next from "i18next";
+import {criticalErrorController} from "../../exceptions/bot/criticalErrorController.js";
 
 const errorCatch = async (e, msg) =>{
     log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В searchGroupCommandController. Юзеру сказано что бот прибоел.` + e.message, {stack: e.stack, userId: msg.chat.id})
-    bot.sendMessage(msg.chat.id, "⚠️ Бот немножко приболел, попробуйте позже. ").catch(e => console.error(e))
+    await criticalErrorController(msg)
 }
 
 export const searchGroupMenuCache = {}
@@ -15,12 +18,15 @@ export const searchGroupMenuCache = {}
 export async function searchGroupCommandController(msg){
     await commandAntiSpamMiddleware(msg, async() => {
         try{
+            const user_language = await userService.getUserLanguage(msg.chat.id)
+
             const splittedText = msg.text.split(" ")
 
             let groupName = splittedText.slice(1).join(" ").replaceAll(" ", "-")
 
             if (!groupName || groupName.length<2){
-                return await bot.sendMessage(msg.chat.id, '⚠️ Название группы должно состоять как минимум из 2 символов.')
+                const msg_text = i18next.t('group_search_validation_error', {lng:user_language})
+                return await bot.sendMessage(msg.chat.id, msg_text)
             }
 
             groupName = splittedText.slice(1).join(" ").replaceAll(" ", "-")
@@ -28,9 +34,8 @@ export async function searchGroupCommandController(msg){
             const groups = await GroupService.findByName(groupName)
 
             if (!groups.length){
-                return await bot.sendMessage(msg.chat.id, `⚠️ К сожалению по запросу: <b>${groupName}</b> ничего не найдено.\n` +
-                    `✍️ Проверьте корректность ввода.\n` +
-                    `Если всё в порядке и я не могу найти - значит сори 🙃`, {parse_mode:"HTML"})
+                const msg_text = i18next.t('search_bad_result', {lng:user_language, searchQuery:groupName})
+                return await bot.sendMessage(msg.chat.id, msg_text, {parse_mode:"HTML"})
             }
 
             searchGroupMenuCache[groupName] = {groups, time:Date.now()}
@@ -38,8 +43,9 @@ export async function searchGroupCommandController(msg){
             const {data, page, page_count} = ScheduleController.configureMenuData(groups, 0)
 
             let markup = SearchGroupController.getMenuMarkup(data, groupName, page_count, page)
-
-            await bot.sendMessage(msg.chat.id, `✅По вашему запросу: <b>${groupName}</b> найдено ${groups.length} групп!🙉`, {reply_markup:markup, parse_mode:"HTML"})
+            
+            const msg_text = i18next.t('group_search_success_result', {lng:user_language, searchQuery:groupName, searchCountResult:groups.length})
+            await bot.sendMessage(msg.chat.id, msg_text, {reply_markup:markup, parse_mode:"HTML"})
         }catch (e) {
             await errorCatch();
         }

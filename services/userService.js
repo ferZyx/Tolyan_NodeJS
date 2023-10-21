@@ -1,6 +1,8 @@
 import {User} from "../models/user.js"
 import log from "../logging/logging.js";
 
+export const userLanguagesCache = {}
+
 class UserService {
     async registerUser(msg) {
         try {
@@ -94,6 +96,30 @@ class UserService {
             return await User.find({})
         } catch (e) {
             throw new Error("Ошибка при получении всех пользователей: " + e.stack)
+        }
+    }
+
+    async getUserLanguage(userId) {
+        try {
+            if (userId in userLanguagesCache){
+                return userLanguagesCache[userId]
+            }
+            const user = await User.findOne({userId})
+            const language = user.language
+            userLanguagesCache[userId] = language
+            console.log(userLanguagesCache)
+            return language ?? "ru"
+        } catch (e) {
+            throw new Error("Ошибка при получении языка пользователя. " + e.stack)
+        }
+    }
+
+    async setUserLanguage(userId, language) {
+        try {
+            userLanguagesCache[userId] = language
+            return await User.updateOne({userId}, { $set: { language:language } }, {new: true})
+        } catch (e) {
+            throw new Error("Ошибка при set языка пользователя. " + e.stack)
         }
     }
 

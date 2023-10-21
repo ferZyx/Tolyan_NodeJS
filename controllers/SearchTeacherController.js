@@ -4,6 +4,7 @@ import {searchTeacherMenuCache} from "./commands/searchTeacherCommandController.
 import TeacherService from "../services/teacherService.js";
 import ScheduleController from "./ScheduleController.js";
 import TeacherScheduleController from "./TeacherScheduleController.js";
+import {criticalErrorController} from "../exceptions/bot/criticalErrorController.js";
 
 
 class SearchTeacherController{
@@ -11,9 +12,7 @@ class SearchTeacherController{
         log.error(`User ${message.chat.id} get an error at SearchTeacherController.` + e.message, {
             stack: e.stack, message
         });
-        await bot.editMessageText('⚠️ Я не знаю что произошло, но по какой-то никому неизвестной причине произошла ошибочка. Не переживай, фиксики уже в пути. Прости(', {
-            chat_id: message.chat.id, message_id: message.message_id
-        });
+        await criticalErrorController(message)
     }
 
     getMenuMarkup(data, teacherName, page_count, page) {

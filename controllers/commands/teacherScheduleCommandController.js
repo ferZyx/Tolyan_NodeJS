@@ -6,16 +6,19 @@ import ScheduleController from "../ScheduleController.js";
 import teacherService from "../../services/teacherService.js";
 import TeacherScheduleController from "../TeacherScheduleController.js";
 import teacherScheduleController from "../TeacherScheduleController.js";
+import i18next from "i18next";
+import {criticalErrorController} from "../../exceptions/bot/criticalErrorController.js";
 
 const errorCatch = async (e, msg) => {
     log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В teacherScheduleCommandController. Юзеру сказано что бот прибоел.` + e.message, {
         stack: e.stack,
         userId: msg.chat.id
     })
-    bot.sendMessage(msg.chat.id, "⚠️ Бот немножко приболел, попробуйте позже. ").catch(e => console.error(e))
+    await criticalErrorController(msg)
 }
 
 export async function sendUserTeacherSchedule(User, msg, answer) {
+    const user_language = await userService.getUserLanguage(msg.chat.id)
     const teacherId = User.teacher
 
     const Teacher = await teacherService.getById(teacherId)
@@ -24,9 +27,8 @@ export async function sendUserTeacherSchedule(User, msg, answer) {
             User,
             userId: msg.chat.id
         })
-        return bot.editMessageText("⚠️ Я не смог найти данного преподавателя(\n" +
-            "2 варианта. Либо я сломался что вероятнее всего. Либо произошла какая то ошибка. \n" +
-            "Попробуй воспользоваться /start для повторной регистрации", {
+        const msg_text = i18next.t('teacher_not_found', {lng:user_language})
+        return bot.editMessageText(msg_text, {
             chat_id: answer.chat.id, message_id: answer.message_id
         })
     }
@@ -41,13 +43,17 @@ export async function sendUserTeacherSchedule(User, msg, answer) {
 
 export async function teacherScheduleCommandController(msg) {
     await commandAntiSpamMiddleware(msg, async () => {
-        const answer = await bot.sendMessage(msg.chat.id, "🪄 Пытаюсь накодовать расписание преподавателя. Вжух!", {parse_mode: 'HTML'})
+        const user_language = await userService.getUserLanguage(msg.chat.id)
+
+        const answer = await bot.sendMessage(msg.chat.id, `🪄 ${i18next.t('schedule_loading', { lng: user_language })}`, {parse_mode: 'HTML'})
         try {
             const User = await userService.getUserById(msg.chat.id)
 
             if (!User) {
                 await bot.deleteMessage(msg.chat.id, answer.message_id);
-                return await bot.sendMessage(msg.chat.id, "❗️ Я тебя не знаю! Воспользуйся /start для регистрации!")
+                const msg_text = i18next.t('who_are_you', {lng:user_language})
+
+                return await bot.sendMessage(msg.chat.id, msg_text)
             }
             if (!User.teacher) {
                 return await teacherScheduleController.getDepartmentMenu(answer, 0)

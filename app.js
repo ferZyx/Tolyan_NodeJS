@@ -15,6 +15,7 @@ import {setupDailyDataUpdate} from "./cron/dailyDataUpdate.js";
 import {setupLoggingPathUpdate} from "./cron/loggingPathUpdate.js";
 import setupNewChatMemberHandler from "./handlers/newChatMemberHandler.js";
 import {setupAnyMessageHandler} from "./handlers/anyMessageHandler.js";
+import {i18nextInit} from "./locales/init.js";
 
 export const bot = new TelegramBot(config.TG_TOKEN, {
     polling: {
@@ -42,6 +43,7 @@ export const userLastRequest = {};
             log.error("Ошибка подключения к базе данных! ВЫЗЫВАЮ ФИКСИКОВ ВИУ ВИУ ВИУ!", {stack: e.stack})
         })
 
+    await i18nextInit();
 
     await setupCommandHandlers();
     await setupAdminCommandHandler();

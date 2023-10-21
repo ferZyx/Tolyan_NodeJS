@@ -2,34 +2,34 @@ import log from "../../logging/logging.js";
 import {bot} from "../../app.js";
 import {commandAntiSpamMiddleware} from "../../middlewares/bot/commandAntiSpamMiddleware.js";
 import ProfileController from "../ProfileController.js";
+import userService from "../../services/userService.js";
+import i18next from "i18next";
+import {criticalErrorController} from "../../exceptions/bot/criticalErrorController.js";
 
 const errorCatch = async (e, msg) =>{
     log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В profileCommandController. Юзеру сказано что бот прибоел.` + e.message, {stack: e.stack, userId: msg.chat.id})
-    bot.sendMessage(msg.chat.id, "⚠️ Бот немножко приболел, попробуйте позже. ").catch(e => console.error(e))
+    await criticalErrorController(msg)
 }
 
 
 export async function profileCommandController(msg) {
     await commandAntiSpamMiddleware(msg, async () => {
+        const user_language = await userService.getUserLanguage(msg.chat.id)
+
         const splittedText = msg.text.split(" ")
-
-        let surname = ''
-
-        if (!splittedText[1] || splittedText[1].length<2){
-            return await bot.sendMessage(msg.chat.id, '⚠️ Фамилия для поиска профиля должна состоять как минимум из 2 символов.')
-        }else{
-            surname = splittedText.slice(1).join(" ")
-        }
+        let surname = splittedText.slice(1).join(" ")
 
         try {
             if (!surname) {
-                await bot.sendMessage(msg.chat.id, '⚠️ После команды "профиль" должна быть указана фамилия.');
-                return;
+                const msg_text = i18next.t('profile_surname_validation', {lng:user_language})
+                return await bot.sendMessage(msg.chat.id, msg_text);
+            }
+            if (surname.length < 2){
+                const msg_text = i18next.t('profile_surname_length_validation', {lng:user_language})
+                return await bot.sendMessage(msg.chat.id, msg_text);
             }
 
-            const answer = await bot.sendMessage(msg.chat.id, `🪄 Пытаюсь накодовать профиль препода с фамилией: ${surname}. Вжух!`, {parse_mode: 'HTML'});
-
-            await ProfileController.findProfiles( answer, surname);
+            await ProfileController.findProfiles(msg, surname);
         } catch (e) {
             await errorCatch(e, msg)
         }

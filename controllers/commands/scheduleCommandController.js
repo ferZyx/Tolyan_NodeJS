@@ -5,18 +5,23 @@ import {commandAntiSpamMiddleware} from "../../middlewares/bot/commandAntiSpamMi
 import {sendUserGroupSchedule} from "./groupScheduleCommandController.js";
 import {sendUserTeacherSchedule} from "./teacherScheduleCommandController.js";
 import {redirectToNewScheduleMenu} from "./newScheduleCommandController.js";
+import i18next from "i18next";
+import {criticalErrorController} from "../../exceptions/bot/criticalErrorController.js";
 
 const errorCatch = async (e, msg) => {
     log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В scheduleCommandController. Юзеру сказано что бот прибоел.` + e.message, {
         stack: e.stack,
         userId: msg.chat.id
     })
-    bot.sendMessage(msg.chat.id, "⚠️ Бот немножко приболел, попробуйте позже. ").catch(e => console.error(e))
+    await criticalErrorController(msg)
 }
 
 export async function scheduleCommandController(msg) {
     await commandAntiSpamMiddleware(msg, async () => {
-        const answer = await bot.sendMessage(msg.chat.id, "🪄 Пытаюсь накодовать последнее загруженное тобой расписание. Вжух!", {parse_mode: 'HTML'})
+        const user_language = await userService.getUserLanguage(msg.chat.id)
+        const msg_text = i18next.t('schedule_loading', {lng:user_language})
+
+        const answer = await bot.sendMessage(msg.chat.id, `🪄 ${msg_text}`, {parse_mode: 'HTML'})
         try {
             const User = await userService.getUserById(msg.chat.id)
 

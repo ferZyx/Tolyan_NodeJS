@@ -1,18 +1,27 @@
-import {commandAntiSpamMiddleware} from "../../middlewares/bot/commandAntiSpamMiddleware.js";
 import log from "../../logging/logging.js";
 import {bot} from "../../app.js";
+import {commandAntiSpamMiddleware} from "../../middlewares/bot/commandAntiSpamMiddleware.js";
+import userService from "../../services/userService.js";
+import i18next from "i18next";
+import {criticalErrorController} from "../../exceptions/bot/criticalErrorController.js";
 
-const errorCatch = async (e, msg) =>{
-    log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В removeKeyboardCommandController. Юзеру сказано что бот прибоел.` + e.message, {stack: e.stack, userId: msg.chat.id})
-    bot.sendMessage(msg.chat.id, "⚠️ Бот немножко приболел, попробуйте позже. ").catch(e => console.error(e))
+const errorCatch = async (e, msg) => {
+    log.error(`ВАЖНО!User ${msg.chat.id}! ОШИБКА В removeKeyboardCommandController. Юзеру сказано что бот прибоел.` + e.message, {
+        stack: e.stack,
+        userId: msg.chat.id
+    })
+    await criticalErrorController(msg)
 }
 
-export async function removeKeyboardCommandController(msg){
-    await commandAntiSpamMiddleware(msg, async() => {
-        try{
-            await bot.sendMessage(msg.chat.id,  "Удалил кнопочки. Если будут нужны - /start", {reply_markup:{remove_keyboard:true}})
-        }catch (e) {
-            await errorCatch()
+export async function removeKeyboardCommandController(msg) {
+    await commandAntiSpamMiddleware(msg, async () => {
+        try {
+            const user_language = await userService.getUserLanguage(msg.chat.id)
+            const msg_text = i18next.t('keyboard_deleted', {lng:user_language})
+            
+            await bot.sendMessage(msg.chat.id, msg_text, {reply_markup: {remove_keyboard: true}})
+        } catch (e) {
+            await errorCatch(e, msg)
         }
     })
 }

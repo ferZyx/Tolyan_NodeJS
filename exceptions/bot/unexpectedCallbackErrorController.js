@@ -1,18 +1,24 @@
 import log from "../../logging/logging.js";
 import {bot} from "../../app.js";
+import userService from "../../services/userService.js";
+import i18next from "i18next";
 
-export async function unexpectedErrorController(e, message, callback_data) {
+export async function unexpectedCallbackErrorController(e, message, callback_data) {
     try {
         if (e.response && e.response.body.description === 'Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message') {
             log.info(`User ${message.chat.id} получил ошибку о том шо сообщение нот модифайнед. Скипаю ошибочку`, {userId: message.chat.id})
         } else {
             try {
+                const user_language = await userService.getUserLanguage(message.chat.id)
+
                 log.error(`User ${message.chat.id} got an error at ${callback_data}. Данные об ошибке в метаданных.`, {
                     stack: e.stack, message, callback_data, userId: message.chat.id
                 })
-                await bot.editMessageText("⚠️ Дико извиняемся, произошла какая то ошибка." + "\n🔩 Не переживайте, я уже вызвал фиксиков! Постараемся всё починить как можно скорее!", {
+                const msg_text = i18next.t('error', {lng:user_language})
+                const button_text = i18next.t('try_again', {lng:user_language})
+                await bot.editMessageText(msg_text, {
                     chat_id: message.chat.id, message_id: message.message_id, reply_markup: {
-                        inline_keyboard: [[{text: "Попробовать снова", callback_data}]]
+                        inline_keyboard: [[{text: button_text, callback_data}]]
                     }
                 })
             } catch (e) {
