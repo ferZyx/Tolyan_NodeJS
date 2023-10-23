@@ -22,6 +22,7 @@ import {inactiveSpamAdminCommandController} from "../controllers/commands/adminC
 import config from "../config.js";
 import {piarAdminCommandController} from "../controllers/commands/adminCommands/piarAdminCommandController.js";
 import axios from "axios";
+import { getUserCommandController } from "../controllers/commands/adminCommands/getUser.js";
 
 export function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -263,56 +264,7 @@ export default function setupAdminCommandHandler() {
 
         });
 
-        bot.onText(/^\/get_user/i, async (msg) => {
-            try {
-                if (!await userService.isAdmin(msg.from.id)) {
-                    return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
-                }
-                const userId = parseFloat(msg.text.replace('/get_user', ''))
-                if (isNaN(userId)) {
-                    return await bot.sendMessage(msg.chat.id, "UserId is NaN")
-                }
-
-                const user = await userService.getUserById(userId)
-                if (!user) {
-                    return await bot.sendMessage(msg.chat.id, "Не найден такой юзер. НЕТУ!")
-                }
-                let msg_text = `Информация о юзере id: ${userId}\n` +
-                    `Тип: ${user.userType}\n` +
-                    `username: @${user.username}\n`
-
-                if (user.userType !== 'private') {
-                    msg_text += `Название: ${user.userTitle}\n\n`
-                } else {
-                    msg_text += `Имя: ${user.firstName}\n` +
-                        `Фамилия: ${user.lastName}\n`
-                }
-                msg_text += `Тип расписания: ${user.scheduleType}\n`
-
-                const group = await groupService.getById(user.group)
-                if (group) {
-                    const group_users = await userService.getUsersCountByGroupId(group.id)
-                    msg_text += `\nГруппа: ${group.name} | id: ${group.id}\n` +
-                        `В группе: ${group.studentCount} | Пользуются ботом: ${group_users}\n`
-                    const program = await programService.getById(group.program)
-                    const faculty = await facultyService.getById(program.faculty)
-
-                    msg_text += `Программа: ${program.name} || id: ${program.id}\n`
-                    msg_text += `Факультет: ${faculty.name} || id: ${faculty.id}\n`
-                }
-                const teacher = await teacherService.getById(user.teacher)
-                if (teacher) {
-                    msg_text += `\nПрепод: ${teacher.name} | id: ${teacher.id}\n`
-                }
-                msg_text += `last_activity: ${ScheduleController.formatElapsedTime((new Date(user.updatedAt).getTime()))} назад\n`
-
-
-                await bot.sendMessage(msg.chat.id, msg_text)
-            } catch (e) {
-                log.error("Ошибочка при /get_user", {stack: e.stack})
-            }
-
-        });
+        bot.onText(/^\/get_user/i, getUserCommandController);
 
         bot.onText(/^\/ignoreLogs/i, async (msg) => {
             try {

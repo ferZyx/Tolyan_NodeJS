@@ -43,7 +43,7 @@ class UserService {
 
     async updateUser(userId, newData) {
         try {
-            return await User.findOneAndUpdate({userId: userId}, newData, {new: true});
+            return await User.findOneAndUpdate({userId: userId}, newData, {upsert: true, returnDocument:"before"});
         } catch (error) {
             throw new Error('Ошибка при обновлении данных пользователя: ' + error.stack);
         }
@@ -107,7 +107,6 @@ class UserService {
             const user = await User.findOne({userId})
             const language = user.language
             userLanguagesCache[userId] = language
-            console.log(userLanguagesCache)
             return language ?? "ru"
         } catch (e) {
             throw new Error("Ошибка при получении языка пользователя. " + e.stack)

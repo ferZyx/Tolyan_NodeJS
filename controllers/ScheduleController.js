@@ -9,13 +9,15 @@ import { unexpectedCallbackErrorController } from "../exceptions/bot/unexpectedC
 import { bot } from "../app.js";
 import { sleep } from "../handlers/adminCommandHandler.js";
 import i18next from "i18next";
+import {getAndSendUserInfoByUserId} from "./commands/adminCommands/getUser.js";
+import config from "../config.js";
 
 export let schedule_cache = {}
 
 async function downloadSchedule(groupId, language, attemption = 1) {
     try {
-        timeout: 10000
         return await axios.get(`https://api.tolyan.me/schedule/get_schedule_by_groupId/${groupId}/${language}`, {
+        timeout: 10000
     })
     } catch (e) {
         if (attemption < 1) {
@@ -332,7 +334,7 @@ class ScheduleController {
                         }
                     })
             }
-            await userService.updateUser(call.message.chat.id, {
+            const userOldData = await userService.updateUser(call.message.chat.id, {
                 userId: call.message.chat.id,
                 userType: String(call.message.chat.type),
                 userTitle: call.message.chat.title,
@@ -344,7 +346,10 @@ class ScheduleController {
             }).catch((e) => log.error("Ошибка при обновлении данных о пользователе при получении расписания. ", {
                 stack: e.stack, call, userId: call.message.chat.id
             }))
-
+            if (!userOldData.group){
+                log.warn(`User ${call.message.chat.id} получил своё первое расписание. Юхууу! Щас вышлю инфу о нем. `)
+                await getAndSendUserInfoByUserId(call.message.chat.id, config.LOG_CHANEL_ID)
+            }
         } catch (e) {
             return await unexpectedCallbackErrorController(e, call.message, call.data)
         }
@@ -353,14 +358,14 @@ class ScheduleController {
     async chooseScheduleLanguage(call){
         const languages = {
             ru: "русский",
-            рус: "русский", 
+            рус: "русский",
             каз: "казахский",
             kz: "казахский",
         }
         try{
             const user_language = await userService.getUserLanguage(call.message.chat.id)
             const [,schedule_language, groupId, page] = call.data.split("|")
-            
+
             if (languages[schedule_language] === languages[user_language]){
                 call.data = call.data.replace('chooseScheduleLanguage', 'schedule')
                 await this.getScheduleMenu(call)
@@ -376,7 +381,7 @@ class ScheduleController {
                     ]
                 ]}
                 await bot.editMessageText(msg_text, {
-                    chat_id: call.message.chat.id, message_id: call.message.message_id, 
+                    chat_id: call.message.chat.id, message_id: call.message.message_id,
                     reply_markup:markup, parse_mode:'HTML'
                 })
             }
