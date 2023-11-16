@@ -12,6 +12,7 @@ export async function getAndSendUserInfoByUserId(userId, toChatId) {
     if (!user) {
         return await bot.sendMessage(toChatId, "Не найден такой юзер. НЕТУ!")
     }
+
     const group = await groupService.getById(user.group)
     let group_users = null
     let program = null
