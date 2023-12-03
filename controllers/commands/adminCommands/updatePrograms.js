@@ -21,7 +21,7 @@ export async function updateProgramsCommandController(hard = false) {
 
     try {
         log.warn("Начинаю обновление списка программ. hard = " + hard)
-
+        await sleep(1000)
         const startTime = Date.now()
 
         const old_programs = await programService.getAll()
@@ -59,6 +59,7 @@ export async function updateProgramsCommandController(hard = false) {
                 "Время выполнения" + Math.floor((endTime - startTime) / 1000) + "сек." +
                 `Было: ${old_programs.length}. Я получил: ${programs.length}`)
         }
+        await sleep(1000)
 
     } catch (e) {
         log.error(`Произошла непредвиденная ошибка в updateProgramsCommandController() :` + e.message, {stack: e.stack})

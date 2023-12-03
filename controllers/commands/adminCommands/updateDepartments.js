@@ -18,6 +18,7 @@ export async function updateDepartmentsCommandController(hard = false){
     }
     try{
         log.warn("Начинаю обновление списка кафедр. hard = " + hard)
+        await sleep(1000)
 
         const startTime = Date.now()
 
@@ -36,6 +37,7 @@ export async function updateDepartmentsCommandController(hard = false){
                 "Время выполнения" + Math.floor((endTime - startTime) / 1000) + "сек." +
                 `Было: ${old_departments.length}. Я получил: ${departments.length}`)
         }
+        await sleep(1000)
 
     }catch (e) {
         log.error(`Произошла непредвиденная ошибка в updateProfilesCommandController() :` + e.message, {stack: e.stack})

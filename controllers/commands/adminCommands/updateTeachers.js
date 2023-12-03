@@ -19,7 +19,8 @@ export async function updateTeachersCommandController(hard = false) {
     }
 
     try {
-        log.warn("Начинаю обновление списка программ. hard = " + hard)
+        log.warn("Начинаю обновление списка преподов. hard = " + hard)
+        await sleep(1000)
 
         const startTime = Date.now()
 
@@ -59,8 +60,7 @@ export async function updateTeachersCommandController(hard = false) {
                 "Время выполнения" + Math.floor((endTime - startTime) / 1000) + "сек." +
                 `Было: ${old_teachers.length}. Я получил: ${teachers.length}`)
         }
-
-
+        await sleep(1000)
     } catch (e) {
         log.error(`Произошла непредвиденная ошибка в updateTeachersCommandController() :` + e.message, {stack: e.stack})
     }

@@ -19,6 +19,7 @@ export async function updateProfilesCommandController(hard = false){
 
     try{
         log.warn("Начинаю обновление списка профилей. hard = " + hard)
+        await sleep(1000)
 
         const startTime = Date.now()
 
@@ -37,6 +38,8 @@ export async function updateProfilesCommandController(hard = false){
                 "Время выполнения" + Math.floor((endTime - startTime) / 1000) + "сек." +
                 `Было: ${old_profiles.length}. Я получил: ${profiles.length}`)
         }
+        await sleep(1000)
+
     }catch (e) {
         log.error(`Произошла непредвиденная ошибка в updateProfilesCommandController() :` + e.message, {stack: e.stack})
     }

@@ -20,7 +20,7 @@ export async function updateFacultiesCommandController(hard = false) {
 
     try {
         log.warn("Начинаю обновление списка факультетов. hard = " + hard)
-
+        await sleep(1000)
         const startTime = Date.now()
 
         const old_faculties = await facultyService.getAll()
@@ -38,6 +38,8 @@ export async function updateFacultiesCommandController(hard = false) {
                 "Время выполнения" + Math.floor((endTime - startTime) / 1000) + "сек." +
                 `Было: ${old_faculties.length}. Я получил: ${faculties.length}`)
         }
+        await sleep(1000)
+
     } catch (e) {
         log.error(`Произошла непредвиденная ошибка в updateFacultiesCommandController() :` + e.message, {stack: e.stack})
     }
