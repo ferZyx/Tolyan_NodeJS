@@ -6,7 +6,7 @@ import {sleep} from "../../../handlers/adminCommandHandler.js";
 export async function updateProfilesCommandController(hard = false){
     async function getProfileList() {
         try {
-            const response = await axios.get(`https://api.tolyan.me/teacher/get_all_teachers`)
+            const response = await axios.get(`https://api.tolyan.me/express/api/teacher/get_all_teachers`)
             if (response.status === 200){
                 return response.data
             }

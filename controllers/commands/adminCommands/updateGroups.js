@@ -7,7 +7,7 @@ import {sleep} from "../../../handlers/adminCommandHandler.js";
 export async function updateGroupsCommandController(hard = false){
     async function getGroupList(programId) {
         try {
-            const response = await axios.get(`https://api.tolyan.me/schedule/get_group_list_by_programId/${programId}`)
+            const response = await axios.get(`https://api.tolyan.me/express/api/schedule/get_group_list_by_programId/${programId}`)
             if (response.status === 200){
                 return response.data
             }
