@@ -37,8 +37,11 @@ export async function getAndSendUserInfoByUserId(userId, toChatId) {
         {key: 'В группе', value: group ? `${group.studentCount} | Пользуются ботом: ${group_users}` : undefined},
         {key: 'Программа', value: program ? `${program.name} | id: ${program.id}` : undefined},
         {key: 'Факультет', value: faculty ? `${faculty.name} | id: ${faculty.id}` : undefined},
-        {key: '\nПрепод', value:+ teacher ? teacher.name + " | " + teacher.id : undefined},
-        {key: '\nПоследняя активность', value: `${ScheduleController.formatElapsedTime((new Date(user.updatedAt).getTime()))} назад`},
+        {key: '\nПрепод', value: teacher ? teacher.name + " | " + teacher.id : undefined},
+        {
+            key: '\nПоследняя активность',
+            value: `${ScheduleController.formatElapsedTime((new Date(user.updatedAt).getTime()))} назад`
+        },
     ];
 
     let msg_text = `Информация о юзере id: ${userId}\n`
