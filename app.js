@@ -25,8 +25,12 @@ export const bot = new TelegramBot(config.TG_TOKEN, {
 
 const app = express();
 const corsOptions = {
-    origin: '*',
-    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+    credentials: true,
+    origin: [
+        'https://tolyan.me',
+        'http://tolyan.me:3000',
+        'http://localhost:3000'
+    ]
 }
 app.use(cors(corsOptions));
 app.use(express.json());
