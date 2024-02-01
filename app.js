@@ -26,7 +26,7 @@ export const bot = new TelegramBot(config.TG_TOKEN, {
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use("/bot", router);
+app.use(router);
 app.use(errorMiddleware)
 
 const port = 5001;
