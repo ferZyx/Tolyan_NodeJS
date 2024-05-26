@@ -19,8 +19,8 @@ export async function updateFacultiesCommandController(hard = false) {
     }
 
     try {
-        log.warn("Начинаю обновление списка факультетов. hard = " + hard)
-        await sleep(1000)
+        log.info("Начинаю обновление списка факультетов. hard = " + hard)
+
         const startTime = Date.now()
 
         const old_faculties = await facultyService.getAll()
@@ -28,9 +28,11 @@ export async function updateFacultiesCommandController(hard = false) {
 
         const endTime = Date.now()
 
-        if (faculties.length >= old_faculties.length || hard){
+        const availableRange = old_faculties.length * 0.3;
+
+        if (faculties.length + availableRange >= old_faculties.length || hard){
             await facultyService.updateAll(faculties)
-            log.warn(`Обновление факультетов прошло успешно. Время выполнения:` +
+            log.info(`Обновление факультетов прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +
                 `Было: ${old_faculties.length} || Стало: ${faculties.length} || Разница: ${faculties.length - old_faculties.length}`)
         }else{

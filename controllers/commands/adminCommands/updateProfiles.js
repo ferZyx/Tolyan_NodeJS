@@ -18,8 +18,7 @@ export async function updateProfilesCommandController(hard = false){
     }
 
     try{
-        log.warn("Начинаю обновление списка профилей. hard = " + hard)
-        await sleep(1000)
+        log.info("Начинаю обновление списка профилей. hard = " + hard)
 
         const startTime = Date.now()
 
@@ -28,9 +27,11 @@ export async function updateProfilesCommandController(hard = false){
 
         const endTime = Date.now()
 
-        if (profiles.length >= old_profiles.length || hard){
+        const availableRange = old_profiles.length * 0.3;
+
+        if (profiles.length + availableRange >= old_profiles.length || hard){
             await teacherProfileService.updateAll(profiles)
-            log.warn(`Обновление профилей прошло успешно. Время выполнения:` +
+            log.info(`Обновление профилей прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +
                 `Было: ${old_profiles.length} || Стало: ${profiles.length} || Разница: ${profiles.length - old_profiles.length}`)
         }else{

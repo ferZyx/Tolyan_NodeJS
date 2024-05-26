@@ -20,8 +20,8 @@ export async function updateProgramsCommandController(hard = false) {
     }
 
     try {
-        log.warn("Начинаю обновление списка программ. hard = " + hard)
-        await sleep(1000)
+        log.info("Начинаю обновление списка программ. hard = " + hard)
+
         const startTime = Date.now()
 
         const old_programs = await programService.getAll()
@@ -48,10 +48,12 @@ export async function updateProgramsCommandController(hard = false) {
                 `Стадия обновления: ${stage}%`)
         }
 
+        const availableRange = old_programs.length * 0.3;
+
         const endTime = Date.now()
-        if (programs.length >= old_programs.length || hard){
+        if (programs.length + availableRange >= old_programs.length || hard){
             await programService.updateAll(programs)
-            log.warn(`Обновление программ прошло успешно. Время выполнения:` +
+            log.info(`Обновление программ прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +
                 `Было: ${old_programs.length} || Стало: ${programs.length} || Разница: ${programs.length - old_programs.length}`)
         }else{

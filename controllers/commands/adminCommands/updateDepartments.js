@@ -17,8 +17,7 @@ export async function updateDepartmentsCommandController(hard = false){
         }
     }
     try{
-        log.warn("Начинаю обновление списка кафедр. hard = " + hard)
-        await sleep(1000)
+        log.info("Начинаю обновление списка кафедр. hard = " + hard)
 
         const startTime = Date.now()
 
@@ -27,9 +26,11 @@ export async function updateDepartmentsCommandController(hard = false){
 
         const endTime = Date.now()
 
-        if (departments.length >= old_departments.length || hard){
+        const availableRange = old_departments.length * 0.3;
+
+        if (departments.length + availableRange >= old_departments.length || hard){
             await departmentService.updateAll(departments)
-            log.warn(`Обновление кафедр прошло успешно. Время выполнения:` +
+            log.info(`Обновление кафедр прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +
                 `Было: ${old_departments.length} || Стало: ${departments.length} || Разница: ${departments.length - old_departments.length}`)
         }else{

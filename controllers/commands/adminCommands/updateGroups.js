@@ -20,8 +20,7 @@ export async function updateGroupsCommandController(hard = false){
 
 
     try {
-        log.warn("Начинаю обновление списка групп. hard = " + hard)
-        await sleep(1000)
+        log.info("Начинаю обновление списка групп. hard = " + hard)
 
         const startTime = Date.now()
 
@@ -54,9 +53,11 @@ export async function updateGroupsCommandController(hard = false){
 
         const endTime = Date.now()
 
-        if (groups.length >= old_groups.length || hard){
+        const availableRange = old_groups.length * 0.3;
+
+        if (groups.length + availableRange >= old_groups.length || hard){
             await groupService.updateAll(groups)
-            log.warn(`Обновление групп прошло успешно. Время выполнения:` +
+            log.info(`Обновление групп прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +
                 `Было: ${old_groups.length} || Стало: ${groups.length} || Разница: ${groups.length - old_groups.length}`)
         }else{

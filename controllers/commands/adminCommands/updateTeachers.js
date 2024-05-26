@@ -19,7 +19,7 @@ export async function updateTeachersCommandController(hard = false) {
     }
 
     try {
-        log.warn("Начинаю обновление списка преподов. hard = " + hard)
+        log.info("Начинаю обновление списка преподов. hard = " + hard)
         await sleep(1000)
 
         const startTime = Date.now()
@@ -50,9 +50,11 @@ export async function updateTeachersCommandController(hard = false) {
 
         const endTime = Date.now()
 
-        if (teachers.length >= old_teachers.length || hard){
+        const availableRange = old_teachers.length * 0.3;
+
+        if (teachers.length + availableRange >= old_teachers.length || hard){
             await teacherService.updateAll(teachers)
-            log.warn(`Обновление преподов прошло успешно. Время выполнения:` +
+            log.info(`Обновление преподов прошло успешно. Время выполнения:` +
                 `${Math.floor((endTime - startTime) / 1000)} сек.\n` +
                 `Было: ${old_teachers.length} || Стало: ${teachers.length} || Разница: ${teachers.length - old_teachers.length}`)
         }else{
