@@ -11,7 +11,7 @@ import i18next from 'i18next'
 
 async function downloadSchedule(teacherId, attemption = 1) {
     try {
-        return await axios.get(`https://api.tolyan.me/express/api/teacherSchedule/get_teacher_schedule/${teacherId}`, {
+        return await axios.get(`http://209.38.209.184:5000/express/api/teacherSchedule/get_teacher_schedule/${teacherId}`, {
             timeout: 10000
         })
     } catch (e) {

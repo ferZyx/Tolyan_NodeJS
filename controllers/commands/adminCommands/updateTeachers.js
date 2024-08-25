@@ -7,7 +7,7 @@ import departmentService from "../../../services/departmentService.js";
 export async function updateTeachersCommandController(hard = false) {
     async function getTeacherList(departmentId) {
         try {
-            const response = await axios.get(`https://api.tolyan.me/express/api/teacherSchedule/get_teachers_list/${departmentId}`)
+            const response = await axios.get(`http://209.38.209.184:5000/express/api/teacherSchedule/get_teachers_list/${departmentId}`)
             if (response.status === 200) {
                 return response.data
             }
