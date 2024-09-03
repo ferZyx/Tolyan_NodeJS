@@ -395,7 +395,20 @@ export default function setupAdminCommandHandler() {
 
         });
 
-        bot.onText(/^\/get_group (\w+)/i, async (msg, match) => {
+        bot.onText(/^\/get_group (\w+)/i, async (msg) => {
+            try {
+                if (!await userService.isAdmin(msg.from.id)) {
+                    return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
+                }
+                await bot.sendMessage(msg.chat.id, "Ща всё будет")
+
+                await axios.get('http://209.38.209.184:5000/express/api/browser/restart_browser')
+            } catch (e) {
+                log.error({stack: e.stack})
+            }
+        });
+
+        bot.onText(/^\/restart (\w+)/i, async (msg, match) => {
             try {
                 if (!await userService.isAdmin(msg.from.id)) {
                     return await bot.sendMessage(msg.chat.id, "У вас нет доступа к этой прекрасной команде!")
@@ -407,7 +420,6 @@ export default function setupAdminCommandHandler() {
             } catch (e) {
                 log.error({stack: e.stack})
             }
-
         });
 
         bot.onText(/^\/get_callback/i, async (msg) => {
