@@ -105,7 +105,7 @@ class UserService {
                 return userLanguagesCache[userId]
             }
             const user = await User.findOne({userId})
-            const language = user.language
+            const language = user?.language ?? 'ru';
             userLanguagesCache[userId] = language
             return language ?? "ru"
         } catch (e) {
