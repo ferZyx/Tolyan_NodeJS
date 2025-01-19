@@ -34,7 +34,7 @@ export async function piarAdminCommandController(msg) {
                 })
             }
 
-            const sortedGroupStat = group_stat.filter((obj) => (obj.our_users !== 0) && ((obj.not_our_users > 15) || (obj.ratio <= 0.5)))
+            const sortedGroupStat = group_stat.filter((obj) => (obj.our_users !== 0) && ((obj.not_our_users > 20)))
                 .sort((a, b) => b.not_our_users - a.not_our_users)
 
 
