@@ -437,7 +437,7 @@ export default function setupAdminCommandHandler() {
   })
 
   bot.onText(/^\/ahelp/i, async (msg) => {
-    const msg_text = 'updateFaculties [isHard] \n' +
+    const msg_text = '/updateFaculties [isHard] \n' +
       '/updatePrograms [isHard] \n' +
       '/updateGroups [isHard] \n' +
       '/updateProfiles [isHard] \n' +
