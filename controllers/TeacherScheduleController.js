@@ -8,10 +8,11 @@ import userService from "../services/userService.js";
 import teacherScheduleService from "../services/teacherScheduleService.js";
 import {bot} from "../app.js";
 import i18next from 'i18next'
+import config from "../config.js";
 
 async function downloadSchedule(teacherId, attemption = 1) {
     try {
-        return await axios.get(`http://209.38.209.184:5000/express/api/teacherSchedule/get_teacher_schedule/${teacherId}`, {
+        return await axios.get(`${config.KSU_HELPER_URL}/express/api/teacherSchedule/get_teacher_schedule/${teacherId}`, {
             timeout: 10000
         })
     } catch (e) {

@@ -7,6 +7,7 @@ import scheduleService from "./services/scheduleService.js";
 import LogService from "./services/logService.js";
 import teacherService from "./services/teacherService.js";
 import teacherScheduleService from "./services/teacherScheduleService.js";
+import config from "./config.js";
 
 const router = new Router()
 
@@ -37,7 +38,7 @@ router.get('/get_user_schedule', async (req, res) => {
         const groupId = group.id;
         const language = group.language;
         try {
-            const response = await axios.get(`http://209.38.209.184:5000/epxress/api/schedule/get_schedule_by_groupId/${groupId}/${language}`, {timeout:10000})
+            const response = await axios.get(`${config.KSU_HELPER_URL}/epxress/api/schedule/get_schedule_by_groupId/${groupId}/${language}`, {timeout:10000})
 
             data.studentSchedule = {
                 schedule:response.data,
@@ -66,7 +67,7 @@ router.get('/get_user_schedule', async (req, res) => {
     if (teacher) {
         const teacherId = teacher.id;
         try {
-            const response = await axios.get(`http://209.38.209.184:5000/express/api/teacherSchedule/get_teacher_schedule/${teacherId}`)
+            const response = await axios.get(`${config.KSU_HELPER_URL}/express/api/teacherSchedule/get_teacher_schedule/${teacherId}`)
 
             data.teacherSchedule = {
                 schedule:response.data,

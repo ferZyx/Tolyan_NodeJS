@@ -2,11 +2,12 @@ import axios from "axios";
 import teacherProfileService from "../../../services/profileService.js";
 import log from "../../../logging/logging.js";
 import {sleep} from "../../../handlers/adminCommandHandler.js";
+import config from "../../../config.js";
 
 export async function updateProfilesCommandController(hard = false){
     async function getProfileList() {
         try {
-            const response = await axios.get(`http://209.38.209.184:5000/express/api/teacher/get_all_teachers`)
+            const response = await axios.get(`${config.KSU_HELPER_URL}/express/api/teacher/get_all_teachers`)
             if (response.status === 200){
                 return response.data
             }

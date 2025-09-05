@@ -3,12 +3,13 @@ import programService from "../../../services/programService.js";
 import facultyService from "../../../services/facultyService.js";
 import axios from "axios";
 import {sleep} from "../../../handlers/adminCommandHandler.js";
+import config from "../../../config.js";
 
 
 export async function updateProgramsCommandController(hard = false) {
     async function getProgramList(facultyId) {
         try {
-            const response = await axios.get(`http://209.38.209.184:5000/express/api/schedule/get_program_list_by_facultyId/${facultyId}`)
+            const response = await axios.get(`${config.KSU_HELPER_URL}/express/api/schedule/get_program_list_by_facultyId/${facultyId}`)
             if (response.status === 200){
                 return response.data
             }

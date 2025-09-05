@@ -3,11 +3,12 @@ import log from "../../../logging/logging.js";
 import {sleep} from "../../../handlers/adminCommandHandler.js";
 import teacherService from "../../../services/teacherService.js";
 import departmentService from "../../../services/departmentService.js";
+import config from "../../../config.js";
 
 export async function updateTeachersCommandController(hard = false) {
     async function getTeacherList(departmentId) {
         try {
-            const response = await axios.get(`http://209.38.209.184:5000/express/api/teacherSchedule/get_teachers_list/${departmentId}`)
+            const response = await axios.get(`${config.KSU_HELPER_URL}/express/api/teacherSchedule/get_teachers_list/${departmentId}`)
             if (response.status === 200) {
                 return response.data
             }

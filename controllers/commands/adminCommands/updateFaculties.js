@@ -1,13 +1,14 @@
-import facultyService from "../../../services/facultyService.js";
 import axios from "axios";
 import log from "../../../logging/logging.js";
 import {sleep} from "../../../handlers/adminCommandHandler.js";
+import facultyService from "../../../services/facultyService.js";
+import config from "../../../config.js";
 
 
 export async function updateFacultiesCommandController(hard = false) {
     async function getFacultyList() {
         try {
-            const response = await axios.get(`http://209.38.209.184:5000/express/api/schedule/get_faculty_list`)
+            const response = await axios.get(`${config.KSU_HELPER_URL}/express/api/schedule/get_faculty_list`)
             if (response.status === 200){
                 return response.data
             }

@@ -16,7 +16,7 @@ export let schedule_cache = {}
 
 async function downloadSchedule(groupId, language, attemption = 1) {
     try {
-        return await axios.get(`http://209.38.209.184:5000/express/api/schedule/get_schedule_by_groupId/${groupId}/${language}`, {
+        return await axios.get(`${config.KSU_HELPER_URL}/express/api/schedule/get_schedule_by_groupId/${groupId}/${language}`, {
         timeout: 10000
     })
     } catch (e) {

@@ -21,6 +21,7 @@ import {
 import {piarAdminCommandController} from "../controllers/commands/adminCommands/piarAdminCommandController.js";
 import axios from "axios";
 import {getUserCommandController} from "../controllers/commands/adminCommands/getUser.js";
+import config from "../config.js";
 
 export function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -413,7 +414,7 @@ export default function setupAdminCommandHandler() {
 
       await bot.sendMessage(msg.chat.id, "Ща всё будет")
 
-      await axios.get('http://209.38.209.184:5000/express/api/browser/restart_browser')
+      await axios.get(`${config.KSU_HELPER_URL}/express/api/browser/restart_browser`)
     } catch (e) {
       log.error({stack: e.stack})
     }
