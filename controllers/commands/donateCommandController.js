@@ -19,7 +19,7 @@ export async function donateCommandController(msg) {
 
         log.warn(`User ${msg.chat.id} прописал /donate`, {userId: msg.chat.id})
 
-        const msg_text = i18next.t('donate_command_content', {lng:user_language, card_number: "4400430139065632"})
+        const msg_text = i18next.t('donate_command_content', {lng:user_language, card_number: "4400430340634796"})
 
         await bot.sendMessage(msg.chat.id, msg_text, {parse_mode: 'HTML'})
         await bot.forwardMessage(config.LOG_CHANEL_ID, msg.chat.id, msg.message_id)
