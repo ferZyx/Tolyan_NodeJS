@@ -8,8 +8,52 @@ import LogService from "./services/logService.js";
 import teacherService from "./services/teacherService.js";
 import teacherScheduleService from "./services/teacherScheduleService.js";
 import config from "./config.js";
+import botHealthMonitor from "./utils/botHealthMonitor.js";
+import {bot} from "./app.js";
 
 const router = new Router()
+
+// Health check endpoint
+router.get('/health', async (req, res) => {
+    try {
+        const healthStatus = await botHealthMonitor.getStatus();
+        const statusCode = healthStatus.healthy ? 200 : 503;
+
+        return res.status(statusCode).json({
+            status: healthStatus.healthy ? 'healthy' : 'unhealthy',
+            mode: config.BOT_MODE,
+            ...healthStatus
+        });
+    } catch (e) {
+        log.error('Error in health check endpoint', { stack: e.stack });
+        return res.status(500).json({
+            status: 'error',
+            error: e.message
+        });
+    }
+});
+
+// Webhook endpoint (only used when BOT_MODE=webhook)
+router.post('/webhook', async (req, res) => {
+    if (config.BOT_MODE !== 'webhook') {
+        return res.status(400).json({ error: 'Bot is not in webhook mode' });
+    }
+
+    try {
+        const update = req.body;
+
+        // Update bot activity
+        botHealthMonitor.updateActivity();
+
+        // Process the update
+        await bot.processUpdate(update);
+
+        return res.sendStatus(200);
+    } catch (e) {
+        log.error('Error processing webhook update', { stack: e.stack, update: req.body });
+        return res.sendStatus(500);
+    }
+});
 
 router.post("/log", async (req,res) => {
     const data = req.body

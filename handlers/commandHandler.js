@@ -12,52 +12,53 @@ import {searchGroupCommandController} from "../controllers/commands/searchGroupC
 import {searchTeacherCommandController} from "../controllers/commands/searchTeacherCommandController.js";
 import {removeKeyboardCommandController} from "../controllers/commands/removeKeyboardCommandController.js";
 import {searchHelpCommandController} from "../controllers/commands/searchHelpCommandController.js";
+import {safeHandler} from "../utils/safeHandler.js";
 
 export function setupCommandHandlers() {
-    bot.onText(/^\/start/i, startCommandController);
+    bot.onText(/^\/start/i, safeHandler(startCommandController, 'start'));
 
-    bot.onText(/^🗒 Новое расписание/i, newScheduleCommandController);
-    bot.onText(/^🗒 Жаңа кесте/i, newScheduleCommandController);
-    bot.onText(/^\/new$/i, newScheduleCommandController);
-    bot.onText(/^\/new (.+)/i, newScheduleCommandController);
+    bot.onText(/^🗒 Новое расписание/i, safeHandler(newScheduleCommandController, 'newSchedule'));
+    bot.onText(/^🗒 Жаңа кесте/i, safeHandler(newScheduleCommandController, 'newSchedule'));
+    bot.onText(/^\/new$/i, safeHandler(newScheduleCommandController, 'newSchedule'));
+    bot.onText(/^\/new (.+)/i, safeHandler(newScheduleCommandController, 'newSchedule'));
 
-    bot.onText(/^\/schedule/i, scheduleCommandController);
-    bot.onText(/^расписание/i, scheduleCommandController);
+    bot.onText(/^\/schedule/i, safeHandler(scheduleCommandController, 'schedule'));
+    bot.onText(/^расписание/i, safeHandler(scheduleCommandController, 'schedule'));
 
-    bot.onText(/^🗓 Расписание преподавателя/i, teacherScheduleCommandController);
-    bot.onText(/^🗓 Оқытушының кестесі/i, teacherScheduleCommandController);
+    bot.onText(/^🗓 Расписание преподавателя/i, safeHandler(teacherScheduleCommandController, 'teacherSchedule'));
+    bot.onText(/^🗓 Оқытушының кестесі/i, safeHandler(teacherScheduleCommandController, 'teacherSchedule'));
 
-    bot.onText(/^🗓 Расписание студента/i, groupScheduleCommandController);
-    bot.onText(/^🗓 Студенттің кестесі/i, groupScheduleCommandController);
+    bot.onText(/^🗓 Расписание студента/i, safeHandler(groupScheduleCommandController, 'groupSchedule'));
+    bot.onText(/^🗓 Студенттің кестесі/i, safeHandler(groupScheduleCommandController, 'groupSchedule'));
 
-    bot.onText(/^профиль/i, profileCommandController);
+    bot.onText(/^профиль/i, safeHandler(profileCommandController, 'profile'));
 
-    bot.onText(/^\/help/i, helpCommandController)
-    bot.onText(/^💡 Помощь/i, helpCommandController)
-    bot.onText(/^💡 Көмек/i, helpCommandController)
+    bot.onText(/^\/help/i, safeHandler(helpCommandController, 'help'))
+    bot.onText(/^💡 Помощь/i, safeHandler(helpCommandController, 'help'))
+    bot.onText(/^💡 Көмек/i, safeHandler(helpCommandController, 'help'))
 
-    bot.onText(/^\/news/i, newsCommandController)
-    bot.onText(/^📢 Новости/i, newsCommandController)
-    bot.onText(/^📢 Жаңалықтар/i, newsCommandController)
+    bot.onText(/^\/news/i, safeHandler(newsCommandController, 'news'))
+    bot.onText(/^📢 Новости/i, safeHandler(newsCommandController, 'news'))
+    bot.onText(/^📢 Жаңалықтар/i, safeHandler(newsCommandController, 'news'))
 
-    bot.onText(/^\/donate/i, donateCommandController)
+    bot.onText(/^\/donate/i, safeHandler(donateCommandController, 'donate'))
 
-    bot.onText(/^\/remove/i, removeKeyboardCommandController)
+    bot.onText(/^\/remove/i, safeHandler(removeKeyboardCommandController, 'removeKeyboard'))
 
-    bot.onText(/^Г (.+)/i, searchGroupCommandController)
-    bot.onText(/^Т (.+)/i, searchGroupCommandController)
-    bot.onText(/^Г$/i, searchGroupCommandController)
-    bot.onText(/^Т$/i, searchGroupCommandController)
-    bot.onText(/^Группа/i, searchGroupCommandController)
-    bot.onText(/^Тобы/i, searchGroupCommandController)
+    bot.onText(/^Г (.+)/i, safeHandler(searchGroupCommandController, 'searchGroup'))
+    bot.onText(/^Т (.+)/i, safeHandler(searchGroupCommandController, 'searchGroup'))
+    bot.onText(/^Г$/i, safeHandler(searchGroupCommandController, 'searchGroup'))
+    bot.onText(/^Т$/i, safeHandler(searchGroupCommandController, 'searchGroup'))
+    bot.onText(/^Группа/i, safeHandler(searchGroupCommandController, 'searchGroup'))
+    bot.onText(/^Тобы/i, safeHandler(searchGroupCommandController, 'searchGroup'))
 
-    bot.onText(/^П (.+)/i, searchTeacherCommandController)
-    bot.onText(/^О (.+)/i, searchTeacherCommandController)
-    bot.onText(/^П$/i, searchTeacherCommandController)
-    bot.onText(/^О$/i, searchTeacherCommandController)
-    bot.onText(/^Преподаватель/i, searchTeacherCommandController)
-    bot.onText(/^Оқытушы/i, searchTeacherCommandController)
+    bot.onText(/^П (.+)/i, safeHandler(searchTeacherCommandController, 'searchTeacher'))
+    bot.onText(/^О (.+)/i, safeHandler(searchTeacherCommandController, 'searchTeacher'))
+    bot.onText(/^П$/i, safeHandler(searchTeacherCommandController, 'searchTeacher'))
+    bot.onText(/^О$/i, safeHandler(searchTeacherCommandController, 'searchTeacher'))
+    bot.onText(/^Преподаватель/i, safeHandler(searchTeacherCommandController, 'searchTeacher'))
+    bot.onText(/^Оқытушы/i, safeHandler(searchTeacherCommandController, 'searchTeacher'))
 
-    bot.onText(/^\/search/i, searchHelpCommandController)
-    bot.onText(/^Поиск/i, searchHelpCommandController)
+    bot.onText(/^\/search/i, safeHandler(searchHelpCommandController, 'searchHelp'))
+    bot.onText(/^Поиск/i, safeHandler(searchHelpCommandController, 'searchHelp'))
 }
