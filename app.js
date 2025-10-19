@@ -17,6 +17,7 @@ import setupNewChatMemberHandler from "./handlers/newChatMemberHandler.js";
 import {setupAnyMessageHandler} from "./handlers/anyMessageHandler.js";
 import {i18nextInit} from "./locales/init.js";
 import botHealthMonitor from "./utils/botHealthMonitor.js";
+import webhookTester from "./utils/webhookTester.js";
 
 // Initialize bot based on mode (polling or webhook)
 let botOptions = {};
@@ -82,6 +83,27 @@ const server = app.listen(port, async () => {
             }
         }
     }
+
+    // Test webhook connectivity (works in both polling and webhook modes)
+    // Небольшая задержка чтобы сервер точно был готов
+    setTimeout(async () => {
+        try {
+            const testResults = await webhookTester.testOnStartup();
+
+            // В режиме webhook проверяем готовность к миграции
+            if (config.BOT_MODE === 'polling' && config.WEBHOOK_DOMAIN) {
+                log.info('--- Checking migration readiness ---');
+                const readiness = await webhookTester.checkMigrationReadiness();
+
+                if (readiness.isReady) {
+                    log.info('🎉 Bot is ready to migrate to webhook mode!');
+                    log.info('💡 To migrate: set BOT_MODE=webhook in .env and restart');
+                }
+            }
+        } catch (e) {
+            log.error('Error during webhook testing', { stack: e.stack });
+        }
+    }, 2000); // 2 секунды задержка
 });
 
 export const userLastRequest = {};

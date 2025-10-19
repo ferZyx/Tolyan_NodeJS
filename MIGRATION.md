@@ -116,12 +116,12 @@ sudo systemctl reload nginx
 Добавьте или измените следующие переменные в `.env`:
 
 ```bash
-# Режим работы бота
-BOT_MODE=webhook
+# ВАЖНО: Сначала оставляем polling для тестирования!
+BOT_MODE=polling
 
-# Webhook настройки
-WEBHOOK_DOMAIN=https://bot.yourdomain.com
-WEBHOOK_PATH=/bot/webhook
+# Webhook настройки (для api.bii.kz)
+WEBHOOK_DOMAIN=https://api.bii.kz
+WEBHOOK_PATH=/api/tolyan-bot/webhook
 
 # Остальные переменные остаются без изменений
 DEBUG=false
@@ -132,32 +132,19 @@ TG_TOKEN=your_telegram_bot_token
 
 **ВАЖНО:**
 - `WEBHOOK_DOMAIN` должен включать протокол `https://`
-- `WEBHOOK_PATH` должен совпадать с `location` в nginx
+- `WEBHOOK_PATH` должен совпадать с `location` в nginx (`/api/tolyan-bot/webhook`)
+- Сначала оставляем `BOT_MODE=polling` для тестирования!
 
-### Шаг 4: Остановка polling режима
+### Шаг 4: Тестирование webhook в polling режиме
 
-Перед переключением на webhook нужно остановить бота в polling режиме:
+**НЕ меняем BOT_MODE! Оставляем polling.**
 
-```bash
-# Остановить через PM2
-pm2 stop tolyan-bot
-
-# Или если запущен напрямую, нажать Ctrl+C
-```
-
-### Шаг 5: Удаление старого webhook (если был)
-
-```bash
-# Удалить webhook через Telegram API
-curl -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/deleteWebhook"
-```
-
-### Шаг 6: Запуск бота в webhook режиме
+Запускаем бота и проверяем логи:
 
 ```bash
 # Запустить через PM2
-pm2 start ecosystem.config.cjs
-pm2 logs tolyan-bot
+pm2 restart tolyan-bot
+pm2 logs tolyan-bot --lines 50
 
 # Или напрямую для тестирования
 npm start
@@ -166,9 +153,54 @@ npm start
 В логах вы должны увидеть:
 
 ```
+Bot is running in POLLING mode.
+Tolyan express started at 5001 port.
+=== Starting webhook connectivity test ===
+Testing webhook endpoint... http://localhost:5001/bot/webhook
+✓ Webhook test SUCCESSFUL
+Testing webhook endpoint... https://api.bii.kz/api/tolyan-bot/webhook
+✓ Webhook test SUCCESSFUL
+=== Webhook connectivity test results ===
+✓ All webhook endpoints are accessible
+--- Checking migration readiness ---
+✓ Bot is READY for webhook migration!
+💡 To migrate: set BOT_MODE=webhook in .env and restart
+```
+
+Если видите **"Bot is READY for webhook migration!"** - значит всё настроено правильно!
+
+### Шаг 5: Финальная миграция на webhook
+
+**Только после успешного теста из Шага 4!**
+
+1. Остановить бота:
+
+```bash
+pm2 stop tolyan-bot
+```
+
+2. Изменить `.env`:
+
+```bash
+# Меняем режим на webhook
+BOT_MODE=webhook
+```
+
+3. Запустить бота:
+
+```bash
+pm2 start tolyan-bot
+pm2 logs tolyan-bot
+```
+
+В логах вы должны увидеть:
+
+```
 Bot will run in WEBHOOK mode. Webhook URL will be set after server starts.
 Tolyan express started at 5001 port.
-Webhook set successfully: https://bot.yourdomain.com/bot/webhook
+Webhook set successfully: https://api.bii.kz/api/tolyan-bot/webhook
+=== Starting webhook connectivity test ===
+✓ Webhook test SUCCESSFUL
 ```
 
 ### Шаг 7: Проверка webhook
@@ -185,7 +217,7 @@ curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getWebhookInfo"
 {
   "ok": true,
   "result": {
-    "url": "https://bot.yourdomain.com/bot/webhook",
+    "url": "https://api.bii.kz/api/tolyan-bot/webhook",
     "has_custom_certificate": false,
     "pending_update_count": 0
   }
@@ -201,7 +233,7 @@ curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getWebhookInfo"
 **Health check:**
 
 ```bash
-curl https://bot.yourdomain.com/bot/health
+curl https://api.bii.kz/api/tolyan-bot/health
 ```
 
 Должен вернуть:

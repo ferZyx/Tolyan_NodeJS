@@ -33,14 +33,18 @@ router.get('/health', async (req, res) => {
     }
 });
 
-// Webhook endpoint (only used when BOT_MODE=webhook)
+// Webhook endpoint (works in both polling and webhook modes)
 router.post('/webhook', async (req, res) => {
-    if (config.BOT_MODE !== 'webhook') {
-        return res.status(400).json({ error: 'Bot is not in webhook mode' });
-    }
-
     try {
         const update = req.body;
+
+        // Log webhook receipt
+        log.info('Webhook update received', {
+            mode: config.BOT_MODE,
+            updateId: update.update_id,
+            hasMessage: !!update.message,
+            hasCallbackQuery: !!update.callback_query
+        });
 
         // Update bot activity
         botHealthMonitor.updateActivity();
@@ -52,6 +56,33 @@ router.post('/webhook', async (req, res) => {
     } catch (e) {
         log.error('Error processing webhook update', { stack: e.stack, update: req.body });
         return res.sendStatus(500);
+    }
+});
+
+// Test webhook endpoint - для тестирования доступности webhook
+router.post('/webhook/test', async (req, res) => {
+    try {
+        const testData = req.body;
+
+        log.info('Test webhook call received', {
+            mode: config.BOT_MODE,
+            testData,
+            timestamp: new Date().toISOString()
+        });
+
+        return res.status(200).json({
+            success: true,
+            mode: config.BOT_MODE,
+            message: 'Test webhook endpoint is working',
+            timestamp: new Date().toISOString(),
+            receivedData: testData
+        });
+    } catch (e) {
+        log.error('Error in test webhook endpoint', { stack: e.stack });
+        return res.status(500).json({
+            success: false,
+            error: e.message
+        });
     }
 });
 
