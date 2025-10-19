@@ -38,14 +38,6 @@ router.post('/webhook', async (req, res) => {
     try {
         const update = req.body;
 
-        // Log webhook receipt
-        log.info('Webhook update received', {
-            mode: config.BOT_MODE,
-            updateId: update.update_id,
-            hasMessage: !!update.message,
-            hasCallbackQuery: !!update.callback_query
-        });
-
         // Update bot activity
         botHealthMonitor.updateActivity();
 
