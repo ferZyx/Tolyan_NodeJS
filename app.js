@@ -1,6 +1,7 @@
 import TelegramBot from "node-telegram-bot-api"
 import express from "express"
 import cors from "cors"
+import mongoose from "mongoose"
 import log from "./logging/logging.js"
 import db from "./db/connection.js"
 import config from "./config.js"
@@ -18,6 +19,7 @@ import {setupAnyMessageHandler} from "./handlers/anyMessageHandler.js";
 import {i18nextInit} from "./locales/init.js";
 import botHealthMonitor from "./utils/botHealthMonitor.js";
 import webhookTester from "./utils/webhookTester.js";
+import WebhookRetryManager from "./utils/webhookRetry.js";
 
 // Initialize bot based on mode (polling or webhook)
 let botOptions = {};
@@ -30,6 +32,12 @@ if (config.BOT_MODE === 'webhook') {
 }
 
 export const bot = new TelegramBot(config.TG_TOKEN, botOptions);
+
+// Initialize webhook retry manager
+let webhookRetryManager = null;
+if (config.BOT_MODE === 'webhook') {
+    webhookRetryManager = new WebhookRetryManager(bot);
+}
 
 // Bot error handlers
 bot.on('polling_error', (error) => {
@@ -68,20 +76,15 @@ const port = 5001;
 const server = app.listen(port, async () => {
     log.info(`Tolyan express started at ${port} port.`);
 
-    // Set webhook if in webhook mode
-    if (config.BOT_MODE === 'webhook') {
-        try {
-            const webhookUrl = `${config.WEBHOOK_DOMAIN}${config.WEBHOOK_PATH}`;
-            await bot.setWebHook(webhookUrl);
-            log.info(`Webhook set successfully: ${webhookUrl}`);
-        } catch (e) {
-            log.error('Failed to set webhook!', { stack: e.stack });
-            if (!config.DEBUG) {
-                await bot.sendMessage(config.LOG_CHANEL_ID,
-                    `⚠️ Failed to set webhook!\n\nError: ${e.message}`
-                ).catch(err => log.error('Failed to send webhook error notification', { stack: err.stack }));
-            }
-        }
+    // Set webhook if in webhook mode (with automatic retry)
+    if (config.BOT_MODE === 'webhook' && webhookRetryManager) {
+        const webhookUrl = `${config.WEBHOOK_DOMAIN}${config.WEBHOOK_PATH}`;
+        await webhookRetryManager.setWebhookWithRetry(webhookUrl);
+
+        // Setup periodic webhook health monitoring (every 5 minutes)
+        setInterval(async () => {
+            await webhookRetryManager.monitorWebhookHealth();
+        }, 5 * 60 * 1000);
     }
 
     // Test webhook connectivity (works in both polling and webhook modes)
@@ -182,8 +185,16 @@ const gracefulShutdown = async (signal) => {
         }
 
         // Close database connection
-        await db.connection.close();
-        log.info('Database connection closed');
+        if (mongoose.connection.readyState !== 0) {
+            await mongoose.connection.close();
+            log.info('Database connection closed');
+        }
+
+        // Cancel any pending webhook retries
+        if (webhookRetryManager) {
+            webhookRetryManager.cancelRetry();
+            log.info('Webhook retry manager stopped');
+        }
 
         log.info('Graceful shutdown completed');
         process.exit(0);
